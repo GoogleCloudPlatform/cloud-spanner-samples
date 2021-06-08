@@ -1,0 +1,19 @@
+syntax = "proto2";
+
+package com.google.finapp;
+
+option java_multiple_files = true;
+option java_package = "com.google.finapp";
+option java_outer_classname = "DatabaseProto";
+
+enum AccountType {
+  UNSPECIFIED_ACCOUNT_TYPE = 0;
+  CHECKING = 1;
+  SAVING = 2;
+}
+
+enum AccountStatus {
+  UNSPECIFIED_ACCOUNT_STATUS = 0;
+  ACTIVE = 1;
+  FROZEN = 2;
+}

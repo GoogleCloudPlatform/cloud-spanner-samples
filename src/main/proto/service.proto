@@ -1,0 +1,20 @@
+syntax = "proto2";
+
+package com.google.finapp;
+
+import "google/protobuf/empty.proto";
+
+option java_multiple_files = true;
+option java_package = "com.google.finapp";
+option java_outer_classname = "ServiceProto";
+
+service FinApp {
+
+  rpc CreateCustomer(Customer) returns (.google.protobuf.Empty) {}
+
+}
+
+message Customer {
+  optional string name = 1;
+  optional string address = 2;
+}
