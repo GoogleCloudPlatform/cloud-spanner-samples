@@ -1,6 +1,8 @@
-A sample banking application built using Cloud Spanner.
+# Cloud Spanner Banking Application
 
-# Running the App Locally
+This repository contains a sample banking application built using Cloud Spanner.
+
+## How to run the application locally
 
 NOTE: Requires gcloud, mvn, grpc_cli installed.
 
