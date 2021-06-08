@@ -12,9 +12,28 @@ service FinApp {
 
   rpc CreateCustomer(Customer) returns (.google.protobuf.Empty) {}
 
+  rpc CreateAccount(Account) returns (.google.protobuf.Empty) {}
 }
 
 message Customer {
   optional string name = 1;
   optional string address = 2;
+}
+
+message Account {
+  optional string balance = 1;
+
+  enum Type {
+    UNSPECIFIED_ACCOUNT_TYPE = 0;
+    CHECKING = 1;
+    SAVING = 2;
+  }
+  optional Type type = 2;
+
+  enum Status {
+    UNSPECIFIED_ACCOUNT_STATUS = 0;
+    ACTIVE = 1;
+    FROZEN = 2;
+  }
+  optional Status status = 3;
 }

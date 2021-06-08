@@ -4,8 +4,11 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.Value;
 import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
+
+import java.math.BigDecimal;
 
 final class SpannerDao {
 
@@ -26,6 +29,25 @@ final class SpannerDao {
                 .to(name)
                 .set("Address")
                 .to(address)
+                .build()));
+  }
+
+  void createAccount(
+      ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
+      throws SpannerException {
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(accountId)
+                .set("AccountType")
+                .to(accountType.getNumber())
+                .set("AccountStatus")
+                .to(accountStatus.getNumber())
+                .set("Balance")
+                .to(balance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
                 .build()));
   }
 }
