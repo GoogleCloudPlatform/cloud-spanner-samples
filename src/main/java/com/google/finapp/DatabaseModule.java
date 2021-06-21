@@ -29,10 +29,10 @@ final class DatabaseModule extends AbstractModule {
 
   @Provides
   @Singleton
-  DatabaseClient provideDatabaseClient() {
+  DatabaseClient provideDatabaseClient(@ArgsModule.SpannerProjectId String spannerProjectId) {
     SpannerOptions spannerOptions = SpannerOptions.getDefaultInstance();
     Spanner spanner = spannerOptions.getService();
     return spanner.getDatabaseClient(
-        DatabaseId.of(spannerOptions.getProjectId(), "test-instance", "test-database"));
+        DatabaseId.of(spannerProjectId, "test-instance", "test-database"));
   }
 }

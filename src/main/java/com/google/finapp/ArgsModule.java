@@ -16,6 +16,7 @@ package com.google.finapp;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 
@@ -41,12 +42,26 @@ final class ArgsModule extends AbstractModule {
     return args.port;
   }
 
+  @Provides
+  @SpannerProjectId
+  String provideSpannerProjectId() {
+    return args.spannerProjectId;
+  }
+
   @Qualifier
   @Retention(RetentionPolicy.RUNTIME)
   @interface Port {}
 
+  @Qualifier
+  @Retention(RetentionPolicy.RUNTIME)
+  @interface SpannerProjectId {}
+
+  @Parameters(separators = "=")
   private static class Args {
     @Parameter(names = {"--port", "-p"})
     int port = 8080;
+
+    @Parameter(names = {"--spanner_project_id"})
+    String spannerProjectId;
   }
 }

@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finapp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      run: finapp
+  template:
+    metadata:
+      labels:
+        run: finapp
+    spec:
+      containers:
+        - name: finapp
+          image: us-central1-docker.pkg.dev/span-cloud-testing/finapp-docker-repo/finapp-image:5
+          args:
+            - "--spanner_project_id=span-cloud-testing"
