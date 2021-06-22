@@ -14,6 +14,8 @@
 
 package com.google.finapp;
 
+import com.google.api.gax.grpc.GrpcTransportChannel;
+import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Spanner;
@@ -21,6 +23,7 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import io.grpc.ManagedChannelBuilder;
 
 final class DatabaseModule extends AbstractModule {
 
@@ -31,7 +34,16 @@ final class DatabaseModule extends AbstractModule {
   @Singleton
   DatabaseClient provideDatabaseClient(@ArgsModule.SpannerProjectId String spannerProjectId) {
     SpannerOptions spannerOptions = SpannerOptions.getDefaultInstance();
-    Spanner spanner = spannerOptions.getService();
+    Spanner spanner =
+        spannerOptions.toBuilder()
+            .setChannelProvider(
+                // Configure GRPC channel explicitly, to simplify deployment on GKE. The default configuration
+                // requires a grpclb to be available.
+                FixedTransportChannelProvider.create(
+                    GrpcTransportChannel.create(
+                        ManagedChannelBuilder.forAddress("spanner.googleapis.com", 443).build())))
+            .build()
+            .getService();
     return spanner.getDatabaseClient(
         DatabaseId.of(spannerProjectId, "test-instance", "test-database"));
   }

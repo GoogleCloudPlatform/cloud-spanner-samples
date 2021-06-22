@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: finapp
-          image: us-central1-docker.pkg.dev/span-cloud-testing/finapp-docker-repo/finapp-image:5
+          image: us-central1-docker.pkg.dev/span-cloud-testing/finapp-docker-repo/finapp-image:6
           args:
             - "--spanner_project_id=span-cloud-testing"
