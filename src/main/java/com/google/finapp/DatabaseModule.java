@@ -32,19 +32,24 @@ final class DatabaseModule extends AbstractModule {
 
   @Provides
   @Singleton
-  DatabaseClient provideDatabaseClient(@ArgsModule.SpannerProjectId String spannerProjectId) {
+  DatabaseClient provideDatabaseClient(
+      @ArgsModule.SpannerHost String spannerHost,
+      @ArgsModule.SpannerPort int spannerPort,
+      @ArgsModule.SpannerProjectId String spannerProjectId,
+      @ArgsModule.SpannerInstanceId String spannerInstanceId,
+      @ArgsModule.SpannerDatabaseId String spannerDatabaseId) {
     SpannerOptions spannerOptions = SpannerOptions.getDefaultInstance();
     Spanner spanner =
         spannerOptions.toBuilder()
             .setChannelProvider(
-                // Configure GRPC channel explicitly, to simplify deployment on GKE. The default configuration
-                // requires a grpclb to be available.
+                // Configure GRPC channel explicitly, to simplify deployment on GKE. The default
+                // configuration requires a grpclb to be available.
                 FixedTransportChannelProvider.create(
                     GrpcTransportChannel.create(
-                        ManagedChannelBuilder.forAddress("spanner.googleapis.com", 443).build())))
+                        ManagedChannelBuilder.forAddress(spannerHost, spannerPort).build())))
             .build()
             .getService();
     return spanner.getDatabaseClient(
-        DatabaseId.of(spannerProjectId, "test-instance", "test-database"));
+        DatabaseId.of(spannerProjectId, spannerInstanceId, spannerDatabaseId));
   }
 }

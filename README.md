@@ -10,6 +10,7 @@ NOTE: Requires gcloud, mvn, grpc_cli installed.
 for client libraries to work.
 
     ```
+    $ gcloud emulators spanner start
     $ gcloud config configurations create emulator
     $ gcloud config set auth/disable_credentials true
     $ gcloud config set project your-project-id
@@ -18,7 +19,7 @@ for client libraries to work.
         --config=emulator-config --description="Test Instance" --nodes=1
     $ gcloud config set spanner/instance test-instance
     $ gcloud spanner databases create test-database \
-        --ddl-file src/main/java/com/google/finapp/schema/schema.sdl
+        --ddl-file src/main/java/com/google/finapp/schema.sdl
     $ export SPANNER_EMULATOR_HOST=”localhost:9010"
     ```
 

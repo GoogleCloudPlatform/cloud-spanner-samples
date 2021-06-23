@@ -15,11 +15,9 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
-import com.google.cloud.spanner.DatabaseClient;
-import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.SpannerException;
-import com.google.cloud.spanner.Value;
+import com.google.cloud.spanner.*;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 
 import java.math.BigDecimal;
@@ -63,5 +61,88 @@ final class SpannerDao {
                 .set("CreationTimestamp")
                 .to(Value.COMMIT_TIMESTAMP)
                 .build()));
+  }
+
+  void addAccountForCustomer(
+      ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
+      throws SpannerException {
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("CustomerRole")
+                .set("CustomerId")
+                .to(customerId)
+                .set("AccountId")
+                .to(accountId)
+                .set("RoleId")
+                .to(roleId)
+                .set("Role")
+                .to(roleName)
+                .build()));
+  }
+
+  void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws SpannerException {
+    databaseClient
+        .readWriteTransaction()
+        .run(
+            transaction -> {
+              // Get account balances.
+              ImmutableMap<ByteArray, BigDecimal> accountBalances =
+                  readAccountBalances(fromAccountId, toAccountId, transaction);
+
+              transaction.buffer(
+                  ImmutableList.of(
+                      buildUpdateAccountMutation(
+                          fromAccountId, accountBalances.get(fromAccountId).subtract(amount)),
+                      buildUpdateAccountMutation(
+                          toAccountId, accountBalances.get(toAccountId).add(amount)),
+                      buildInsertTransactionHistoryMutation(
+                          fromAccountId, amount, /* isCredit= */ true),
+                      buildInsertTransactionHistoryMutation(
+                          toAccountId, amount, /* isCredit= */ false)));
+              return null;
+            });
+  }
+
+  void getAccountMetadata(ByteArray accountId) throws SpannerException {
+
+  }
+
+  private ImmutableMap<ByteArray, BigDecimal> readAccountBalances(
+      ByteArray fromAccountId, ByteArray toAccountId, TransactionContext transaction) {
+    ResultSet resultSet =
+        transaction.read(
+            "Account",
+            KeySet.newBuilder().addKey(Key.of(fromAccountId)).addKey(Key.of(toAccountId)).build(),
+            ImmutableList.of("AccountId", "Balance"));
+
+    ImmutableMap.Builder<ByteArray, BigDecimal> accountBalancesBuilder = ImmutableMap.builder();
+    while (resultSet.next()) {
+      accountBalancesBuilder.put(
+          resultSet.getBytes("AccountId"), resultSet.getBigDecimal("Balance"));
+    }
+    return accountBalancesBuilder.build();
+  }
+
+  private Mutation buildUpdateAccountMutation(ByteArray accountId, BigDecimal newBalance) {
+    return Mutation.newUpdateBuilder("Account")
+        .set("AccountId")
+        .to(accountId)
+        .set("Balance")
+        .to(newBalance)
+        .build();
+  }
+
+  private Mutation buildInsertTransactionHistoryMutation(
+      ByteArray accountId, BigDecimal amount, boolean isCredit) {
+    return Mutation.newInsertBuilder("TransactionHistory")
+        .set("AccountId")
+        .to(accountId)
+        .set("Amount")
+        .to(amount)
+        .set("IsCredit")
+        .to(isCredit)
+        .set("EventTimestamp")
+        .to(Value.COMMIT_TIMESTAMP)
+        .build();
   }
 }

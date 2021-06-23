@@ -43,9 +43,54 @@ final class ArgsModule extends AbstractModule {
   }
 
   @Provides
+  @SpannerHost
+  String provideSpannerHost() {
+    return args.spannerHost;
+  }
+
+  @Provides
+  @SpannerPort
+  int provideSpannerPort() {
+    return args.spannerPort;
+  }
+
+  @Provides
   @SpannerProjectId
   String provideSpannerProjectId() {
     return args.spannerProjectId;
+  }
+
+  @Provides
+  @SpannerInstanceId
+  String provideSpannerInstanceId() {
+    return args.spannerInstanceId;
+  }
+
+  @Provides
+  @SpannerDatabaseId
+  String provideSpannerDatabaseId() {
+    return args.spannerDatabaseId;
+  }
+
+  @Parameters(separators = "=")
+  private static class Args {
+    @Parameter(names = {"--port", "-p"})
+    int port = 8080;
+
+    @Parameter(names = {"--spanner_host"})
+    String spannerHost = "spanner.googleapis.com";
+
+    @Parameter(names = {"--spanner_port"})
+    int spannerPort = 443;
+
+    @Parameter(names = {"--spanner_project_id"})
+    String spannerProjectId;
+
+    @Parameter(names = {"--spanner_instance_id"})
+    String spannerInstanceId;
+
+    @Parameter(names = {"--spanner_database_id"})
+    String spannerDatabaseId;
   }
 
   @Qualifier
@@ -54,14 +99,21 @@ final class ArgsModule extends AbstractModule {
 
   @Qualifier
   @Retention(RetentionPolicy.RUNTIME)
+  @interface SpannerHost {}
+
+  @Qualifier
+  @Retention(RetentionPolicy.RUNTIME)
+  @interface SpannerPort {}
+
+  @Qualifier
+  @Retention(RetentionPolicy.RUNTIME)
   @interface SpannerProjectId {}
 
-  @Parameters(separators = "=")
-  private static class Args {
-    @Parameter(names = {"--port", "-p"})
-    int port = 8080;
+  @Qualifier
+  @Retention(RetentionPolicy.RUNTIME)
+  @interface SpannerInstanceId {}
 
-    @Parameter(names = {"--spanner_project_id"})
-    String spannerProjectId;
-  }
+  @Qualifier
+  @Retention(RetentionPolicy.RUNTIME)
+  @interface SpannerDatabaseId {}
 }
