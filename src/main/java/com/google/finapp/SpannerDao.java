@@ -21,46 +21,74 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 final class SpannerDao {
 
   private final DatabaseClient databaseClient;
+
+  // TODO(developer): change these variables
+  private final String projectId = "test-project";
+  private final String databaseId = "test-database";
+  private final String instanceId  = "test-instance";
+
+  // use this URL to connect to Cloud Spanner
+  // private final String connectionUrl =
+  //     String.format(
+  //         "jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s",
+  //         projectId, instanceId, databaseId);
+
+  // use this URL to connect to the emulator
+  private final String connectionUrl =
+      String.format(
+          "jdbc:cloudspanner://localhost:9010/projects/%s/instances/%s/databases/%s;usePlainText=true",
+          projectId, instanceId, databaseId);
 
   @Inject
   SpannerDao(DatabaseClient databaseClient) {
     this.databaseClient = databaseClient;
   }
 
-  void createCustomer(ByteArray customerId, String name, String address) throws SpannerException {
-    databaseClient.write(
-        ImmutableList.of(
-            Mutation.newInsertBuilder("Customer")
-                .set("CustomerId")
-                .to(customerId)
-                .set("Name")
-                .to(name)
-                .set("Address")
-                .to(address)
-                .build()));
+  void createCustomer(ByteArray customerId, String name, String address) throws SQLException {
+    try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
+      try (PreparedStatement ps =
+          connection.prepareStatement(
+              "INSERT INTO Customer\n"
+                  + "(CustomerId, Name, Address)\n"
+                  + "VALUES\n"
+                  + "(?, ?, ?)")) {
+        ps.setBytes(1, customerId.toByteArray());
+        ps.setString(2, name);
+        ps.setString(3, address);
+        int updateCounts = ps.executeUpdate();
+        System.out.printf("Insert counts: %d", updateCounts);
+      }
+    }
   }
+
 
   void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
-      throws SpannerException {
-    databaseClient.write(
-        ImmutableList.of(
-            Mutation.newInsertBuilder("Account")
-                .set("AccountId")
-                .to(accountId)
-                .set("AccountType")
-                .to(accountType.getNumber())
-                .set("AccountStatus")
-                .to(accountStatus.getNumber())
-                .set("Balance")
-                .to(balance)
-                .set("CreationTimestamp")
-                .to(Value.COMMIT_TIMESTAMP)
-                .build()));
+      throws SQLException {
+    try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
+      try (PreparedStatement ps =
+          connection.prepareStatement(
+              "INSERT INTO Account\n"
+                  + "(AccountId, AccountType, AccountStatus, Balance, CreationTimestamp)\n"
+                  + "VALUES\n"
+                  + "(?, ?, ?, ?, ?)")) {
+        ps.setBytes(1, accountId.toByteArray());
+        ps.setInt(2, accountType.getNumber());
+        ps.setInt(3, accountStatus.getNumber());
+        ps.setBigDecimal(4, balance);
+        ps.setTimestamp(5, Value.COMMIT_TIMESTAMP.toSqlTimestamp()); //TODO: should we use this method to get timestamp?
+        int updateCounts = ps.executeUpdate();
+        System.out.printf("Insert counts: %d", updateCounts);
+      }
+    }
   }
 
   void addAccountForCustomer(

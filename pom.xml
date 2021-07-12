@@ -30,6 +30,12 @@
     </dependencyManagement>
 
     <dependencies>
+        <!--spanner JDBC dependency -->
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-spanner-jdbc</artifactId>
+        </dependency>
+        <!-- testing -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
