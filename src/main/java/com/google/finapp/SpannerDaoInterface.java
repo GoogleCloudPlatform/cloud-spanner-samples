@@ -15,7 +15,7 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
-import com.google.cloud.spanner.*;
+import com.google.cloud.spanner.SpannerException;
 
 import java.math.BigDecimal;
 
