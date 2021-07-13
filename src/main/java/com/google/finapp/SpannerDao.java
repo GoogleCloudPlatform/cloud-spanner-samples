@@ -22,7 +22,7 @@ import com.google.inject.Inject;
 
 import java.math.BigDecimal;
 
-final class SpannerDao implements com.google.finapp.SpannerDaoInterface {
+final class SpannerDao implements SpannerDaoInterface {
 
   private final DatabaseClient databaseClient;
 
