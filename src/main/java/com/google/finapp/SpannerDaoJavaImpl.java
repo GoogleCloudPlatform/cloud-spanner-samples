@@ -22,12 +22,12 @@ import com.google.inject.Inject;
 
 import java.math.BigDecimal;
 
-final class SpannerDao implements SpannerDaoInterface {
+final class SpannerDaoJavaImpl implements SpannerDaoInterface {
 
   private final DatabaseClient databaseClient;
 
   @Inject
-  SpannerDao(DatabaseClient databaseClient) {
+  SpannerDaoJavaImpl(DatabaseClient databaseClient) {
     this.databaseClient = databaseClient;
   }
 
