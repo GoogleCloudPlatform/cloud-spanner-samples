@@ -41,12 +41,12 @@ final class DatabaseModule extends AbstractModule {
     SpannerOptions spannerOptions = SpannerOptions.getDefaultInstance();
     Spanner spanner =
         spannerOptions.toBuilder()
-            .setChannelProvider(
-                // Configure GRPC channel explicitly, to simplify deployment on GKE. The default
-                // configuration requires a grpclb to be available.
-                FixedTransportChannelProvider.create(
-                    GrpcTransportChannel.create(
-                        ManagedChannelBuilder.forAddress(spannerHost, spannerPort).build())))
+            // .setChannelProvider(
+            //     // Configure GRPC channel explicitly, to simplify deployment on GKE. The default
+            //     // configuration requires a grpclb to be available.
+            //     FixedTransportChannelProvider.create(
+            //         GrpcTransportChannel.create(
+            //             ManagedChannelBuilder.forAddress(spannerHost, spannerPort).build())))
             .build()
             .getService();
     return spanner.getDatabaseClient(
