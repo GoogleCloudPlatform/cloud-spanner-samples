@@ -32,7 +32,7 @@ final class SpannerDao implements SpannerDaoInterface {
   }
 
   @Override
-  public void createCustomer(ByteArray customerId, String name, String address) throws SpannerException {
+  void createCustomer(ByteArray customerId, String name, String address) throws SpannerException {
     databaseClient.write(
         ImmutableList.of(
             Mutation.newInsertBuilder("Customer")
@@ -46,7 +46,7 @@ final class SpannerDao implements SpannerDaoInterface {
   }
 
   @Override
-  public void createAccount(
+  void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerException {
     databaseClient.write(
@@ -66,7 +66,7 @@ final class SpannerDao implements SpannerDaoInterface {
   }
 
   @Override
-  public void addAccountForCustomer(
+  void addAccountForCustomer(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
       throws SpannerException {
     databaseClient.write(
@@ -84,7 +84,7 @@ final class SpannerDao implements SpannerDaoInterface {
   }
 
   @Override
-  public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws SpannerException {
+  void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws SpannerException {
     databaseClient
         .readWriteTransaction()
         .run(
@@ -108,7 +108,7 @@ final class SpannerDao implements SpannerDaoInterface {
   }
 
   @Override
-  public void getAccountMetadata(ByteArray accountId) throws SpannerException {
+  void getAccountMetadata(ByteArray accountId) throws SpannerException {
 
   }
 
