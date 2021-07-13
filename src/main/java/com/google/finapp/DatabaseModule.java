@@ -28,7 +28,9 @@ import io.grpc.ManagedChannelBuilder;
 final class DatabaseModule extends AbstractModule {
 
   @Override
-  protected void configure() {}
+  protected void configure() {
+    bind(SpannerDaoInterface.class).to(SpannerDaoJavaImpl.class);
+  }
 
   @Provides
   @Singleton
