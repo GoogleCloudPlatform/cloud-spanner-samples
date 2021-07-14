@@ -19,18 +19,56 @@ import com.google.cloud.spanner.SpannerException;
 
 import java.math.BigDecimal;
 
+/**
+ * The SpannerDaoInterface declares the methods to be used by its separate implementations.
+ */
 public interface SpannerDaoInterface {
 
+  /**
+   * Inserts a new row to the Customer table in the database.
+   *
+   * @param customerId unique the Customer id
+   * @param name Customer name
+   * @param address Customer address
+   * @throws SpannerException
+   */
   void createCustomer(ByteArray customerId, String name, String address) throws SpannerException;
 
+  /**
+   * Inserts a new row to the Account table in the database.
+   *
+   * @param accountId unique Account id
+   * @param accountType indicates unspecified, checking, or savings Account type
+   * @param accountStatus indicates unspecificed, active, or frozen Account status
+   * @param balance Account balance
+   * @throws SpannerException
+   */
   void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerException;
 
+  /**
+   * Inserts a new row to the Account table for a Customer in the database.
+   *
+   * @param customerId unique Customer id
+   * @param accountId unique account id
+   * @param roleId unique role id
+   * @param roleName role name
+   * @throws SpannerException
+   */
   void addAccountForCustomer(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
       throws SpannerException;
 
+  /**
+   * Moves an amount from one unique account to another unique account for a Customer
+   * in the database.
+   *
+   * @param fromAccountId unique account id where amount will be transferred from
+   * @param toAccountId unique account id where amount will be transferred to
+   * @param amount amount transferred from fromAccountId to toAccountId
+   * @throws SpannerException
+   */
   void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId,
       BigDecimal amount) throws SpannerException;
 }
