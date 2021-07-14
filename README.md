@@ -20,7 +20,7 @@ for client libraries to work.
     $ gcloud config set spanner/instance test-instance
     $ gcloud spanner databases create test-database \
         --ddl-file src/main/java/com/google/finapp/schema.sdl
-    $ export SPANNER_EMULATOR_HOST=”localhost:9010"
+    $ export SPANNER_EMULATOR_HOST="localhost:9010"
     ```
 
 2. Bring up the FinAppServer hosting a grpc service.
