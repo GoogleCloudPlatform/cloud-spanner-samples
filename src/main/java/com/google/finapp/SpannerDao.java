@@ -60,8 +60,8 @@ final class SpannerDao {
         ps.setBytes(1, customerId.toByteArray());
         ps.setString(2, name);
         ps.setString(3, address);
-        int updateCounts = ps.executeUpdate();
-        System.out.printf("Insert counts: %d", updateCounts);
+        ps.executeUpdate();
+        System.out.printf("Customer created: %s\n", name);
       }
     }
   }
@@ -82,7 +82,7 @@ final class SpannerDao {
         ps.setInt(3, accountStatus.getNumber());
         ps.setBigDecimal(4, balance);
         int updateCounts = ps.executeUpdate();
-        System.out.printf("Insert counts: %d", updateCounts);
+        System.out.printf("Account created with balance %s\n", balance.toString());
       }
     }
   }
@@ -102,7 +102,7 @@ final class SpannerDao {
         ps.setBytes(3, roleId.toByteArray());
         ps.setString(4, roleName);
         int updateCounts = ps.executeUpdate();
-        System.out.printf("Insert counts: %d", updateCounts);
+        System.out.printf("New role created: %s\n", roleName);
       }
     }
   }
@@ -144,7 +144,7 @@ final class SpannerDao {
             insertTransactionStatement);
         insertTransactionStatement.executeBatch();
         connection.commit();
-        System.out.println("Balance moved");
+        System.out.printf("Balance of %s moved.\n", amount.toString());
       }
     }
   }
@@ -152,6 +152,7 @@ final class SpannerDao {
   void getAccountMetadata(ByteArray accountId) throws SpannerException {
 
   }
+
 
   private void updateAccount(byte[] accountId, BigDecimal newBalance,
       PreparedStatement ps) throws SQLException {
