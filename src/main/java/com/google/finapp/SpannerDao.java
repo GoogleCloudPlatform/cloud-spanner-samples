@@ -76,13 +76,11 @@ final class SpannerDao {
               "INSERT INTO Account\n"
                   + "(AccountId, AccountType, AccountStatus, Balance, CreationTimestamp)\n"
                   + "VALUES\n"
-                  + "(?, ?, ?, ?, ?)")) {
+                  + "(?, ?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
         ps.setBytes(1, accountId.toByteArray());
         ps.setInt(2, accountType.getNumber());
         ps.setInt(3, accountStatus.getNumber());
         ps.setBigDecimal(4, balance);
-        ps.setTimestamp(5, Value.COMMIT_TIMESTAMP
-            .toSqlTimestamp()); //TODO: should we use this method to get timestamp?
         int updateCounts = ps.executeUpdate();
         System.out.printf("Insert counts: %d", updateCounts);
       }
@@ -124,7 +122,7 @@ final class SpannerDao {
           );
           PreparedStatement insertTransactionStatement = connection.prepareStatement(
               "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
-                  + "VALUES (?, ?, ?, ?)")) {
+                  + "VALUES (?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
         readStatement.setBytes(1, fromAccountId.toByteArray());
         readStatement.setBytes(2, toAccountId.toByteArray());
         java.sql.ResultSet resultSet = readStatement.executeQuery();
@@ -167,7 +165,6 @@ final class SpannerDao {
     ps.setBytes(1, accountId);
     ps.setBigDecimal(2, amount);
     ps.setBoolean(3, isCredit);
-    ps.setTimestamp(4, Value.COMMIT_TIMESTAMP.toSqlTimestamp());
     ps.addBatch();
   }
 }
