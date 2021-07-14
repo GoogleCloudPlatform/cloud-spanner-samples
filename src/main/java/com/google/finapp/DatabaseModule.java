@@ -29,7 +29,7 @@ final class DatabaseModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    bind(SpannerDaoInterface.class).to(SpannerDaoJavaImpl.class);
+    bind(SpannerDaoInterface.class).to(SpannerDaoImpl.class);
   }
 
   @Provides
