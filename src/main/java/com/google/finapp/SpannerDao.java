@@ -16,8 +16,6 @@ package com.google.finapp;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.*;
-import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 
@@ -26,13 +24,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 
 final class SpannerDao {
 
-  private final DatabaseClient databaseClient;
-
-  // TODO(developer): change these variables
+  // TODO: get these variables from args
   private final String projectId = "test-project";
   private final String databaseId = "test-database";
   private final String instanceId = "test-instance";
@@ -49,9 +44,9 @@ final class SpannerDao {
           "jdbc:cloudspanner://localhost:9010/projects/%s/instances/%s/databases/%s;usePlainText=true",
           projectId, instanceId, databaseId);
 
+  // TODO: remove dependency?
   @Inject
   SpannerDao(DatabaseClient databaseClient) {
-    this.databaseClient = databaseClient;
   }
 
   void createCustomer(ByteArray customerId, String name, String address) throws SQLException {
