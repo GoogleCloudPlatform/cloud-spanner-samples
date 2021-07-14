@@ -112,6 +112,7 @@ final class SpannerDao {
       ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SQLException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
+      // begin transaction
       connection.setAutoCommit(false);
       try (
           PreparedStatement readStatement = connection.prepareStatement(
@@ -123,6 +124,7 @@ final class SpannerDao {
           PreparedStatement insertTransactionStatement = connection.prepareStatement(
               "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
                   + "VALUES (?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
+        // read current balances from Account table
         readStatement.setBytes(1, fromAccountId.toByteArray());
         readStatement.setBytes(2, toAccountId.toByteArray());
         java.sql.ResultSet resultSet = readStatement.executeQuery();
@@ -132,6 +134,7 @@ final class SpannerDao {
               resultSet.getBytes("AccountId"), resultSet.getBigDecimal("Balance"));
         }
         ImmutableMap<byte[], BigDecimal> accountBalances = accountBalancesBuilder.build();
+        // update Account and TransactionHistory tables
         updateAccount(fromAccountId.toByteArray(),
             accountBalances.get(fromAccountId.toByteArray()).subtract(amount),
             updateAccountStatement);
