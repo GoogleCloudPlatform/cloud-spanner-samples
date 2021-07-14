@@ -93,19 +93,22 @@ final class SpannerDao {
 
   void addAccountForCustomer(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
-      throws SpannerException {
-    databaseClient.write(
-        ImmutableList.of(
-            Mutation.newInsertBuilder("CustomerRole")
-                .set("CustomerId")
-                .to(customerId)
-                .set("AccountId")
-                .to(accountId)
-                .set("RoleId")
-                .to(roleId)
-                .set("Role")
-                .to(roleName)
-                .build()));
+      throws SQLException {
+    try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
+      try (PreparedStatement ps =
+          connection.prepareStatement(
+              "INSERT INTO CustomerRole\n"
+                  + "(CustomerId, AccountId, RoleId, Role)\n"
+                  + "VALUES\n"
+                  + "(?, ?, ?, ?)")) {
+        ps.setBytes(1, customerId.toByteArray());
+        ps.setBytes(2, accountId.toByteArray());
+        ps.setBytes(3, roleId.toByteArray());
+        ps.setString(4, roleName);
+        int updateCounts = ps.executeUpdate();
+        System.out.printf("Insert counts: %d", updateCounts);
+      }
+    }
   }
 
   void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws SpannerException {
