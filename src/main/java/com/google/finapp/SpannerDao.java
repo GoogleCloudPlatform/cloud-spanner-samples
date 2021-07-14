@@ -16,6 +16,7 @@ package com.google.finapp;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.*;
+import com.google.cloud.spanner.jdbc.CloudSpannerJdbcConnection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
@@ -25,6 +26,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
 final class SpannerDao {
 
@@ -111,69 +113,65 @@ final class SpannerDao {
     }
   }
 
-  void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws SpannerException {
-    databaseClient
-        .readWriteTransaction()
-        .run(
-            transaction -> {
-              // Get account balances.
-              ImmutableMap<ByteArray, BigDecimal> accountBalances =
-                  readAccountBalances(fromAccountId, toAccountId, transaction);
 
-              transaction.buffer(
-                  ImmutableList.of(
-                      buildUpdateAccountMutation(
-                          fromAccountId, accountBalances.get(fromAccountId).subtract(amount)),
-                      buildUpdateAccountMutation(
-                          toAccountId, accountBalances.get(toAccountId).add(amount)),
-                      buildInsertTransactionHistoryMutation(
-                          fromAccountId, amount, /* isCredit= */ true),
-                      buildInsertTransactionHistoryMutation(
-                          toAccountId, amount, /* isCredit= */ false)));
-              return null;
-            });
+  void moveAccountBalance(
+      ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
+      throws SQLException {
+    try (Connection connection = DriverManager.getConnection(this.connectionUrl)){
+      connection.setAutoCommit(false);
+      try (
+        PreparedStatement readStatement = connection.prepareStatement(
+            "SELECT AccountId, Balance FROM Account WHERE (AccountId = ? or AccountId = ?)"
+        );
+        PreparedStatement updateAccountStatement = connection.prepareStatement(
+            "UPDATE Account SET Balance = ? WHERE AccountId = ?"
+        );
+        PreparedStatement insertTransactionStatement = connection.prepareStatement(
+            "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
+                + "VALUES (?, ?, ?, ?)")) {
+        readStatement.setBytes(1, fromAccountId.toByteArray());
+        readStatement.setBytes(2, toAccountId.toByteArray());
+        java.sql.ResultSet resultSet = readStatement.executeQuery();
+        ImmutableMap.Builder<byte[], BigDecimal> accountBalancesBuilder = ImmutableMap.builder();
+        while (resultSet.next()) {
+          accountBalancesBuilder.put(
+              resultSet.getBytes("AccountId"), resultSet.getBigDecimal("Balance"));
+        }
+        ImmutableMap<byte[], BigDecimal> accountBalances = accountBalancesBuilder.build();
+        updateAccount(fromAccountId.toByteArray(),
+            accountBalances.get(fromAccountId.toByteArray()).subtract(amount),
+            updateAccountStatement);
+        updateAccount(toAccountId.toByteArray(),
+            accountBalances.get(toAccountId.toByteArray()).add(amount), updateAccountStatement);
+        updateAccountStatement.executeBatch();
+        insertTransaction(fromAccountId.toByteArray(), amount, /* isCredit = */ true,
+            insertTransactionStatement); //TODO: are these bools correct?
+        insertTransaction(toAccountId.toByteArray(), amount, /* isCredit = */ false,
+            insertTransactionStatement);
+        insertTransactionStatement.executeBatch();
+        connection.commit();
+        System.out.println("Balance moved");
+      }
+    }
   }
 
   void getAccountMetadata(ByteArray accountId) throws SpannerException {
 
   }
 
-  private ImmutableMap<ByteArray, BigDecimal> readAccountBalances(
-      ByteArray fromAccountId, ByteArray toAccountId, TransactionContext transaction) {
-    ResultSet resultSet =
-        transaction.read(
-            "Account",
-            KeySet.newBuilder().addKey(Key.of(fromAccountId)).addKey(Key.of(toAccountId)).build(),
-            ImmutableList.of("AccountId", "Balance"));
-
-    ImmutableMap.Builder<ByteArray, BigDecimal> accountBalancesBuilder = ImmutableMap.builder();
-    while (resultSet.next()) {
-      accountBalancesBuilder.put(
-          resultSet.getBytes("AccountId"), resultSet.getBigDecimal("Balance"));
-    }
-    return accountBalancesBuilder.build();
+  private void updateAccount(byte[] accountId, BigDecimal newBalance,
+      PreparedStatement ps) throws SQLException{
+    ps.setBigDecimal(1, newBalance);
+    ps.setBytes(2, accountId);
+    ps.addBatch();
   }
 
-  private Mutation buildUpdateAccountMutation(ByteArray accountId, BigDecimal newBalance) {
-    return Mutation.newUpdateBuilder("Account")
-        .set("AccountId")
-        .to(accountId)
-        .set("Balance")
-        .to(newBalance)
-        .build();
-  }
-
-  private Mutation buildInsertTransactionHistoryMutation(
-      ByteArray accountId, BigDecimal amount, boolean isCredit) {
-    return Mutation.newInsertBuilder("TransactionHistory")
-        .set("AccountId")
-        .to(accountId)
-        .set("Amount")
-        .to(amount)
-        .set("IsCredit")
-        .to(isCredit)
-        .set("EventTimestamp")
-        .to(Value.COMMIT_TIMESTAMP)
-        .build();
+  private void insertTransaction(byte[] accountId, BigDecimal amount, boolean isCredit,
+      PreparedStatement ps) throws SQLException{
+    ps.setBytes(1, accountId);
+    ps.setBigDecimal(2, amount);
+    ps.setBoolean(3, isCredit);
+    ps.setTimestamp(4, Value.COMMIT_TIMESTAMP.toSqlTimestamp());
+    ps.addBatch();
   }
 }
