@@ -62,8 +62,8 @@ public interface SpannerDaoInterface {
 
   /**
    * Moves an amount from one unique account to another unique account for a Customer
-   * in the database. Also modifies Account table and adds rows to the TransactionHistory table
-   * in the database.
+   * in the database by modifying the unique accounts in the Account table and adding rows
+   * to the TransactionHistory table in the database.
    *
    * @param fromAccountId unique account id where amount will be transferred from
    * @param toAccountId unique account id where amount will be transferred to
