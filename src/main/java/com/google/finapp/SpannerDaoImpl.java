@@ -107,11 +107,6 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
             });
   }
 
-  // @Override
-  // public void getAccountMetadata(ByteArray accountId) throws SpannerException {
-  //
-  // }
-
   private ImmutableMap<ByteArray, BigDecimal> readAccountBalances(
       ByteArray fromAccountId, ByteArray toAccountId, TransactionContext transaction) {
     ResultSet resultSet =
