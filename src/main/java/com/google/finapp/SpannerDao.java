@@ -124,17 +124,8 @@ final class SpannerDao {
           PreparedStatement insertTransactionStatement = connection.prepareStatement(
               "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
                   + "VALUES (?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
-        // read current balances from Account table
-        readStatement.setBytes(1, fromAccountId.toByteArray());
-        readStatement.setBytes(2, toAccountId.toByteArray());
-        java.sql.ResultSet resultSet = readStatement.executeQuery();
-        ImmutableMap.Builder<byte[], BigDecimal> accountBalancesBuilder = ImmutableMap.builder();
-        while (resultSet.next()) {
-          accountBalancesBuilder.put(
-              resultSet.getBytes("AccountId"), resultSet.getBigDecimal("Balance"));
-        }
-        ImmutableMap<byte[], BigDecimal> accountBalances = accountBalancesBuilder.build();
-        // update Account and TransactionHistory tables
+        ImmutableMap<byte[], BigDecimal> accountBalances = readAccountBalances(
+            fromAccountId.toByteArray(), toAccountId.toByteArray(), readStatement);
         updateAccount(fromAccountId.toByteArray(),
             accountBalances.get(fromAccountId.toByteArray()).subtract(amount),
             updateAccountStatement);
@@ -154,6 +145,21 @@ final class SpannerDao {
 
   void getAccountMetadata(ByteArray accountId) throws SpannerException {
 
+  }
+
+
+  private ImmutableMap<byte[], BigDecimal> readAccountBalances(
+      byte[] fromAccountId, byte[] toAccountId, PreparedStatement readStatement)
+      throws SQLException {
+    readStatement.setBytes(1, fromAccountId);
+    readStatement.setBytes(2, toAccountId);
+    java.sql.ResultSet resultSet = readStatement.executeQuery();
+    ImmutableMap.Builder<byte[], BigDecimal> accountBalancesBuilder = ImmutableMap.builder();
+    while (resultSet.next()) {
+      accountBalancesBuilder.put(
+          resultSet.getBytes("AccountId"), resultSet.getBigDecimal("Balance"));
+    }
+    return accountBalancesBuilder.build();
   }
 
 
