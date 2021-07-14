@@ -35,7 +35,7 @@ final class SpannerDao {
   // TODO(developer): change these variables
   private final String projectId = "test-project";
   private final String databaseId = "test-database";
-  private final String instanceId  = "test-instance";
+  private final String instanceId = "test-instance";
 
   // use this URL to connect to Cloud Spanner
   // private final String connectionUrl =
@@ -86,7 +86,8 @@ final class SpannerDao {
         ps.setInt(2, accountType.getNumber());
         ps.setInt(3, accountStatus.getNumber());
         ps.setBigDecimal(4, balance);
-        ps.setTimestamp(5, Value.COMMIT_TIMESTAMP.toSqlTimestamp()); //TODO: should we use this method to get timestamp?
+        ps.setTimestamp(5, Value.COMMIT_TIMESTAMP
+            .toSqlTimestamp()); //TODO: should we use this method to get timestamp?
         int updateCounts = ps.executeUpdate();
         System.out.printf("Insert counts: %d", updateCounts);
       }
@@ -117,18 +118,18 @@ final class SpannerDao {
   void moveAccountBalance(
       ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SQLException {
-    try (Connection connection = DriverManager.getConnection(this.connectionUrl)){
+    try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
       connection.setAutoCommit(false);
       try (
-        PreparedStatement readStatement = connection.prepareStatement(
-            "SELECT AccountId, Balance FROM Account WHERE (AccountId = ? or AccountId = ?)"
-        );
-        PreparedStatement updateAccountStatement = connection.prepareStatement(
-            "UPDATE Account SET Balance = ? WHERE AccountId = ?"
-        );
-        PreparedStatement insertTransactionStatement = connection.prepareStatement(
-            "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
-                + "VALUES (?, ?, ?, ?)")) {
+          PreparedStatement readStatement = connection.prepareStatement(
+              "SELECT AccountId, Balance FROM Account WHERE (AccountId = ? or AccountId = ?)"
+          );
+          PreparedStatement updateAccountStatement = connection.prepareStatement(
+              "UPDATE Account SET Balance = ? WHERE AccountId = ?"
+          );
+          PreparedStatement insertTransactionStatement = connection.prepareStatement(
+              "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
+                  + "VALUES (?, ?, ?, ?)")) {
         readStatement.setBytes(1, fromAccountId.toByteArray());
         readStatement.setBytes(2, toAccountId.toByteArray());
         java.sql.ResultSet resultSet = readStatement.executeQuery();
@@ -160,14 +161,14 @@ final class SpannerDao {
   }
 
   private void updateAccount(byte[] accountId, BigDecimal newBalance,
-      PreparedStatement ps) throws SQLException{
+      PreparedStatement ps) throws SQLException {
     ps.setBigDecimal(1, newBalance);
     ps.setBytes(2, accountId);
     ps.addBatch();
   }
 
   private void insertTransaction(byte[] accountId, BigDecimal amount, boolean isCredit,
-      PreparedStatement ps) throws SQLException{
+      PreparedStatement ps) throws SQLException {
     ps.setBytes(1, accountId);
     ps.setBigDecimal(2, amount);
     ps.setBoolean(3, isCredit);
