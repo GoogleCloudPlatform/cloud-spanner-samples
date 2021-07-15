@@ -133,7 +133,7 @@ final class SpannerDao {
             accountBalances.get(toAccountId.toByteArray()).add(amount), updateAccountStatement);
         updateAccountStatement.executeBatch();
         insertTransaction(fromAccountId.toByteArray(), amount, /* isCredit = */ true,
-            insertTransactionStatement); //TODO: are these bools correct?
+            insertTransactionStatement);
         insertTransaction(toAccountId.toByteArray(), amount, /* isCredit = */ false,
             insertTransactionStatement);
         insertTransactionStatement.executeBatch();
