@@ -81,7 +81,7 @@ final class SpannerDao {
         ps.setInt(2, accountType.getNumber());
         ps.setInt(3, accountStatus.getNumber());
         ps.setBigDecimal(4, balance);
-        int updateCounts = ps.executeUpdate();
+        ps.executeUpdate();
         System.out.printf("Account created with balance %s\n", balance.toString());
       }
     }
@@ -101,7 +101,7 @@ final class SpannerDao {
         ps.setBytes(2, accountId.toByteArray());
         ps.setBytes(3, roleId.toByteArray());
         ps.setString(4, roleName);
-        int updateCounts = ps.executeUpdate();
+        ps.executeUpdate();
         System.out.printf("New role created: %s\n", roleName);
       }
     }
