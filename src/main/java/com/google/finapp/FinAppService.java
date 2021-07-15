@@ -25,10 +25,10 @@ import java.util.UUID;
 
 final class FinAppService extends FinAppGrpc.FinAppImplBase {
 
-  private final SpannerDao spannerDao;
+  private final SpannerDaoInterface spannerDao;
 
   @Inject
-  FinAppService(SpannerDao spannerDao) {
+  FinAppService(SpannerDaoInterface spannerDao) {
     this.spannerDao = spannerDao;
   }
 

@@ -22,16 +22,17 @@ import com.google.inject.Inject;
 
 import java.math.BigDecimal;
 
-final class SpannerDao {
+final class SpannerDaoImpl implements SpannerDaoInterface {
 
   private final DatabaseClient databaseClient;
 
   @Inject
-  SpannerDao(DatabaseClient databaseClient) {
+  SpannerDaoImpl(DatabaseClient databaseClient) {
     this.databaseClient = databaseClient;
   }
 
-  void createCustomer(ByteArray customerId, String name, String address) throws SpannerException {
+  @Override
+  public void createCustomer(ByteArray customerId, String name, String address) throws SpannerException {
     databaseClient.write(
         ImmutableList.of(
             Mutation.newInsertBuilder("Customer")
@@ -44,7 +45,8 @@ final class SpannerDao {
                 .build()));
   }
 
-  void createAccount(
+  @Override
+  public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerException {
     databaseClient.write(
@@ -63,7 +65,8 @@ final class SpannerDao {
                 .build()));
   }
 
-  void addAccountForCustomer(
+  @Override
+  public void addAccountForCustomer(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
       throws SpannerException {
     databaseClient.write(
@@ -80,7 +83,8 @@ final class SpannerDao {
                 .build()));
   }
 
-  void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws SpannerException {
+  @Override
+  public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws SpannerException {
     databaseClient
         .readWriteTransaction()
         .run(
@@ -101,10 +105,6 @@ final class SpannerDao {
                           toAccountId, amount, /* isCredit= */ false)));
               return null;
             });
-  }
-
-  void getAccountMetadata(ByteArray accountId) throws SpannerException {
-
   }
 
   private ImmutableMap<ByteArray, BigDecimal> readAccountBalances(
