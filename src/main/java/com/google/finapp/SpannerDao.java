@@ -122,9 +122,10 @@ final class SpannerDao {
           PreparedStatement updateAccountStatement = connection.prepareStatement(
               "UPDATE Account SET Balance = ? WHERE AccountId = ?"
           );
+          // TODO: explain PENDING_COMMIT_TIMESTAMP()
           PreparedStatement insertTransactionStatement = connection.prepareStatement(
               "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
-                  + "VALUES (?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
+                  + "VALUES (?, ?, ?, PENDING_COMMIT_TIMESTAMP()), (?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
         byte[] fromAccountIdArray = fromAccountId.toByteArray();
         byte[] toAccountIdArray = toAccountId.toByteArray();
         BigDecimal[] accountBalances = readAccountBalances(
@@ -135,11 +136,10 @@ final class SpannerDao {
         updateAccount(toAccountIdArray,
             accountBalances[1].add(amount), updateAccountStatement);
         updateAccountStatement.executeBatch();
-        insertTransaction(fromAccountIdArray, amount, /* isCredit = */ true,
+        insertTransaction(
+            fromAccountIdArray, toAccountIdArray, amount,
             insertTransactionStatement);
-        insertTransaction(toAccountIdArray, amount, /* isCredit = */ false,
-            insertTransactionStatement);
-        insertTransactionStatement.executeBatch();
+        insertTransactionStatement.executeUpdate();
         connection.commit();
         System.out.printf("Balance of %s moved.\n", amount.toString());
       }
@@ -177,11 +177,15 @@ final class SpannerDao {
     ps.addBatch();
   }
 
-  private void insertTransaction(byte[] accountId, BigDecimal amount, boolean isCredit,
+  private void insertTransaction(byte[] fromAccountId, byte[] toAccountId, BigDecimal amount,
       PreparedStatement ps) throws SQLException {
-    ps.setBytes(1, accountId);
+    ps.setBytes(1, fromAccountId);
     ps.setBigDecimal(2, amount);
-    ps.setBoolean(3, isCredit);
+    ps.setBoolean(3, /* isCredit = */ true);
+    ps.setBytes(4, toAccountId);
+    ps.setBigDecimal(5, amount);
+    ps.setBoolean(6, /* isCredit = */ false);
     ps.addBatch();
   }
 }
+
