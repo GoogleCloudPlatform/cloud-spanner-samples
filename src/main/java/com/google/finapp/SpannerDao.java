@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 final class SpannerDao {
 
@@ -124,17 +125,19 @@ final class SpannerDao {
           PreparedStatement insertTransactionStatement = connection.prepareStatement(
               "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
                   + "VALUES (?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
-        ImmutableMap<byte[], BigDecimal> accountBalances = readAccountBalances(
-            fromAccountId.toByteArray(), toAccountId.toByteArray(), readStatement);
-        updateAccount(fromAccountId.toByteArray(),
-            accountBalances.get(fromAccountId.toByteArray()).subtract(amount),
+        byte[] fromAccountIdArray = fromAccountId.toByteArray();
+        byte[] toAccountIdArray = toAccountId.toByteArray();
+        BigDecimal[] accountBalances = readAccountBalances(
+            fromAccountIdArray, toAccountIdArray, readStatement);
+        updateAccount(fromAccountIdArray,
+            accountBalances[0].subtract(amount),
             updateAccountStatement);
-        updateAccount(toAccountId.toByteArray(),
-            accountBalances.get(toAccountId.toByteArray()).add(amount), updateAccountStatement);
+        updateAccount(toAccountIdArray,
+            accountBalances[1].add(amount), updateAccountStatement);
         updateAccountStatement.executeBatch();
-        insertTransaction(fromAccountId.toByteArray(), amount, /* isCredit = */ true,
+        insertTransaction(fromAccountIdArray, amount, /* isCredit = */ true,
             insertTransactionStatement);
-        insertTransaction(toAccountId.toByteArray(), amount, /* isCredit = */ false,
+        insertTransaction(toAccountIdArray, amount, /* isCredit = */ false,
             insertTransactionStatement);
         insertTransactionStatement.executeBatch();
         connection.commit();
@@ -148,18 +151,22 @@ final class SpannerDao {
   }
 
 
-  private ImmutableMap<byte[], BigDecimal> readAccountBalances(
+  private BigDecimal[] readAccountBalances(
       byte[] fromAccountId, byte[] toAccountId, PreparedStatement readStatement)
       throws SQLException {
     readStatement.setBytes(1, fromAccountId);
     readStatement.setBytes(2, toAccountId);
     java.sql.ResultSet resultSet = readStatement.executeQuery();
-    ImmutableMap.Builder<byte[], BigDecimal> accountBalancesBuilder = ImmutableMap.builder();
+    BigDecimal[] results = new BigDecimal[2];
     while (resultSet.next()) {
-      accountBalancesBuilder.put(
-          resultSet.getBytes("AccountId"), resultSet.getBigDecimal("Balance"));
+      byte[] currentId = resultSet.getBytes("AccountId");
+      if (Arrays.equals(currentId, fromAccountId)) {
+        results[0] = resultSet.getBigDecimal("Balance");
+      } else {
+        results[1] = resultSet.getBigDecimal("Balance");
+      }
     }
-    return accountBalancesBuilder.build();
+    return results;
   }
 
 
