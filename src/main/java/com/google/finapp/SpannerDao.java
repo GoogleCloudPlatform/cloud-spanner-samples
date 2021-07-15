@@ -125,7 +125,8 @@ final class SpannerDao {
           // TODO: explain PENDING_COMMIT_TIMESTAMP()
           PreparedStatement insertTransactionStatement = connection.prepareStatement(
               "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
-                  + "VALUES (?, ?, ?, PENDING_COMMIT_TIMESTAMP()), (?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
+                  + "VALUES (?, ?, ?, PENDING_COMMIT_TIMESTAMP()), "
+                  + "(?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
         byte[] fromAccountIdArray = fromAccountId.toByteArray();
         byte[] toAccountIdArray = toAccountId.toByteArray();
         BigDecimal[] accountBalances = readAccountBalances(
@@ -152,11 +153,12 @@ final class SpannerDao {
 
 
   private BigDecimal[] readAccountBalances(
-      byte[] fromAccountId, byte[] toAccountId, PreparedStatement readStatement)
+      byte[] fromAccountId, byte[] toAccountId, PreparedStatement preparedStatement)
       throws SQLException {
-    readStatement.setBytes(1, fromAccountId);
-    readStatement.setBytes(2, toAccountId);
-    java.sql.ResultSet resultSet = readStatement.executeQuery();
+    // preparedStatement: "SELECT AccountId, Balance FROM Account WHERE (AccountId = ? or AccountId = ?)"
+    preparedStatement.setBytes(1, fromAccountId);
+    preparedStatement.setBytes(2, toAccountId);
+    java.sql.ResultSet resultSet = preparedStatement.executeQuery();
     BigDecimal[] results = new BigDecimal[2];
     while (resultSet.next()) {
       byte[] currentId = resultSet.getBytes("AccountId");
@@ -171,21 +173,26 @@ final class SpannerDao {
 
 
   private void updateAccount(byte[] accountId, BigDecimal newBalance,
-      PreparedStatement ps) throws SQLException {
-    ps.setBigDecimal(1, newBalance);
-    ps.setBytes(2, accountId);
-    ps.addBatch();
+      PreparedStatement preparedStatement) throws SQLException {
+    // preparedStatement: "UPDATE Account SET Balance = ? WHERE AccountId = ?"
+    preparedStatement.setBigDecimal(1, newBalance);
+    preparedStatement.setBytes(2, accountId);
+    preparedStatement.addBatch();
   }
 
   private void insertTransaction(byte[] fromAccountId, byte[] toAccountId, BigDecimal amount,
-      PreparedStatement ps) throws SQLException {
-    ps.setBytes(1, fromAccountId);
-    ps.setBigDecimal(2, amount);
-    ps.setBoolean(3, /* isCredit = */ true);
-    ps.setBytes(4, toAccountId);
-    ps.setBigDecimal(5, amount);
-    ps.setBoolean(6, /* isCredit = */ false);
-    ps.addBatch();
+      PreparedStatement preparedStatement) throws SQLException {
+    /* preparedStatement: "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
+                       + "VALUES (?, ?, ?, PENDING_COMMIT_TIMESTAMP()),"
+                       + "(?, ?, ?, PENDING_COMMIT_TIMESTAMP())"
+     */
+    preparedStatement.setBytes(1, fromAccountId);
+    preparedStatement.setBigDecimal(2, amount);
+    preparedStatement.setBoolean(3, /* isCredit = */ true);
+    preparedStatement.setBytes(4, toAccountId);
+    preparedStatement.setBigDecimal(5, amount);
+    preparedStatement.setBoolean(6, /* isCredit = */ false);
+    preparedStatement.addBatch();
   }
 }
 
