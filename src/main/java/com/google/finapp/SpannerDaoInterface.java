@@ -20,7 +20,7 @@ import com.google.cloud.spanner.SpannerException;
 import java.math.BigDecimal;
 
 /**
- * The SpannerDaoInterface declares the methods to be used by its separate implementations.
+ * The SpannerDaoInterface defines the methods to be used by its separate implementations.
  */
 public interface SpannerDaoInterface {
 
