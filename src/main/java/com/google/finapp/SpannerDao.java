@@ -28,26 +28,26 @@ import java.util.Arrays;
 
 final class SpannerDao {
 
-  // TODO: get these variables from args
-  private final String projectId = "test-project";
-  private final String databaseId = "test-database";
-  private final String instanceId = "test-instance";
+  private final String projectId;
+  private final String databaseId;
+  private final String instanceId;
+  private final String connectionUrl;
 
-  // use this URL to connect to Cloud Spanner
-  // private final String connectionUrl =
-  //     String.format(
-  //         "jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s",
-  //         projectId, instanceId, databaseId);
-
-  // use this URL to connect to the emulator
-  private final String connectionUrl =
-      String.format(
-          "jdbc:cloudspanner://localhost:9010/projects/%s/instances/%s/databases/%s;usePlainText=true",
-          projectId, instanceId, databaseId);
-
-  // TODO: remove dependency?
   @Inject
-  SpannerDao(DatabaseClient databaseClient) {
+  SpannerDao(@ArgsModule.SpannerProjectId String spannerProjectId,
+      @ArgsModule.SpannerInstanceId String spannerInstanceId,
+      @ArgsModule.SpannerDatabaseId String spannerDatabaseId) {
+    this.projectId = spannerProjectId;
+    this.databaseId = spannerDatabaseId;
+    this.instanceId = spannerInstanceId;
+    // use this URL to connect to the emulator
+    this.connectionUrl = String.format(
+        "jdbc:cloudspanner://localhost:9010/projects/%s/instances/%s/databases/%s;usePlainText=true",
+        projectId, instanceId, databaseId);
+    // use this URL to connect to Cloud Spanner
+    // this.connectionUrl = String.format(
+    //     "jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s",
+    //     projectId, instanceId, databaseId);
   }
 
   void createCustomer(ByteArray customerId, String name, String address) throws SQLException {
