@@ -35,79 +35,95 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   @Override
   public void createCustomer(ByteArray customerId, String name, String address)
       throws SpannerDaoException {
-    databaseClient.write(
-        ImmutableList.of(
-            Mutation.newInsertBuilder("Customer")
-                .set("CustomerId")
-                .to(customerId)
-                .set("Name")
-                .to(name)
-                .set("Address")
-                .to(address)
-                .build()));
+    try {
+      databaseClient.write(
+          ImmutableList.of(
+              Mutation.newInsertBuilder("Customer")
+                  .set("CustomerId")
+                  .to(customerId)
+                  .set("Name")
+                  .to(name)
+                  .set("Address")
+                  .to(address)
+                  .build()));
+    } catch (SpannerException e) {
+      throw new SpannerDaoException("SpannerException:", e);
+    }
   }
 
   @Override
   public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerDaoException {
-    databaseClient.write(
-        ImmutableList.of(
-            Mutation.newInsertBuilder("Account")
-                .set("AccountId")
-                .to(accountId)
-                .set("AccountType")
-                .to(accountType.getNumber())
-                .set("AccountStatus")
-                .to(accountStatus.getNumber())
-                .set("Balance")
-                .to(balance)
-                .set("CreationTimestamp")
-                .to(Value.COMMIT_TIMESTAMP)
-                .build()));
+    try {
+      databaseClient.write(
+          ImmutableList.of(
+              Mutation.newInsertBuilder("Account")
+                  .set("AccountId")
+                  .to(accountId)
+                  .set("AccountType")
+                  .to(accountType.getNumber())
+                  .set("AccountStatus")
+                  .to(accountStatus.getNumber())
+                  .set("Balance")
+                  .to(balance)
+                  .set("CreationTimestamp")
+                  .to(Value.COMMIT_TIMESTAMP)
+                  .build()));
+    } catch (SpannerException e) {
+      throw new SpannerDaoException("SpannerException:", e);
+    }
   }
 
   @Override
   public void addAccountForCustomer(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
       throws SpannerDaoException {
-    databaseClient.write(
-        ImmutableList.of(
-            Mutation.newInsertBuilder("CustomerRole")
-                .set("CustomerId")
-                .to(customerId)
-                .set("AccountId")
-                .to(accountId)
-                .set("RoleId")
-                .to(roleId)
-                .set("Role")
-                .to(roleName)
-                .build()));
+    try {
+      databaseClient.write(
+          ImmutableList.of(
+              Mutation.newInsertBuilder("CustomerRole")
+                  .set("CustomerId")
+                  .to(customerId)
+                  .set("AccountId")
+                  .to(accountId)
+                  .set("RoleId")
+                  .to(roleId)
+                  .set("Role")
+                  .to(roleName)
+                  .build()));
+    } catch (SpannerException e) {
+      throw new SpannerDaoException("SpannerException:", e);
+    }
   }
 
   @Override
   public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SpannerDaoException {
-    databaseClient
-        .readWriteTransaction()
-        .run(
-            transaction -> {
-              // Get account balances.
-              ImmutableMap<ByteArray, BigDecimal> accountBalances =
-                  readAccountBalances(fromAccountId, toAccountId, transaction);
+    try {
+      databaseClient
+          .readWriteTransaction()
+          .run(
+              transaction -> {
+                // Get account balances.
+                ImmutableMap<ByteArray, BigDecimal> accountBalances =
+                    readAccountBalances(fromAccountId, toAccountId, transaction);
 
-              transaction.buffer(
-                  ImmutableList.of(
-                      buildUpdateAccountMutation(
-                          fromAccountId, accountBalances.get(fromAccountId).subtract(amount)),
-                      buildUpdateAccountMutation(
-                          toAccountId, accountBalances.get(toAccountId).add(amount)),
-                      buildInsertTransactionHistoryMutation(
-                          fromAccountId, amount, /* isCredit= */ true),
-                      buildInsertTransactionHistoryMutation(
-                          toAccountId, amount, /* isCredit= */ false)));
-              return null;
-            });
+                transaction.buffer(
+                    ImmutableList.of(
+                        buildUpdateAccountMutation(
+                            fromAccountId, accountBalances.get(fromAccountId).subtract(amount)),
+                        buildUpdateAccountMutation(
+                            toAccountId, accountBalances.get(toAccountId).add(amount)),
+                        buildInsertTransactionHistoryMutation(
+                            fromAccountId, amount, /* isCredit= */ true),
+                        buildInsertTransactionHistoryMutation(
+                            toAccountId, amount, /* isCredit= */ false)));
+                return null;
+              });
+    } catch (SpannerException e) {
+      throw new SpannerDaoException("SpannerException:", e);
+    }
   }
 
   private ImmutableMap<ByteArray, BigDecimal> readAccountBalances(
