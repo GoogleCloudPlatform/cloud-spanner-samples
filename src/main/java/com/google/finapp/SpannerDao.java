@@ -122,7 +122,6 @@ final class SpannerDao {
           PreparedStatement updateAccountStatement = connection.prepareStatement(
               "UPDATE Account SET Balance = ? WHERE AccountId = ?"
           );
-          // TODO: explain PENDING_COMMIT_TIMESTAMP()
           PreparedStatement insertTransactionStatement = connection.prepareStatement(
               "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
                   + "VALUES (?, ?, ?, PENDING_COMMIT_TIMESTAMP()), "
