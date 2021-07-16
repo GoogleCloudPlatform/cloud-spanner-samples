@@ -18,6 +18,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.finapp.SpannerDaoException;
 import com.google.inject.Inject;
 
 import java.math.BigDecimal;
@@ -32,7 +33,8 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   }
 
   @Override
-  public void createCustomer(ByteArray customerId, String name, String address) throws SpannerException {
+  public void createCustomer(ByteArray customerId, String name, String address)
+      throws SpannerDaoException {
     databaseClient.write(
         ImmutableList.of(
             Mutation.newInsertBuilder("Customer")
@@ -48,7 +50,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   @Override
   public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
-      throws SpannerException {
+      throws SpannerDaoException {
     databaseClient.write(
         ImmutableList.of(
             Mutation.newInsertBuilder("Account")
@@ -68,7 +70,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   @Override
   public void addAccountForCustomer(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
-      throws SpannerException {
+      throws SpannerDaoException {
     databaseClient.write(
         ImmutableList.of(
             Mutation.newInsertBuilder("CustomerRole")
@@ -84,7 +86,8 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   }
 
   @Override
-  public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws SpannerException {
+  public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
+      throws SpannerDaoException {
     databaseClient
         .readWriteTransaction()
         .run(
