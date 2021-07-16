@@ -26,7 +26,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
 
-final class SpannerDao {
+final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
 
   private final String projectId;
   private final String databaseId;
@@ -34,7 +34,7 @@ final class SpannerDao {
   private final String connectionUrl;
 
   @Inject
-  SpannerDao(@ArgsModule.SpannerProjectId String spannerProjectId,
+  SpannerDaoJDBCImpl(@ArgsModule.SpannerProjectId String spannerProjectId,
       @ArgsModule.SpannerInstanceId String spannerInstanceId,
       @ArgsModule.SpannerDatabaseId String spannerDatabaseId) {
     this.projectId = spannerProjectId;
@@ -50,7 +50,7 @@ final class SpannerDao {
     //     projectId, instanceId, databaseId);
   }
 
-  void createCustomer(ByteArray customerId, String name, String address) throws SQLException {
+  public void createCustomer(ByteArray customerId, String name, String address) throws SQLException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
       try (PreparedStatement ps =
           connection.prepareStatement(
@@ -68,7 +68,7 @@ final class SpannerDao {
   }
 
 
-  void createAccount(
+  public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SQLException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
@@ -88,7 +88,7 @@ final class SpannerDao {
     }
   }
 
-  void addAccountForCustomer(
+  public void addAccountForCustomer(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
       throws SQLException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
@@ -109,7 +109,7 @@ final class SpannerDao {
   }
 
 
-  void moveAccountBalance(
+  public void moveAccountBalance(
       ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SQLException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
