@@ -16,12 +16,10 @@ package com.google.finapp;
 
 import com.google.inject.Inject;
 import com.google.protobuf.Empty;
-import com.google.finapp.SpannerDaoException;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.util.UUID;
 
 final class FinAppService extends FinAppGrpc.FinAppImplBase {
