@@ -117,36 +117,21 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SQLException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
-      // begin transaction
       connection.setAutoCommit(false);
-      try (
-          PreparedStatement readStatement = connection.prepareStatement(
-              "SELECT AccountId, Balance FROM Account WHERE (AccountId = ? or AccountId = ?)"
-          );
-          PreparedStatement updateAccountStatement = connection.prepareStatement(
-              "UPDATE Account SET Balance = ? WHERE AccountId = ?"
-          );
-          PreparedStatement insertTransactionStatement = connection.prepareStatement(
-              "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
-                  + "VALUES (?, ?, ?, PENDING_COMMIT_TIMESTAMP()), "
-                  + "(?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
-        byte[] fromAccountIdArray = fromAccountId.toByteArray();
-        byte[] toAccountIdArray = toAccountId.toByteArray();
-        BigDecimal[] accountBalances = readAccountBalances(
-            fromAccountIdArray, toAccountIdArray, readStatement);
-        updateAccount(fromAccountIdArray,
-            accountBalances[0].subtract(amount),
-            updateAccountStatement);
-        updateAccount(toAccountIdArray,
-            accountBalances[1].add(amount), updateAccountStatement);
-        updateAccountStatement.executeBatch();
-        insertTransaction(
-            fromAccountIdArray, toAccountIdArray, amount,
-            insertTransactionStatement);
-        insertTransactionStatement.executeUpdate();
-        connection.commit();
-        System.out.printf("Balance of %s moved.\n", amount.toString());
-      }
+      byte[] fromAccountIdArray = fromAccountId.toByteArray();
+      byte[] toAccountIdArray = toAccountId.toByteArray();
+      BigDecimal[] accountBalances = readAccountBalances(
+          fromAccountIdArray, toAccountIdArray, connection);
+      updateAccount(fromAccountIdArray,
+          accountBalances[0].subtract(amount),
+          connection);
+      updateAccount(toAccountIdArray,
+          accountBalances[1].add(amount), connection);
+      insertTransaction(
+          fromAccountIdArray, toAccountIdArray, amount,
+          connection);
+      connection.commit();
+      System.out.printf("Balance of %s moved.\n", amount.toString());
     }
   }
 
@@ -156,46 +141,51 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
 
 
   private BigDecimal[] readAccountBalances(
-      byte[] fromAccountId, byte[] toAccountId, PreparedStatement preparedStatement)
+      byte[] fromAccountId, byte[] toAccountId, Connection connection)
       throws SQLException {
-    // preparedStatement: "SELECT AccountId, Balance FROM Account WHERE (AccountId = ? or AccountId = ?)"
-    preparedStatement.setBytes(1, fromAccountId);
-    preparedStatement.setBytes(2, toAccountId);
-    java.sql.ResultSet resultSet = preparedStatement.executeQuery();
-    BigDecimal[] results = new BigDecimal[2];
-    while (resultSet.next()) {
-      byte[] currentId = resultSet.getBytes("AccountId");
-      if (Arrays.equals(currentId, fromAccountId)) {
-        results[0] = resultSet.getBigDecimal("Balance");
-      } else {
-        results[1] = resultSet.getBigDecimal("Balance");
+    try (PreparedStatement preparedStatement = connection.prepareStatement(
+        "SELECT AccountId, Balance FROM Account WHERE (AccountId = ? or AccountId = ?)")) {
+      preparedStatement.setBytes(1, fromAccountId);
+      preparedStatement.setBytes(2, toAccountId);
+      java.sql.ResultSet resultSet = preparedStatement.executeQuery();
+      BigDecimal[] results = new BigDecimal[2];
+      while (resultSet.next()) {
+        byte[] currentId = resultSet.getBytes("AccountId");
+        if (Arrays.equals(currentId, fromAccountId)) {
+          results[0] = resultSet.getBigDecimal("Balance");
+        } else {
+          results[1] = resultSet.getBigDecimal("Balance");
+        }
       }
+      return results;
     }
-    return results;
   }
 
 
   private void updateAccount(byte[] accountId, BigDecimal newBalance,
-      PreparedStatement preparedStatement) throws SQLException {
-    // preparedStatement: "UPDATE Account SET Balance = ? WHERE AccountId = ?"
-    preparedStatement.setBigDecimal(1, newBalance);
-    preparedStatement.setBytes(2, accountId);
-    preparedStatement.addBatch();
+      Connection connection) throws SQLException {
+    try (PreparedStatement preparedStatement = connection.prepareStatement(
+        "UPDATE Account SET Balance = ? WHERE AccountId = ?")) {
+      preparedStatement.setBigDecimal(1, newBalance);
+      preparedStatement.setBytes(2, accountId);
+      preparedStatement.executeUpdate();
+    }
   }
 
   private void insertTransaction(byte[] fromAccountId, byte[] toAccountId, BigDecimal amount,
-      PreparedStatement preparedStatement) throws SQLException {
-    /* preparedStatement: "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
+      Connection connection) throws SQLException {
+    try (PreparedStatement preparedStatement = connection.prepareStatement(
+        "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
                        + "VALUES (?, ?, ?, PENDING_COMMIT_TIMESTAMP()),"
-                       + "(?, ?, ?, PENDING_COMMIT_TIMESTAMP())"
-     */
-    preparedStatement.setBytes(1, fromAccountId);
-    preparedStatement.setBigDecimal(2, amount);
-    preparedStatement.setBoolean(3, /* isCredit = */ true);
-    preparedStatement.setBytes(4, toAccountId);
-    preparedStatement.setBigDecimal(5, amount);
-    preparedStatement.setBoolean(6, /* isCredit = */ false);
-    preparedStatement.addBatch();
+                       + "(?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
+      preparedStatement.setBytes(1, fromAccountId);
+      preparedStatement.setBigDecimal(2, amount);
+      preparedStatement.setBoolean(3, /* isCredit = */ true);
+      preparedStatement.setBytes(4, toAccountId);
+      preparedStatement.setBigDecimal(5, amount);
+      preparedStatement.setBoolean(6, /* isCredit = */ false);
+      preparedStatement.executeUpdate();
+    }
   }
 }
 
