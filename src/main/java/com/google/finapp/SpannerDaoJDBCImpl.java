@@ -40,14 +40,18 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     this.projectId = spannerProjectId;
     this.databaseId = spannerDatabaseId;
     this.instanceId = spannerInstanceId;
-    // use this URL to connect to the emulator
-    this.connectionUrl = String.format(
-        "jdbc:cloudspanner://localhost:9010/projects/%s/instances/%s/databases/%s;usePlainText=true",
-        projectId, instanceId, databaseId);
-    // use this URL to connect to Cloud Spanner
-    // this.connectionUrl = String.format(
-    //     "jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s",
-    //     projectId, instanceId, databaseId);
+    String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
+    if (emulatorHost != null) {
+      // connect to emulator
+      this.connectionUrl = String.format(
+          "jdbc:cloudspanner://%s/projects/%s/instances/%s/databases/%s;usePlainText=true",
+          emulatorHost, projectId, instanceId, databaseId);
+    } else {
+      // connect to Cloud Spanner
+      this.connectionUrl = String.format(
+          "jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s",
+          projectId, instanceId, databaseId);
+    }
   }
 
   public void createCustomer(ByteArray customerId, String name, String address) throws SQLException {
