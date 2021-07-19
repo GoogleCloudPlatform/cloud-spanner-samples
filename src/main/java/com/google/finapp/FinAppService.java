@@ -14,9 +14,9 @@
 
 package com.google.finapp;
 
-import com.google.cloud.spanner.SpannerException;
 import com.google.inject.Inject;
 import com.google.protobuf.Empty;
+import com.google.finapp.SpannerDaoException;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 
@@ -40,7 +40,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
           UuidConverter.getBytesFromUuid(UUID.randomUUID()),
           customer.getName(),
           customer.getAddress());
-    } catch (SQLException e) {
+    } catch (SpannerDaoException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
@@ -56,7 +56,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
           toStorageAccountType(account.getType()),
           toStorageAccountStatus(account.getStatus()),
           new BigDecimal(account.getBalance()));
-    } catch (SQLException e) {
+    } catch (SpannerDaoException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     } catch (NumberFormatException e) {
