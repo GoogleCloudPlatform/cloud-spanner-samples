@@ -15,7 +15,7 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
-import com.google.cloud.spanner.SpannerException;
+import com.google.finapp.SpannerDaoException;
 
 import java.math.BigDecimal;
 
@@ -27,7 +27,7 @@ public interface SpannerDaoInterface {
   /**
    * Inserts a new row to the Customer table in the database.
    */
-  void createCustomer(ByteArray customerId, String name, String address) throws SpannerException;
+  void createCustomer(ByteArray customerId, String name, String address) throws SpannerDaoException;
 
   /**
    * Inserts a new row to the Account table in the database.
@@ -37,14 +37,14 @@ public interface SpannerDaoInterface {
    */
   void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
-      throws SpannerException;
+      throws SpannerDaoException;
 
   /**
    * Inserts a new row to the CustomerRole table for a Customer in the database.
    */
   void addAccountForCustomer(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
-      throws SpannerException;
+      throws SpannerDaoException;
 
   /**
    * Moves an amount from one unique account to another unique account for a Customer in the
@@ -56,5 +56,5 @@ public interface SpannerDaoInterface {
    * @param amount amount transferred from fromAccountId to toAccountId
    */
   void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId,
-      BigDecimal amount) throws SpannerException;
+      BigDecimal amount) throws SpannerDaoException;
 }
