@@ -16,7 +16,6 @@ package com.google.finapp;
 
 import com.google.cloud.ByteArray;
 import com.google.inject.Inject;
-
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -32,7 +31,8 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
   private final String connectionUrl;
 
   @Inject
-  SpannerDaoJDBCImpl(@ArgsModule.SpannerProjectId String spannerProjectId,
+  SpannerDaoJDBCImpl(
+      @ArgsModule.SpannerProjectId String spannerProjectId,
       @ArgsModule.SpannerInstanceId String spannerInstanceId,
       @ArgsModule.SpannerDatabaseId String spannerDatabaseId) {
     this.projectId = spannerProjectId;
@@ -41,14 +41,16 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     if (emulatorHost != null) {
       // connect to emulator
-      this.connectionUrl = String.format(
-          "jdbc:cloudspanner://%s/projects/%s/instances/%s/databases/%s;usePlainText=true",
-          emulatorHost, projectId, instanceId, databaseId);
+      this.connectionUrl =
+          String.format(
+              "jdbc:cloudspanner://%s/projects/%s/instances/%s/databases/%s;usePlainText=true",
+              emulatorHost, projectId, instanceId, databaseId);
     } else {
       // connect to Cloud Spanner
-      this.connectionUrl = String.format(
-          "jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s",
-          projectId, instanceId, databaseId);
+      this.connectionUrl =
+          String.format(
+              "jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s",
+              projectId, instanceId, databaseId);
     }
   }
 
@@ -72,7 +74,6 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       throw new SpannerDaoException(e);
     }
   }
-
 
   public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
@@ -121,25 +122,18 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     }
   }
 
-
-  public void moveAccountBalance(
-      ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
+  public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SpannerDaoException {
     try {
       try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
         connection.setAutoCommit(false);
         byte[] fromAccountIdArray = fromAccountId.toByteArray();
         byte[] toAccountIdArray = toAccountId.toByteArray();
-        BigDecimal[] accountBalances = readAccountBalances(
-            fromAccountIdArray, toAccountIdArray, connection);
-        updateAccount(fromAccountIdArray,
-            accountBalances[0].subtract(amount),
-            connection);
-        updateAccount(toAccountIdArray,
-            accountBalances[1].add(amount), connection);
-        insertTransaction(
-            fromAccountIdArray, toAccountIdArray, amount,
-            connection);
+        BigDecimal[] accountBalances =
+            readAccountBalances(fromAccountIdArray, toAccountIdArray, connection);
+        updateAccount(fromAccountIdArray, accountBalances[0].subtract(amount), connection);
+        updateAccount(toAccountIdArray, accountBalances[1].add(amount), connection);
+        insertTransaction(fromAccountIdArray, toAccountIdArray, amount, connection);
         connection.commit();
         System.out.printf("Balance of %s moved.\n", amount.toString());
       }
@@ -148,12 +142,11 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     }
   }
 
-
   private BigDecimal[] readAccountBalances(
-      byte[] fromAccountId, byte[] toAccountId, Connection connection)
-      throws SQLException {
-    try (PreparedStatement preparedStatement = connection.prepareStatement(
-        "SELECT AccountId, Balance FROM Account WHERE (AccountId = ? or AccountId = ?)")) {
+      byte[] fromAccountId, byte[] toAccountId, Connection connection) throws SQLException {
+    try (PreparedStatement preparedStatement =
+        connection.prepareStatement(
+            "SELECT AccountId, Balance FROM Account WHERE (AccountId = ? or AccountId = ?)")) {
       preparedStatement.setBytes(1, fromAccountId);
       preparedStatement.setBytes(2, toAccountId);
       java.sql.ResultSet resultSet = preparedStatement.executeQuery();
@@ -170,23 +163,24 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     }
   }
 
-
-  private void updateAccount(byte[] accountId, BigDecimal newBalance,
-      Connection connection) throws SQLException {
-    try (PreparedStatement preparedStatement = connection.prepareStatement(
-        "UPDATE Account SET Balance = ? WHERE AccountId = ?")) {
+  private void updateAccount(byte[] accountId, BigDecimal newBalance, Connection connection)
+      throws SQLException {
+    try (PreparedStatement preparedStatement =
+        connection.prepareStatement("UPDATE Account SET Balance = ? WHERE AccountId = ?")) {
       preparedStatement.setBigDecimal(1, newBalance);
       preparedStatement.setBytes(2, accountId);
       preparedStatement.executeUpdate();
     }
   }
 
-  private void insertTransaction(byte[] fromAccountId, byte[] toAccountId, BigDecimal amount,
-      Connection connection) throws SQLException {
-    try (PreparedStatement preparedStatement = connection.prepareStatement(
-        "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
-            + "VALUES (?, ?, ?, PENDING_COMMIT_TIMESTAMP()),"
-            + "(?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
+  private void insertTransaction(
+      byte[] fromAccountId, byte[] toAccountId, BigDecimal amount, Connection connection)
+      throws SQLException {
+    try (PreparedStatement preparedStatement =
+        connection.prepareStatement(
+            "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
+                + "VALUES (?, ?, ?, PENDING_COMMIT_TIMESTAMP()),"
+                + "(?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
       preparedStatement.setBytes(1, fromAccountId);
       preparedStatement.setBigDecimal(2, amount);
       preparedStatement.setBoolean(3, /* isCredit = */ true);
@@ -197,4 +191,3 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     }
   }
 }
-
