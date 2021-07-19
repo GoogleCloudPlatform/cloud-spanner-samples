@@ -47,7 +47,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                   .to(address)
                   .build()));
     } catch (SpannerException e) {
-      throw new SpannerDaoException("SpannerException:", e);
+      throw new SpannerDaoException(e);
     }
   }
 
@@ -71,7 +71,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                   .to(Value.COMMIT_TIMESTAMP)
                   .build()));
     } catch (SpannerException e) {
-      throw new SpannerDaoException("SpannerException:", e);
+      throw new SpannerDaoException(e);
     }
   }
 
@@ -93,7 +93,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                   .to(roleName)
                   .build()));
     } catch (SpannerException e) {
-      throw new SpannerDaoException("SpannerException:", e);
+      throw new SpannerDaoException(e);
     }
   }
 
@@ -122,7 +122,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                 return null;
               });
     } catch (SpannerException e) {
-      throw new SpannerDaoException("SpannerException:", e);
+      throw new SpannerDaoException(e);
     }
   }
 

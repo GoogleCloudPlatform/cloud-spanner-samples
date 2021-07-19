@@ -16,7 +16,7 @@ package com.google.finapp;
 
 public class SpannerDaoException extends Exception {
 
-  public SpannerDaoException(String msg, Throwable err) {
-    super(msg, err);
+  public SpannerDaoException(Exception e) {
+    super(e);
   }
 }
