@@ -114,7 +114,6 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
           ps.setBytes(3, roleId.toByteArray());
           ps.setString(4, roleName);
           ps.executeUpdate();
-          System.out.printf("New role created: %s\n", roleName);
         }
       }
     } catch (SQLException e) {
@@ -135,7 +134,6 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
         updateAccount(toAccountIdArray, accountBalances[1].add(amount), connection);
         insertTransaction(fromAccountIdArray, toAccountIdArray, amount, connection);
         connection.commit();
-        System.out.printf("Balance of %s moved.\n", amount.toString());
       }
     } catch (SQLException e) {
       throw new SpannerDaoException(e);
