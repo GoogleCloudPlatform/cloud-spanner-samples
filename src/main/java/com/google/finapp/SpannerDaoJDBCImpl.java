@@ -54,7 +54,6 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
   }
 
   public void createCustomer(ByteArray customerId, String name, String address) throws SpannerDaoException {
-    System.out.println(this.connectionUrl);
     try {
       try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
         try (PreparedStatement ps =
@@ -67,7 +66,6 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
           ps.setString(2, name);
           ps.setString(3, address);
           ps.executeUpdate();
-          System.out.printf("Customer created: %s\n", name);
         }
       }
     } catch (SQLException e) {
@@ -92,7 +90,6 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
           ps.setInt(3, accountStatus.getNumber());
           ps.setBigDecimal(4, balance);
           ps.executeUpdate();
-          System.out.printf("Account created with balance %s\n", balance.toString());
         }
       }
     } catch (SQLException e) {
