@@ -72,6 +72,9 @@ final class ArgsModule extends AbstractModule {
     return args.spannerDatabaseId;
   }
 
+  @Provides
+  boolean provideSpannerUseJdbc() { return args.spannerUseJdbc; }
+
   @Parameters(separators = "=")
   private static class Args {
     @Parameter(names = {"--port", "-p"})
@@ -91,6 +94,9 @@ final class ArgsModule extends AbstractModule {
 
     @Parameter(names = {"--spanner_database_id"})
     String spannerDatabaseId;
+
+    @Parameter(names = {"--spanner_use_jdbc"})
+    boolean spannerUseJdbc = false;
   }
 
   @Qualifier
@@ -116,4 +122,8 @@ final class ArgsModule extends AbstractModule {
   @Qualifier
   @Retention(RetentionPolicy.RUNTIME)
   @interface SpannerDatabaseId {}
+
+  @Qualifier
+  @Retention(RetentionPolicy.RUNTIME)
+  @interface SpannerUseJdbc {}
 }
