@@ -15,7 +15,6 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
-import com.google.cloud.spanner.*;
 import com.google.inject.Inject;
 
 import java.math.BigDecimal;
@@ -146,10 +145,6 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     } catch (SQLException e) {
       throw new SpannerDaoException(e);
     }
-  }
-
-  void getAccountMetadata(ByteArray accountId) throws SpannerException {
-
   }
 
 
