@@ -52,7 +52,8 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     }
   }
 
-  public void createCustomer(ByteArray customerId, String name, String address) throws SpannerDaoException {
+  public void createCustomer(ByteArray customerId, String name, String address)
+      throws SpannerDaoException {
     try {
       try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
         try (PreparedStatement ps =
@@ -184,8 +185,8 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       Connection connection) throws SQLException {
     try (PreparedStatement preparedStatement = connection.prepareStatement(
         "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
-                       + "VALUES (?, ?, ?, PENDING_COMMIT_TIMESTAMP()),"
-                       + "(?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
+            + "VALUES (?, ?, ?, PENDING_COMMIT_TIMESTAMP()),"
+            + "(?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
       preparedStatement.setBytes(1, fromAccountId);
       preparedStatement.setBigDecimal(2, amount);
       preparedStatement.setBoolean(3, /* isCredit = */ true);
