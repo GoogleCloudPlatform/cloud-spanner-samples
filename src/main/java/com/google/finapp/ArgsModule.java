@@ -73,6 +73,7 @@ final class ArgsModule extends AbstractModule {
   }
 
   @Provides
+  @SpannerUseJdbc
   boolean provideSpannerUseJdbc() { return args.spannerUseJdbc; }
 
   @Parameters(separators = "=")
@@ -95,7 +96,7 @@ final class ArgsModule extends AbstractModule {
     @Parameter(names = {"--spanner_database_id"})
     String spannerDatabaseId;
 
-    @Parameter(names = {"--spanner_use_jdbc"})
+    @Parameter(names = {"--spanner_use_jdbc"}, arity = 1)
     boolean spannerUseJdbc = false;
   }
 
