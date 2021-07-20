@@ -124,8 +124,8 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       readStatement.setBytes(1, fromAccountIdArray);
       readStatement.setBytes(2, toAccountIdArray);
       java.sql.ResultSet resultSet = readStatement.executeQuery();
-      BigDecimal sourceAmount = new BigDecimal(Long.MIN_VALUE);
-      BigDecimal destAmount = new BigDecimal(Long.MIN_VALUE);
+      BigDecimal sourceAmount = null;
+      BigDecimal destAmount = null;
       while (resultSet.next()) {
         byte[] currentId = resultSet.getBytes("AccountId");
         if (Arrays.equals(currentId, fromAccountIdArray)) {
@@ -134,7 +134,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
           destAmount = resultSet.getBigDecimal("Balance");
         }
       }
-      if (sourceAmount.min(destAmount).equals(new BigDecimal(Long.MIN_VALUE))) {
+      if (sourceAmount == null || destAmount == null) {
         throw new IllegalArgumentException();
       }
       updateAccount(fromAccountIdArray, sourceAmount.subtract(amount), connection);
