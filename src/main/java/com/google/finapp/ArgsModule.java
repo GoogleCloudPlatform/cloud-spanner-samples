@@ -74,7 +74,7 @@ final class ArgsModule extends AbstractModule {
 
   @Provides
   @SpannerUseJdbc
-  boolean provideSpannerUseJdbc() { return args.spannerUseJdbc; }
+  String provideSpannerDaoImpl() { return args.spannerDaoImpl; }
 
   @Parameters(separators = "=")
   private static class Args {
@@ -96,8 +96,8 @@ final class ArgsModule extends AbstractModule {
     @Parameter(names = {"--spanner_database_id"})
     String spannerDatabaseId;
 
-    @Parameter(names = {"--spanner_use_jdbc"}, arity = 1)
-    boolean spannerUseJdbc = false;
+    @Parameter(names = {"--spanner_dao_impl"})
+    String spannerDaoImpl = "clientlib";
   }
 
   @Qualifier
@@ -126,5 +126,5 @@ final class ArgsModule extends AbstractModule {
 
   @Qualifier
   @Retention(RetentionPolicy.RUNTIME)
-  @interface SpannerUseJdbc {}
+  @interface SpannerDaoImpl {}
 }
