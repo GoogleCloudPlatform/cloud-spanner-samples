@@ -44,7 +44,7 @@ final class DatabaseModule extends AbstractModule {
     DatabaseClient client = spanner.getDatabaseClient(
         DatabaseId.of(spannerProjectId, spannerInstanceId, spannerDatabaseId));
     if (spannerDaoImpl == "jdbc") {
-      throw new Exception("Implementation not available yet");
+      throw new IllegalArgumentException("Implementation not available yet");
     } else {
       return new SpannerDaoImpl(client);
     }
