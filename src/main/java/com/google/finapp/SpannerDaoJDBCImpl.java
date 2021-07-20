@@ -25,9 +25,6 @@ import java.util.Arrays;
 
 final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
 
-  private final String projectId;
-  private final String databaseId;
-  private final String instanceId;
   private final String connectionUrl;
 
   @Inject
@@ -35,22 +32,19 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       @ArgsModule.SpannerProjectId String spannerProjectId,
       @ArgsModule.SpannerInstanceId String spannerInstanceId,
       @ArgsModule.SpannerDatabaseId String spannerDatabaseId) {
-    this.projectId = spannerProjectId;
-    this.databaseId = spannerDatabaseId;
-    this.instanceId = spannerInstanceId;
     String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     if (emulatorHost != null) {
       // connect to emulator
       this.connectionUrl =
           String.format(
               "jdbc:cloudspanner://%s/projects/%s/instances/%s/databases/%s;usePlainText=true",
-              emulatorHost, projectId, instanceId, databaseId);
+              emulatorHost, spannerProjectId, spannerInstanceId, spannerDatabaseId);
     } else {
       // connect to Cloud Spanner
       this.connectionUrl =
           String.format(
               "jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s",
-              projectId, instanceId, databaseId);
+              spannerProjectId, spannerInstanceId, spannerDatabaseId);
     }
   }
 
