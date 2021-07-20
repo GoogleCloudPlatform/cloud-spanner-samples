@@ -114,39 +114,35 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
 
   public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SpannerDaoException {
-    try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
+    try (Connection connection = DriverManager.getConnection(this.connectionUrl);
+        PreparedStatement readStatement =
+            connection.prepareStatement(
+                "SELECT AccountId, Balance FROM Account WHERE (AccountId = ? or AccountId = ?)")) {
       connection.setAutoCommit(false);
       byte[] fromAccountIdArray = fromAccountId.toByteArray();
       byte[] toAccountIdArray = toAccountId.toByteArray();
-      BigDecimal[] accountBalances =
-          readAccountBalances(fromAccountIdArray, toAccountIdArray, connection);
-      updateAccount(fromAccountIdArray, accountBalances[0].subtract(amount), connection);
-      updateAccount(toAccountIdArray, accountBalances[1].add(amount), connection);
+      readStatement.setBytes(1, fromAccountIdArray);
+      readStatement.setBytes(2, toAccountIdArray);
+      java.sql.ResultSet resultSet = readStatement.executeQuery();
+      BigDecimal sourceAmount = new BigDecimal(Long.MIN_VALUE);
+      BigDecimal destAmount = new BigDecimal(Long.MIN_VALUE);
+      while (resultSet.next()) {
+        byte[] currentId = resultSet.getBytes("AccountId");
+        if (Arrays.equals(currentId, fromAccountIdArray)) {
+          sourceAmount = resultSet.getBigDecimal("Balance");
+        } else {
+          destAmount = resultSet.getBigDecimal("Balance");
+        }
+      }
+      if (sourceAmount.min(destAmount).equals(new BigDecimal(Long.MIN_VALUE))) {
+        throw new IllegalArgumentException();
+      }
+      updateAccount(fromAccountIdArray, sourceAmount.subtract(amount), connection);
+      updateAccount(toAccountIdArray, destAmount.add(amount), connection);
       insertTransaction(fromAccountIdArray, toAccountIdArray, amount, connection);
       connection.commit();
     } catch (SQLException e) {
       throw new SpannerDaoException(e);
-    }
-  }
-
-  private BigDecimal[] readAccountBalances(
-      byte[] fromAccountId, byte[] toAccountId, Connection connection) throws SQLException {
-    try (PreparedStatement preparedStatement =
-        connection.prepareStatement(
-            "SELECT AccountId, Balance FROM Account WHERE (AccountId = ? or AccountId = ?)")) {
-      preparedStatement.setBytes(1, fromAccountId);
-      preparedStatement.setBytes(2, toAccountId);
-      java.sql.ResultSet resultSet = preparedStatement.executeQuery();
-      BigDecimal[] results = new BigDecimal[2];
-      while (resultSet.next()) {
-        byte[] currentId = resultSet.getBytes("AccountId");
-        if (Arrays.equals(currentId, fromAccountId)) {
-          results[0] = resultSet.getBigDecimal("Balance");
-        } else {
-          results[1] = resultSet.getBigDecimal("Balance");
-        }
-      }
-      return results;
     }
   }
 
