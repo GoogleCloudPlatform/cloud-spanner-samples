@@ -73,7 +73,7 @@ final class ArgsModule extends AbstractModule {
   }
 
   @Provides
-  @SpannerUseJdbc
+  @SpannerDaoImpl
   String provideSpannerDaoImpl() { return args.spannerDaoImpl; }
 
   @Parameters(separators = "=")
@@ -97,7 +97,7 @@ final class ArgsModule extends AbstractModule {
     String spannerDatabaseId;
 
     @Parameter(names = {"--spanner_dao_impl"})
-    String spannerDaoImpl = "clientlib";
+    String spannerDaoImpl;
   }
 
   @Qualifier
