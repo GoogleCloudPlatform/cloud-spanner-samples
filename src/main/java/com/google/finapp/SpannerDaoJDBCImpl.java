@@ -56,20 +56,17 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
 
   public void createCustomer(ByteArray customerId, String name, String address)
       throws SpannerDaoException {
-    try {
-      try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
-        try (PreparedStatement ps =
+    try (Connection connection = DriverManager.getConnection(this.connectionUrl);
+        PreparedStatement ps =
             connection.prepareStatement(
                 "INSERT INTO Customer\n"
                     + "(CustomerId, Name, Address)\n"
                     + "VALUES\n"
                     + "(?, ?, ?)")) {
-          ps.setBytes(1, customerId.toByteArray());
-          ps.setString(2, name);
-          ps.setString(3, address);
-          ps.executeUpdate();
-        }
-      }
+      ps.setBytes(1, customerId.toByteArray());
+      ps.setString(2, name);
+      ps.setString(3, address);
+      ps.executeUpdate();
     } catch (SQLException e) {
       throw new SpannerDaoException(e);
     }
@@ -78,21 +75,18 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
   public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerDaoException {
-    try {
-      try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
-        try (PreparedStatement ps =
+    try (Connection connection = DriverManager.getConnection(this.connectionUrl);
+        PreparedStatement ps =
             connection.prepareStatement(
                 "INSERT INTO Account\n"
                     + "(AccountId, AccountType, AccountStatus, Balance, CreationTimestamp)\n"
                     + "VALUES\n"
                     + "(?, ?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
-          ps.setBytes(1, accountId.toByteArray());
-          ps.setInt(2, accountType.getNumber());
-          ps.setInt(3, accountStatus.getNumber());
-          ps.setBigDecimal(4, balance);
-          ps.executeUpdate();
-        }
-      }
+      ps.setBytes(1, accountId.toByteArray());
+      ps.setInt(2, accountType.getNumber());
+      ps.setInt(3, accountStatus.getNumber());
+      ps.setBigDecimal(4, balance);
+      ps.executeUpdate();
     } catch (SQLException e) {
       throw new SpannerDaoException(e);
     }
@@ -101,21 +95,18 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
   public void addAccountForCustomer(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
       throws SpannerDaoException {
-    try {
-      try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
-        try (PreparedStatement ps =
+    try (Connection connection = DriverManager.getConnection(this.connectionUrl);
+        PreparedStatement ps =
             connection.prepareStatement(
                 "INSERT INTO CustomerRole\n"
                     + "(CustomerId, AccountId, RoleId, Role)\n"
                     + "VALUES\n"
                     + "(?, ?, ?, ?)")) {
-          ps.setBytes(1, customerId.toByteArray());
-          ps.setBytes(2, accountId.toByteArray());
-          ps.setBytes(3, roleId.toByteArray());
-          ps.setString(4, roleName);
-          ps.executeUpdate();
-        }
-      }
+      ps.setBytes(1, customerId.toByteArray());
+      ps.setBytes(2, accountId.toByteArray());
+      ps.setBytes(3, roleId.toByteArray());
+      ps.setString(4, roleName);
+      ps.executeUpdate();
     } catch (SQLException e) {
       throw new SpannerDaoException(e);
     }
@@ -123,18 +114,16 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
 
   public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SpannerDaoException {
-    try {
-      try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
-        connection.setAutoCommit(false);
-        byte[] fromAccountIdArray = fromAccountId.toByteArray();
-        byte[] toAccountIdArray = toAccountId.toByteArray();
-        BigDecimal[] accountBalances =
-            readAccountBalances(fromAccountIdArray, toAccountIdArray, connection);
-        updateAccount(fromAccountIdArray, accountBalances[0].subtract(amount), connection);
-        updateAccount(toAccountIdArray, accountBalances[1].add(amount), connection);
-        insertTransaction(fromAccountIdArray, toAccountIdArray, amount, connection);
-        connection.commit();
-      }
+    try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
+      connection.setAutoCommit(false);
+      byte[] fromAccountIdArray = fromAccountId.toByteArray();
+      byte[] toAccountIdArray = toAccountId.toByteArray();
+      BigDecimal[] accountBalances =
+          readAccountBalances(fromAccountIdArray, toAccountIdArray, connection);
+      updateAccount(fromAccountIdArray, accountBalances[0].subtract(amount), connection);
+      updateAccount(toAccountIdArray, accountBalances[1].add(amount), connection);
+      insertTransaction(fromAccountIdArray, toAccountIdArray, amount, connection);
+      connection.commit();
     } catch (SQLException e) {
       throw new SpannerDaoException(e);
     }
