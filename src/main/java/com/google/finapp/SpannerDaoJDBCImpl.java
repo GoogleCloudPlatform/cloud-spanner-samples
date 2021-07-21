@@ -69,6 +69,9 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
   public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerDaoException {
+    if (balance.compareTo(BigDecimal.ZERO) < 0) {
+      throw new IllegalArgumentException("Account balance cannot be negative");
+    }
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement ps =
             connection.prepareStatement(
