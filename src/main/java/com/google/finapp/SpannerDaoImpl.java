@@ -120,14 +120,16 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                 ImmutableMap<ByteArray, BigDecimal> accountBalances =
                     readAccountBalances(fromAccountId, toAccountId, transaction);
 
-                if (accountBalances.get(fromAccountId).subtract(amount).signum() == -1) {
+                BigDecimal newSourceAmount = accountBalances.get(fromAccountId).subtract(amount);
+
+                if (newSourceAmount.signum() == -1) {
                   throw new IllegalArgumentException("Account balance cannot be negative");
                 }
 
                 transaction.buffer(
                     ImmutableList.of(
                         buildUpdateAccountMutation(
-                            fromAccountId, accountBalances.get(fromAccountId).subtract(amount)),
+                            fromAccountId, newSourceAmount),
                         buildUpdateAccountMutation(
                             toAccountId, accountBalances.get(toAccountId).add(amount)),
                         buildInsertTransactionHistoryMutation(
