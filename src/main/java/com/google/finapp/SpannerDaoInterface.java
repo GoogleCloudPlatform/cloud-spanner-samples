@@ -30,7 +30,6 @@ public interface SpannerDaoInterface {
   /**
    * Inserts a new row to the Account table in the database.
    *
-   * @param accountId unique id of account
    * @param accountType indicates unspecified, checking, or savings Account type
    * @param accountStatus indicates unspecified, active, or frozen Account status
    * @param balance non-negative account balance
