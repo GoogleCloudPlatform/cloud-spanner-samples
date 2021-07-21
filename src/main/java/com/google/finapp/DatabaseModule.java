@@ -38,12 +38,12 @@ final class DatabaseModule extends AbstractModule {
       @ArgsModule.SpannerProjectId String spannerProjectId,
       @ArgsModule.SpannerInstanceId String spannerInstanceId,
       @ArgsModule.SpannerDatabaseId String spannerDatabaseId,
-      @ArgsModule.SpannerDaoImpl String spannerDaoImpl) {
+      @ArgsModule.SpannerUseJdbc boolean spannerUseJdbc) {
     SpannerOptions spannerOptions = SpannerOptions.getDefaultInstance();
     Spanner spanner = spannerOptions.toBuilder().build().getService();
     DatabaseClient client = spanner.getDatabaseClient(
         DatabaseId.of(spannerProjectId, spannerInstanceId, spannerDatabaseId));
-    if (spannerDaoImpl == "jdbc") {
+    if (spannerUseJdbc) {
       throw new IllegalArgumentException("Implementation not available yet");
     } else {
       return new SpannerDaoImpl(client);
