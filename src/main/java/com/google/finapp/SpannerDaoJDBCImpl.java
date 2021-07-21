@@ -131,6 +131,10 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       if (sourceAmount == null || destAmount == null) {
         throw new IllegalArgumentException();
       }
+      if (sourceAmount.subtract(amount).compareTo(BigDecimal.ZERO)
+          < 0) {
+        throw new IllegalArgumentException("Account balance cannot be negative");
+      }
       updateAccount(fromAccountIdArray, sourceAmount.subtract(amount), connection);
       updateAccount(toAccountIdArray, destAmount.add(amount), connection);
       insertTransaction(fromAccountIdArray, toAccountIdArray, amount, connection);

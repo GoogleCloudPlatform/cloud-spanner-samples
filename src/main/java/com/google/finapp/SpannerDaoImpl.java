@@ -15,12 +15,17 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
-import com.google.cloud.spanner.*;
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.Key;
+import com.google.cloud.spanner.KeySet;
+import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.TransactionContext;
+import com.google.cloud.spanner.Value;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.finapp.SpannerDaoException;
 import com.google.inject.Inject;
-
 import java.math.BigDecimal;
 
 final class SpannerDaoImpl implements SpannerDaoInterface {
@@ -108,6 +113,11 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                 // Get account balances.
                 ImmutableMap<ByteArray, BigDecimal> accountBalances =
                     readAccountBalances(fromAccountId, toAccountId, transaction);
+
+                if (accountBalances.get(fromAccountId).subtract(amount).compareTo(BigDecimal.ZERO)
+                    < 0) {
+                  throw new IllegalArgumentException("Account balance cannot be negative");
+                }
 
                 transaction.buffer(
                     ImmutableList.of(
