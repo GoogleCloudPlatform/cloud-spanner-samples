@@ -54,7 +54,7 @@ public interface SpannerDaoInterface {
    * @param fromAccountId unique account id where amount will be transferred from
    * @param toAccountId unique account id where amount will be transferred to
    * @param amount amount transferred from fromAccountId to toAccountId, must be less than or equal
-   * to fromAccountId's account balance
+   * to fromAccountId's account balance, must be non-negative
    */
   void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId,
       BigDecimal amount) throws SpannerDaoException;

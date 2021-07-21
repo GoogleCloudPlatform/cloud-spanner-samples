@@ -108,6 +108,9 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   @Override
   public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SpannerDaoException {
+    if (amount.signum() == -1) {
+      throw new IllegalArgumentException("Amount cannot be negative");
+    }
     try {
       databaseClient
           .readWriteTransaction()

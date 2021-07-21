@@ -111,6 +111,9 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
 
   public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SpannerDaoException {
+    if (amount.signum() == -1) {
+      throw new IllegalArgumentException("Amount cannot be negative");
+    }
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement readStatement =
             connection.prepareStatement(
