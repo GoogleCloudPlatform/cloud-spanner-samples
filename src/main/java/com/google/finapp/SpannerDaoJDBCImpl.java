@@ -129,7 +129,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
         }
       }
       if (sourceAmount == null || destAmount == null) {
-        throw new IllegalArgumentException();
+        throw new IllegalArgumentException("Account not found");
       }
       if (sourceAmount.subtract(amount).compareTo(BigDecimal.ZERO)
           < 0) {
