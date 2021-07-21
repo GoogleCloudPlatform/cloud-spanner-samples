@@ -69,7 +69,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
   public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerDaoException {
-    if (balance.compareTo(BigDecimal.ZERO) < 0) {
+    if (balance.signum() == -1) {
       throw new IllegalArgumentException("Account balance cannot be negative");
     }
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
@@ -134,8 +134,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       if (sourceAmount == null || destAmount == null) {
         throw new IllegalArgumentException("Account not found");
       }
-      if (sourceAmount.subtract(amount).compareTo(BigDecimal.ZERO)
-          < 0) {
+      if (sourceAmount.subtract(amount).signum() == -1) {
         throw new IllegalArgumentException("Account balance cannot be negative");
       }
       updateAccount(fromAccountIdArray, sourceAmount.subtract(amount), connection);

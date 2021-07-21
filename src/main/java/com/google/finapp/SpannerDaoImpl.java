@@ -60,7 +60,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerDaoException {
-    if (balance.compareTo(BigDecimal.ZERO) < 0) {
+    if (balance.signum() == -1) {
       throw new IllegalArgumentException("Account balance cannot be negative");
     }
     try {
@@ -117,8 +117,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                 ImmutableMap<ByteArray, BigDecimal> accountBalances =
                     readAccountBalances(fromAccountId, toAccountId, transaction);
 
-                if (accountBalances.get(fromAccountId).subtract(amount).compareTo(BigDecimal.ZERO)
-                    < 0) {
+                if (accountBalances.get(fromAccountId).subtract(amount).signum() == -1) {
                   throw new IllegalArgumentException("Account balance cannot be negative");
                 }
 
