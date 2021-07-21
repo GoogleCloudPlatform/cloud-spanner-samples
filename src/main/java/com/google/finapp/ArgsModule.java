@@ -74,7 +74,7 @@ final class ArgsModule extends AbstractModule {
 
   @Provides
   @SpannerUseJdbc
-  String provideSpannerUseJdbc() { return args.spannerUseJdbc; }
+  boolean provideSpannerUseJdbc() { return args.spannerUseJdbc; }
 
   @Parameters(separators = "=")
   private static class Args {
