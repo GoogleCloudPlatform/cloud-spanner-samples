@@ -16,7 +16,6 @@ package com.google.finapp;
 
 import com.google.inject.Inject;
 import com.google.protobuf.Empty;
-import com.google.finapp.SpannerDaoException;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 
