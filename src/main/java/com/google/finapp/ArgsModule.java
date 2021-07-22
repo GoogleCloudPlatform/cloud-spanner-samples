@@ -97,7 +97,7 @@ final class ArgsModule extends AbstractModule {
     @Parameter(names = {"--spanner_database_id"})
     String spannerDatabaseId;
 
-    @Parameter(names = {"--spanner_use_jdbc"}, arity = 1)
+    @Parameter(names = {"--spanner_use_jdbc"}, arity = 0)
     boolean spannerUseJdbc = false;
   }
 
