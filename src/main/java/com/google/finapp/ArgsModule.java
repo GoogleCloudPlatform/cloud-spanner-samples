@@ -78,6 +78,7 @@ final class ArgsModule extends AbstractModule {
 
   @Parameters(separators = "=")
   private static class Args {
+
     @Parameter(names = {"--port", "-p"})
     int port = 8080;
 
