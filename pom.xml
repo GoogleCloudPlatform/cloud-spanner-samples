@@ -103,6 +103,7 @@
         </dependency>
     </dependencies>
     <build>
+        <testSourceDirectory>src/test/java/com/google/finapp</testSourceDirectory>
         <extensions>
             <extension>
                 <groupId>kr.motd.maven</groupId>
