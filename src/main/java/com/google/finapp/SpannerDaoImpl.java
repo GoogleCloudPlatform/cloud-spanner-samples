@@ -61,7 +61,9 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerDaoException {
     if (balance.signum() == -1) {
-      throw new IllegalArgumentException("Account balance cannot be negative");
+      throw new IllegalArgumentException(String.format(
+          "Account balance cannot be negative. accountId: %s, balance: %s", accountId.toString(),
+          balance.toString()));
     }
     try {
       databaseClient.write(
@@ -109,7 +111,8 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SpannerDaoException {
     if (amount.signum() == -1) {
-      throw new IllegalArgumentException("Amount cannot be negative");
+      throw new IllegalArgumentException(String.format(
+          "Amount transferred cannot be negative. amount: %s", amount.toString()));
     }
     try {
       databaseClient
@@ -123,7 +126,9 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                 BigDecimal newSourceAmount = accountBalances.get(fromAccountId).subtract(amount);
 
                 if (newSourceAmount.signum() == -1) {
-                  throw new IllegalArgumentException("Account balance cannot be negative");
+                  throw new IllegalArgumentException(String.format(
+                      "Account balance cannot be negative. original account balance: %s, amount transferred: %s",
+                      accountBalances.get(fromAccountId).toString(), amount.toString()));
                 }
 
                 transaction.buffer(
