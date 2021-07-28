@@ -15,8 +15,6 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
-import com.google.finapp.SpannerDaoException;
-
 import java.math.BigDecimal;
 
 /**
@@ -33,7 +31,8 @@ public interface SpannerDaoInterface {
    * Inserts a new row to the Account table in the database.
    *
    * @param accountType indicates unspecified, checking, or savings Account type
-   * @param accountStatus indicates unspecificed, active, or frozen Account status
+   * @param accountStatus indicates unspecified, active, or frozen Account status
+   * @param balance non-negative account balance
    */
   void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
@@ -53,7 +52,8 @@ public interface SpannerDaoInterface {
    *
    * @param fromAccountId unique account id where amount will be transferred from
    * @param toAccountId unique account id where amount will be transferred to
-   * @param amount amount transferred from fromAccountId to toAccountId
+   * @param amount amount transferred from fromAccountId to toAccountId, must be less than or equal
+   * to fromAccountId's account balance, must be non-negative
    */
   void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId,
       BigDecimal amount) throws SpannerDaoException;
