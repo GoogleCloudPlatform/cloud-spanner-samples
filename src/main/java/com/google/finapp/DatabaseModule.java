@@ -28,21 +28,25 @@ import io.grpc.ManagedChannelBuilder;
 final class DatabaseModule extends AbstractModule {
 
   @Override
-  protected void configure() {
-    bind(SpannerDaoInterface.class).to(SpannerDaoImpl.class);
-  }
+  protected void configure() {}
 
   @Provides
   @Singleton
-  DatabaseClient provideDatabaseClient(
+  SpannerDaoInterface provideSpannerDao(
       @ArgsModule.SpannerHost String spannerHost,
       @ArgsModule.SpannerPort int spannerPort,
       @ArgsModule.SpannerProjectId String spannerProjectId,
       @ArgsModule.SpannerInstanceId String spannerInstanceId,
-      @ArgsModule.SpannerDatabaseId String spannerDatabaseId) {
-    SpannerOptions spannerOptions = SpannerOptions.getDefaultInstance();
-    Spanner spanner = spannerOptions.toBuilder().build().getService();
-    return spanner.getDatabaseClient(
-        DatabaseId.of(spannerProjectId, spannerInstanceId, spannerDatabaseId));
+      @ArgsModule.SpannerDatabaseId String spannerDatabaseId,
+      @ArgsModule.SpannerUseJdbc boolean spannerUseJdbc) {
+    if (spannerUseJdbc) {
+      return new SpannerDaoJDBCImpl(spannerProjectId, spannerInstanceId, spannerDatabaseId);
+    } else {
+      SpannerOptions spannerOptions = SpannerOptions.getDefaultInstance();
+      Spanner spanner = spannerOptions.toBuilder().build().getService();
+      DatabaseClient client = spanner.getDatabaseClient(
+          DatabaseId.of(spannerProjectId, spannerInstanceId, spannerDatabaseId));
+      return new SpannerDaoImpl(client);
+    }
   }
 }
