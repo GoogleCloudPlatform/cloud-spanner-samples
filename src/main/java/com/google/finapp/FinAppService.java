@@ -71,6 +71,22 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     responseObserver.onCompleted();
   }
 
+  @Override
+  public void addAccountForCustomer(CustomerRole role, StreamObserver<Empty> responseObserver) {
+    try {
+      spannerDao.addAccountForCustomer(
+          UuidConverter.getBytesFromUuid(UUID.randomUUID()),
+          UuidConverter.getBytesFromUuid(UUID.randomUUID()),
+          UuidConverter.getBytesFromUuid(UUID.randomUUID()),
+          role.getName());
+    } catch (SpannerDaoException e) {
+      responseObserver.onError(Status.fromThrowable(e).asException());
+      return;
+    }
+    responseObserver.onNext(Empty.getDefaultInstance());
+    responseObserver.onCompleted();
+  }
+
   private static AccountType toStorageAccountType(Account.Type apiAccountType) {
     switch (apiAccountType) {
       case CHECKING:
