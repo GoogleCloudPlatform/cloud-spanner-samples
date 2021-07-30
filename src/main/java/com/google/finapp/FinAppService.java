@@ -14,6 +14,7 @@
 
 package com.google.finapp;
 
+import com.google.cloud.ByteArray;
 import com.google.inject.Inject;
 import com.google.protobuf.Empty;
 import io.grpc.Status;
@@ -72,13 +73,14 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
   }
 
   @Override
-  public void addAccountForCustomer(CustomerRole role, StreamObserver<Empty> responseObserver) {
+  public void addAccountForCustomer(AddAccountForCustomerRequest request,
+      StreamObserver<Empty> responseObserver) {
     try {
       spannerDao.addAccountForCustomer(
-          UuidConverter.getBytesFromUuid(UUID.randomUUID()),
-          UuidConverter.getBytesFromUuid(UUID.randomUUID()),
-          UuidConverter.getBytesFromUuid(UUID.randomUUID()),
-          role.getName());
+          ByteArray.copyFrom(request.getCustomerId().toByteArray()),
+          ByteArray.copyFrom(request.getAccountId().toByteArray()),
+          ByteArray.copyFrom(request.getRoleId().toByteArray()),
+          request.getRoleName());
     } catch (SpannerDaoException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;

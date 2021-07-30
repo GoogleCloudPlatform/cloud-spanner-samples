@@ -28,7 +28,7 @@ service FinApp {
 
   rpc CreateAccount(Account) returns (.google.protobuf.Empty) {}
 
-  rpc addAccountForCustomer(CustomerRole) returns (.google.protobuf.Empty) {}
+  rpc addAccountForCustomer(AddAccountForCustomerRequest) returns (.google.protobuf.Empty) {}
 }
 
 message Customer {
@@ -54,6 +54,9 @@ message Account {
   optional Status status = 3;
 }
 
-message CustomerRole {
-  optional string name = 1;
+message AddAccountForCustomerRequest {
+  optional bytes customerId = 1;
+  optional bytes accountId = 2;
+  optional bytes roleId = 3;
+  optional string roleName = 4;
 }
