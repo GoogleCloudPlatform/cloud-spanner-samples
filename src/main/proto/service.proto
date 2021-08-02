@@ -55,8 +55,8 @@ message Account {
 }
 
 message AddAccountForCustomerRequest {
-  optional bytes customerId = 1;
-  optional bytes accountId = 2;
-  optional bytes roleId = 3;
-  optional string roleName = 4;
+  optional bytes customer_id = 1;
+  optional bytes account_id = 2;
+  optional bytes role_id = 3;
+  optional string role_name = 4;
 }
