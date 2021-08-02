@@ -28,7 +28,7 @@ service FinApp {
 
   rpc CreateAccount(Account) returns (.google.protobuf.Empty) {}
 
-  rpc addAccountForCustomer(AddAccountForCustomerRequest) returns (.google.protobuf.Empty) {}
+  rpc addAccountForCustomer(CustomerRole) returns (.google.protobuf.Empty) {}
 }
 
 message Customer {

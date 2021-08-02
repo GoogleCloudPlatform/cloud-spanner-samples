@@ -77,8 +77,8 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       StreamObserver<Empty> responseObserver) {
     try {
       spannerDao.addAccountForCustomer(
-          ByteArray.copyFrom(request.getCustomerId().toByteArray()),
-          ByteArray.copyFrom(request.getAccountId().toByteArray()),
+          ByteArray.copyFrom(role.getCustomerId().toByteArray()),
+          ByteArray.copyFrom(role.getAccountId().toByteArray()),
           UuidConverter.getBytesFromUuid(UUID.randomUUID()),
           role.getName());
     } catch (SpannerDaoException e) {
