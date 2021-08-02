@@ -16,6 +16,8 @@
 
 package com.google.finapp;
 
+import static org.junit.Assert.assertEquals;
+
 import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
@@ -27,7 +29,6 @@ import com.google.cloud.spanner.SpannerOptions;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.UUID;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -76,13 +77,13 @@ public class FinAppTests {
       boolean JDBCSeen = false;
       boolean JavaSeen = false;
       while (resultSet.next()) {
-        Assert.assertEquals(0, resultSet.getLong(0));
-        Assert.assertEquals(0, resultSet.getLong(1));
+        assertEquals(0, resultSet.getLong(0));
+        assertEquals(0, resultSet.getLong(1));
         if (resultSet.getBytes(3).equals(accountIdJDBC)) {
-          Assert.assertEquals(new BigDecimal(2), resultSet.getBigDecimal(2));
+          assertEquals(new BigDecimal(2), resultSet.getBigDecimal(2));
           JDBCSeen = true;
         } else if (resultSet.getBytes(3).equals(accountIdJava)) {
-          Assert.assertEquals(new BigDecimal(36), resultSet.getBigDecimal(2));
+          assertEquals(new BigDecimal(36), resultSet.getBigDecimal(2));
           JavaSeen = true;
         }
       }
