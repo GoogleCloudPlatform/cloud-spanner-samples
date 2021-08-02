@@ -32,7 +32,7 @@ import java.util.UUID;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-public class FinAppTests {
+public class FinAppIT {
 
   private static SpannerDaoInterface JDBCDao;
   private static SpannerDaoInterface JavaDao;
