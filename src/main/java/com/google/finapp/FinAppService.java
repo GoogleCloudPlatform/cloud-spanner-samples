@@ -14,7 +14,6 @@
 
 package com.google.finapp;
 
-import com.google.inject.Inject;
 import com.google.protobuf.Empty;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -26,7 +25,6 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
 
   private final SpannerDaoInterface spannerDao;
 
-  @Inject
   FinAppService(SpannerDaoInterface spannerDao) {
     this.spannerDao = spannerDao;
   }

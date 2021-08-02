@@ -15,24 +15,16 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
-import com.google.cloud.spanner.DatabaseClient;
-import com.google.cloud.spanner.Key;
-import com.google.cloud.spanner.KeySet;
-import com.google.cloud.spanner.Mutation;
-import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.SpannerException;
-import com.google.cloud.spanner.TransactionContext;
-import com.google.cloud.spanner.Value;
+import com.google.cloud.spanner.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.inject.Inject;
+
 import java.math.BigDecimal;
 
 final class SpannerDaoImpl implements SpannerDaoInterface {
 
   private final DatabaseClient databaseClient;
 
-  @Inject
   SpannerDaoImpl(DatabaseClient databaseClient) {
     this.databaseClient = databaseClient;
   }
@@ -61,9 +53,10 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerDaoException {
     if (balance.signum() == -1) {
-      throw new IllegalArgumentException(String.format(
-          "Account balance cannot be negative. accountId: %s, balance: %s", accountId.toString(),
-          balance.toString()));
+      throw new IllegalArgumentException(
+          String.format(
+              "Account balance cannot be negative. accountId: %s, balance: %s",
+              accountId.toString(), balance.toString()));
     }
     try {
       databaseClient.write(
@@ -111,8 +104,8 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SpannerDaoException {
     if (amount.signum() == -1) {
-      throw new IllegalArgumentException(String.format(
-          "Amount transferred cannot be negative. amount: %s", amount.toString()));
+      throw new IllegalArgumentException(
+          String.format("Amount transferred cannot be negative. amount: %s", amount.toString()));
     }
     try {
       databaseClient
@@ -126,15 +119,15 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                 BigDecimal newSourceAmount = accountBalances.get(fromAccountId).subtract(amount);
 
                 if (newSourceAmount.signum() == -1) {
-                  throw new IllegalArgumentException(String.format(
-                      "Account balance cannot be negative. original account balance: %s, amount transferred: %s",
-                      accountBalances.get(fromAccountId).toString(), amount.toString()));
+                  throw new IllegalArgumentException(
+                      String.format(
+                          "Account balance cannot be negative. original account balance: %s, amount transferred: %s",
+                          accountBalances.get(fromAccountId).toString(), amount.toString()));
                 }
 
                 transaction.buffer(
                     ImmutableList.of(
-                        buildUpdateAccountMutation(
-                            fromAccountId, newSourceAmount),
+                        buildUpdateAccountMutation(fromAccountId, newSourceAmount),
                         buildUpdateAccountMutation(
                             toAccountId, accountBalances.get(toAccountId).add(amount)),
                         buildInsertTransactionHistoryMutation(
