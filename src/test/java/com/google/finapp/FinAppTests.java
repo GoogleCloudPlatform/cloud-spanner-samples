@@ -39,6 +39,7 @@ public class FinAppTests {
 
   @BeforeClass
   public static void setUpTests() {
+    // set all IDs according to emulator setup
     String spannerProjectId = "test-project";
     String spannerInstanceId = "test-instance";
     String spannerDatabaseId = "test-database";
@@ -56,13 +57,13 @@ public class FinAppTests {
     ByteArray accountIdJava = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     JDBCDao.createAccount(
         accountIdJDBC,
-        AccountType.UNSPECIFIED_ACCOUNT_TYPE,
-        AccountStatus.UNSPECIFIED_ACCOUNT_STATUS,
+        AccountType.UNSPECIFIED_ACCOUNT_TYPE /* = 0*/,
+        AccountStatus.UNSPECIFIED_ACCOUNT_STATUS /* = 0*/,
         new BigDecimal(2));
     JavaDao.createAccount(
         accountIdJava,
-        AccountType.UNSPECIFIED_ACCOUNT_TYPE,
-        AccountStatus.UNSPECIFIED_ACCOUNT_STATUS,
+        AccountType.UNSPECIFIED_ACCOUNT_TYPE /* = 0*/,
+        AccountStatus.UNSPECIFIED_ACCOUNT_STATUS /* = 0*/,
         new BigDecimal(36));
     try (ResultSet resultSet =
         databaseClient
