@@ -36,3 +36,10 @@ for client libraries to work.
     $ grpc_cli call localhost:8080 CreateCustomer \
         "name: 'google' address: 'amphitheatre pkwy'"
     ```
+
+## How to run the application tests
+
+1. Set up the emulator as described in #1 above.
+2. Replace the variables in `FinAppTests.setUpTests` according to your chosen instance, project, and database IDs.
+> The default variables should work for instance and database. The project variable must be changed based on `your-project-id` from `gcloud config set project your-project-id`. If this exact command was used, use `"your-project-id"`.
+3. Run `mvn test`.
