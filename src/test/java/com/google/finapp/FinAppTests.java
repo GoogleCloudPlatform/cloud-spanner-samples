@@ -16,7 +16,7 @@
 
 package com.google.finapp;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.DatabaseClient;
@@ -29,8 +29,8 @@ import com.google.cloud.spanner.SpannerOptions;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.UUID;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 public class FinAppTests {
 
@@ -38,8 +38,7 @@ public class FinAppTests {
   private static SpannerDaoInterface JavaDao;
   private static DatabaseClient databaseClient;
 
-  @BeforeClass
-  public static void setUpTests() {
+  static {
     // set all IDs according to emulator setup
     String spannerProjectId = "test-project";
     String spannerInstanceId = "test-instance";
@@ -52,43 +51,36 @@ public class FinAppTests {
     JavaDao = new SpannerDaoImpl(databaseClient);
   }
 
-  @Test
-  public void createAccountTest() throws SpannerDaoException {
-    ByteArray accountIdJDBC = UuidConverter.getBytesFromUuid(UUID.randomUUID());
-    ByteArray accountIdJava = UuidConverter.getBytesFromUuid(UUID.randomUUID());
-    JDBCDao.createAccount(
-        accountIdJDBC,
+  private SpannerDaoInterface getImpl(String impl) {
+    if (impl.equals("java client")) {
+      return JavaDao;
+    } else {
+      return JDBCDao;
+    }
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"java client", "jdbc"})
+  public void createAccountTest(String impl) throws SpannerDaoException {
+    SpannerDaoInterface spannerDao = getImpl(impl);
+    ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    spannerDao.createAccount(
+        accountId,
         AccountType.UNSPECIFIED_ACCOUNT_TYPE /* = 0*/,
         AccountStatus.UNSPECIFIED_ACCOUNT_STATUS /* = 0*/,
         new BigDecimal(2));
-    JavaDao.createAccount(
-        accountIdJava,
-        AccountType.UNSPECIFIED_ACCOUNT_TYPE /* = 0*/,
-        AccountStatus.UNSPECIFIED_ACCOUNT_STATUS /* = 0*/,
-        new BigDecimal(36));
     try (ResultSet resultSet =
         databaseClient
             .singleUse()
             .read(
                 "Account",
-                KeySet.newBuilder().addKey(Key.of(accountIdJDBC)).addKey(Key.of(accountIdJava))
-                    .build(),
-                Arrays.asList("AccountType", "AccountStatus", "Balance", "AccountId"))) {
-      boolean JDBCSeen = false;
-      boolean JavaSeen = false;
+                KeySet.newBuilder().addKey(Key.of(accountId)).build(),
+                Arrays.asList("AccountType", "AccountStatus", "Balance"))) {
       while (resultSet.next()) {
         assertEquals(0, resultSet.getLong(0));
         assertEquals(0, resultSet.getLong(1));
-        if (resultSet.getBytes(3).equals(accountIdJDBC)) {
-          assertEquals(new BigDecimal(2), resultSet.getBigDecimal(2));
-          JDBCSeen = true;
-        } else if (resultSet.getBytes(3).equals(accountIdJava)) {
-          assertEquals(new BigDecimal(36), resultSet.getBigDecimal(2));
-          JavaSeen = true;
-        }
+        assertEquals(new BigDecimal(2), resultSet.getBigDecimal(2));
       }
-      assert JDBCSeen;
-      assert JavaSeen;
     }
   }
 }
