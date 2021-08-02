@@ -57,5 +57,5 @@ message Account {
 message CustomerRole {
   optional bytes customer_id = 1;
   optional bytes account_id = 2;
-  optional string role_name = 3;
+  optional string name = 3;
 }
