@@ -14,16 +14,44 @@
 
 package com.google.finapp;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+import com.beust.jcommander.JCommander;
+import com.google.cloud.spanner.DatabaseClient;
+import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.Spanner;
+import com.google.cloud.spanner.SpannerOptions;
 
 public final class ServerMain {
   private ServerMain() {}
 
   public static void main(String[] argv) throws Exception {
-    Injector injector = Guice.createInjector(new DatabaseModule(), new ArgsModule(argv));
-    FinAppServer server = injector.getInstance(FinAppServer.class);
+    Args args = new Args();
+    JCommander.newBuilder().addObject(args).build().parse(argv);
+
+    SpannerDaoInterface spannerDao =
+        getSpannerDao(
+            args.spannerUseJdbc,
+            args.spannerProjectId,
+            args.spannerInstanceId,
+            args.spannerDatabaseId);
+    FinAppServer server = new FinAppServer(args.port, new FinAppService(spannerDao));
     server.start();
     server.blockUntilShutdown();
+  }
+
+  private static SpannerDaoInterface getSpannerDao(
+      boolean spannerUseJdbc,
+      String spannerProjectId,
+      String spannerInstanceId,
+      String spannerDatabaseId) {
+    if (spannerUseJdbc) {
+      return new SpannerDaoJDBCImpl(spannerProjectId, spannerInstanceId, spannerDatabaseId);
+    }
+
+    SpannerOptions spannerOptions = SpannerOptions.getDefaultInstance();
+    Spanner spanner = spannerOptions.toBuilder().build().getService();
+    DatabaseClient client =
+        spanner.getDatabaseClient(
+            DatabaseId.of(spannerProjectId, spannerInstanceId, spannerDatabaseId));
+    return new SpannerDaoImpl(client);
   }
 }

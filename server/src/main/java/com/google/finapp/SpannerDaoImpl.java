@@ -27,7 +27,6 @@ import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.Value;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
 import io.grpc.Status;
 import io.grpc.StatusException;
@@ -37,7 +36,6 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
 
   private final DatabaseClient databaseClient;
 
-  @Inject
   SpannerDaoImpl(DatabaseClient databaseClient) {
     this.databaseClient = databaseClient;
   }
@@ -65,6 +63,12 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerDaoException {
+    if (balance.signum() == -1) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Account balance cannot be negative. accountId: %s, balance: %s",
+              accountId.toString(), balance.toString()));
+    }
     try {
       databaseClient.write(
           ImmutableList.of(
@@ -128,7 +132,8 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                   throw Status.INVALID_ARGUMENT
                       .withDescription(
                           String.format(
-                              "Account balance cannot be negative. Original account balance: %s, amount to be removed: %s",
+                              "Account balance cannot be negative. Original account balance: %s,"
+                                  + " amount to be removed: %s",
                               accountBalances.get(fromAccountId).toString(), amount.toString()))
                       .asException();
                 }
@@ -195,7 +200,8 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                       throw Status.INVALID_ARGUMENT
                           .withDescription(
                               String.format(
-                                  "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
+                                  "Account balance cannot be negative. original account balance:"
+                                      + " %s, amount to be removed: %s",
                                   oldBalance.toString(), amount.toString()))
                           .asException();
                     }

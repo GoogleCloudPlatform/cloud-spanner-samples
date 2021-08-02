@@ -14,7 +14,6 @@
 
 package com.google.finapp;
 
-import com.google.inject.Inject;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.protobuf.services.ProtoReflectionService;
@@ -29,8 +28,7 @@ final class FinAppServer {
   private final int port;
   private final Server grpcServer;
 
-  @Inject
-  FinAppServer(@ArgsModule.Port int port, FinAppService finAppService) {
+  FinAppServer(int port, FinAppService finAppService) {
     this.port = port;
     this.grpcServer =
         ServerBuilder.forPort(port)
