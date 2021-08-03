@@ -14,6 +14,7 @@
 
 package com.google.finapp;
 
+import com.google.cloud.ByteArray;
 import com.google.inject.Inject;
 import com.google.protobuf.Empty;
 import io.grpc.Status;
@@ -65,6 +66,23 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
                   String.format(
                       "Invalid balance - %s. Expected a NUMERIC value", account.getBalance()))
               .asException());
+      return;
+    }
+    responseObserver.onNext(Empty.getDefaultInstance());
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void addAccountForCustomer(CustomerRole role,
+      StreamObserver<Empty> responseObserver) {
+    try {
+      spannerDao.addAccountForCustomer(
+          ByteArray.copyFrom(role.getCustomerId().toByteArray()),
+          ByteArray.copyFrom(role.getAccountId().toByteArray()),
+          UuidConverter.getBytesFromUuid(UUID.randomUUID()),
+          role.getName());
+    } catch (SpannerDaoException e) {
+      responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
     responseObserver.onNext(Empty.getDefaultInstance());
