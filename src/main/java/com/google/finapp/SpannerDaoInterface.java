@@ -25,7 +25,8 @@ public interface SpannerDaoInterface {
   /**
    * Inserts a new row to the Customer table in the database.
    */
-  ByteArray createCustomer(ByteArray customerId, String name, String address) throws SpannerDaoException;
+  ByteArray createCustomer(ByteArray customerId, String name, String address)
+      throws SpannerDaoException;
 
   /**
    * Inserts a new row to the Account table in the database.
