@@ -19,36 +19,89 @@ package com.google.finapp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.google.cloud.ByteArray;
+import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
-import com.google.cloud.spanner.DatabaseId;
+import com.google.cloud.spanner.IntegrationTest;
+import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.ResultSet;
-import com.google.cloud.spanner.Spanner;
-import com.google.cloud.spanner.SpannerOptions;
+import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.UUID;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category(IntegrationTest.class)
 public class FinAppIT {
 
   private static SpannerDaoInterface JDBCDao;
   private static SpannerDaoInterface JavaDao;
   private static DatabaseClient databaseClient;
+  @ClassRule
+  public static IntegrationTestEnv env = new IntegrationTestEnv();
+  private static Database db;
 
-  static {
-    // set all IDs according to emulator setup
-    String spannerProjectId = "test-project";
-    String spannerInstanceId = "test-instance";
-    String spannerDatabaseId = "test-database";
-    JDBCDao = new SpannerDaoJDBCImpl(spannerProjectId, spannerInstanceId, spannerDatabaseId);
-    SpannerOptions spannerOptions = SpannerOptions.getDefaultInstance();
-    Spanner spanner = spannerOptions.toBuilder().build().getService();
-    databaseClient = spanner
-        .getDatabaseClient(DatabaseId.of(spannerProjectId, spannerInstanceId, spannerDatabaseId));
+  @BeforeClass
+  public static void setup() {
+    final RemoteSpannerHelper testHelper = env.getTestHelper();
+    db = testHelper.createTestDatabase(
+        // taken directly from src/main/java/com/google/finapp/schema.sdl
+        "CREATE TABLE Account (\n"
+            + "  AccountId BYTES(16) NOT NULL,\n"
+            + "  AccountType INT64 NOT NULL,\n"
+            + "  CreationTimestamp TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp=true),\n"
+            + "  AccountStatus INT64 NOT NULL,\n"
+            + "  Balance NUMERIC NOT NULL\n"
+            + ") PRIMARY KEY (AccountId)\n",
+        "CREATE TABLE TransactionHistory (\n"
+            + "  AccountId BYTES(16) NOT NULL,\n"
+            + "  EventTimestamp TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp=true),\n"
+            + "  IsCredit BOOL NOT NULL,\n"
+            + "  Amount NUMERIC NOT NULL,\n"
+            + "  Description STRING(MAX)\n"
+            + ") PRIMARY KEY (AccountId, EventTimestamp DESC),\n"
+            + "  INTERLEAVE IN PARENT Account ON DELETE CASCADE\n",
+        "CREATE TABLE Customer (\n"
+            + "  CustomerId BYTES(16) NOT NULL,\n"
+            + "  Name STRING(MAX) NOT NULL,\n"
+            + "  Address STRING(MAX) NOT NULL,\n"
+            + ") PRIMARY KEY (CustomerId)\n",
+        "CREATE TABLE CustomerRole (\n"
+            + "  CustomerId BYTES(16) NOT NULL,\n"
+            + "  RoleId BYTES(16) NOT NULL,\n"
+            + "  Role STRING(MAX) NOT NULL,\n"
+            + "  AccountId BYTES(16) NOT NULL,\n"
+            + "  CONSTRAINT FK_AccountCustomerRole FOREIGN KEY (AccountId)\n"
+            + "    REFERENCES Account(AccountId),\n"
+            + ") PRIMARY KEY (CustomerId, RoleId),\n"
+            + "  INTERLEAVE IN PARENT Customer ON DELETE CASCADE\n",
+        "CREATE INDEX CustomerRoleByAccount ON CustomerRole(AccountId, CustomerId)\n",
+        "CREATE TABLE Statement (\n"
+            + "  AccountId BYTES(16) NOT NULL,\n"
+            + "  StatementId BYTES(16) NOT NULL,\n"
+            + "  Balance NUMERIC NOT NULL,\n"
+            + "  StatementWindowStart TIMESTAMP NOT NULL,\n"
+            + "  StatementWindowEnd TIMESTAMP NOT NULL,\n"
+            + "  StatementSummary BYTES(MAX) NOT NULL\n"
+            + ") PRIMARY KEY (AccountId, StatementId),\n"
+            + "  INTERLEAVE IN PARENT Account ON DELETE CASCADE");
+    final String databaseId = db.getId().getDatabase();
+    final String projectId = testHelper.getOptions().getProjectId();
+    final String instanceId = testHelper.getInstanceId().getInstance();
+    JDBCDao = new SpannerDaoJDBCImpl(projectId, instanceId, databaseId);
+    databaseClient = testHelper.getDatabaseClient(db);
     JavaDao = new SpannerDaoImpl(databaseClient);
+    System.out.println(databaseId);
+  }
+
+  @AfterClass
+  public static void tearDown() {
+    db.drop();
   }
 
   private SpannerDaoInterface getImpl(String impl) {
@@ -59,10 +112,11 @@ public class FinAppIT {
     }
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = {"java client", "jdbc"})
-  public void createAccountTest(String impl) throws SpannerDaoException {
-    SpannerDaoInterface spannerDao = getImpl(impl);
+  // @ParameterizedTest
+  // @ValueSource(strings = {"java client", "jdbc"})
+  @Test
+  public void createAccountTest() throws SpannerDaoException {
+    SpannerDaoInterface spannerDao = getImpl("java client");
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     spannerDao.createAccount(
         accountId,
