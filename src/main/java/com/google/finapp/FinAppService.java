@@ -16,6 +16,7 @@ package com.google.finapp;
 
 import com.google.cloud.ByteArray;
 import com.google.inject.Inject;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -33,9 +34,10 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
   }
 
   @Override
-  public void createCustomer(Customer customer, StreamObserver<Empty> responseObserver) {
+  public void createCustomer(Customer customer, StreamObserver<CustomerResponse> responseObserver) {
+    ByteArray customerId;
     try {
-      spannerDao.createCustomer(
+      customerId = spannerDao.createCustomer(
           UuidConverter.getBytesFromUuid(UUID.randomUUID()),
           customer.getName(),
           customer.getAddress());
@@ -43,7 +45,11 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
-    responseObserver.onNext(Empty.getDefaultInstance());
+
+    CustomerResponse response = CustomerResponse.newBuilder()
+        .setId(ByteString.copyFrom(customerId.toByteArray())).build();
+
+    responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 
