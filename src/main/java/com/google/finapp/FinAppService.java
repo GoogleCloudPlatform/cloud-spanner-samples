@@ -17,10 +17,8 @@ package com.google.finapp;
 import com.google.cloud.ByteArray;
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.Empty;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -45,18 +43,17 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
-
     CustomerResponse response = CustomerResponse.newBuilder()
         .setId(ByteString.copyFrom(customerId.toByteArray())).build();
-
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 
   @Override
-  public void createAccount(Account account, StreamObserver<Empty> responseObserver) {
+  public void createAccount(Account account, StreamObserver<AccountResponse> responseObserver) {
+    ByteArray accountId;
     try {
-      spannerDao.createAccount(
+      accountId = spannerDao.createAccount(
           UuidConverter.getBytesFromUuid(UUID.randomUUID()),
           toStorageAccountType(account.getType()),
           toStorageAccountStatus(account.getStatus()),
@@ -74,15 +71,18 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
               .asException());
       return;
     }
-    responseObserver.onNext(Empty.getDefaultInstance());
+    AccountResponse response = AccountResponse.newBuilder()
+        .setId(ByteString.copyFrom(accountId.toByteArray())).build();
+    responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 
   @Override
   public void addAccountForCustomer(CustomerRole role,
-      StreamObserver<Empty> responseObserver) {
+      StreamObserver<CustomerRoleResponse> responseObserver) {
+    ByteArray roleId;
     try {
-      spannerDao.addAccountForCustomer(
+      roleId = spannerDao.addAccountForCustomer(
           ByteArray.copyFrom(role.getCustomerId().toByteArray()),
           ByteArray.copyFrom(role.getAccountId().toByteArray()),
           UuidConverter.getBytesFromUuid(UUID.randomUUID()),
@@ -91,7 +91,9 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
-    responseObserver.onNext(Empty.getDefaultInstance());
+    CustomerRoleResponse response = CustomerRoleResponse.newBuilder()
+        .setId(ByteString.copyFrom(roleId.toByteArray())).build();
+    responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 
