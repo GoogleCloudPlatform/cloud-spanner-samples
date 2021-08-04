@@ -56,16 +56,16 @@ public class FinAppIT {
 
   @BeforeClass
   public static void setup() {
-    final RemoteSpannerHelper testHelper = env.getTestHelper();
+    RemoteSpannerHelper testHelper = env.getTestHelper();
     try {
       db = testHelper
           .createTestDatabase(extractStatementsFromSDLFile("src/test/resources/schema.sdl"));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
-    final String databaseId = db.getId().getDatabase();
-    final String projectId = testHelper.getOptions().getProjectId();
-    final String instanceId = testHelper.getInstanceId().getInstance();
+    String databaseId = db.getId().getDatabase();
+    String projectId = testHelper.getOptions().getProjectId();
+    String instanceId = testHelper.getInstanceId().getInstance();
     daoJDBC = new SpannerDaoJDBCImpl(projectId, instanceId, databaseId);
     databaseClient = testHelper.getDatabaseClient(db);
     daoJava = new SpannerDaoImpl(databaseClient);
