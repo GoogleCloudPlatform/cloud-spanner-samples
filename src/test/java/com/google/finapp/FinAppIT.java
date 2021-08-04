@@ -29,6 +29,7 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -96,7 +97,8 @@ public class FinAppIT {
     JDBCDao = new SpannerDaoJDBCImpl(projectId, instanceId, databaseId);
     databaseClient = testHelper.getDatabaseClient(db);
     JavaDao = new SpannerDaoImpl(databaseClient);
-    System.out.println(databaseId);
+    System.out.printf("New database \"%s\" created for project \"%s\" instance \"%s\"\n", databaseId, projectId,
+        instanceId);
   }
 
   @AfterClass
@@ -104,36 +106,27 @@ public class FinAppIT {
     db.drop();
   }
 
-  private SpannerDaoInterface getImpl(String impl) {
-    if (impl.equals("java client")) {
-      return JavaDao;
-    } else {
-      return JDBCDao;
-    }
-  }
-
-  // @ParameterizedTest
-  // @ValueSource(strings = {"java client", "jdbc"})
   @Test
   public void createAccountTest() throws SpannerDaoException {
-    SpannerDaoInterface spannerDao = getImpl("java client");
-    ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
-    spannerDao.createAccount(
-        accountId,
-        AccountType.UNSPECIFIED_ACCOUNT_TYPE /* = 0*/,
-        AccountStatus.UNSPECIFIED_ACCOUNT_STATUS /* = 0*/,
-        new BigDecimal(2));
-    try (ResultSet resultSet =
-        databaseClient
-            .singleUse()
-            .read(
-                "Account",
-                KeySet.newBuilder().addKey(Key.of(accountId)).build(),
-                Arrays.asList("AccountType", "AccountStatus", "Balance"))) {
-      while (resultSet.next()) {
-        assertEquals(0, resultSet.getLong(0));
-        assertEquals(0, resultSet.getLong(1));
-        assertEquals(new BigDecimal(2), resultSet.getBigDecimal(2));
+    for (SpannerDaoInterface spannerDao : List.of(JavaDao, JDBCDao)) {
+      ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+      spannerDao.createAccount(
+          accountId,
+          AccountType.UNSPECIFIED_ACCOUNT_TYPE /* = 0*/,
+          AccountStatus.UNSPECIFIED_ACCOUNT_STATUS /* = 0*/,
+          new BigDecimal(2));
+      try (ResultSet resultSet =
+          databaseClient
+              .singleUse()
+              .read(
+                  "Account",
+                  KeySet.newBuilder().addKey(Key.of(accountId)).build(),
+                  Arrays.asList("AccountType", "AccountStatus", "Balance"))) {
+        while (resultSet.next()) {
+          assertEquals(0, resultSet.getLong(0));
+          assertEquals(0, resultSet.getLong(1));
+          assertEquals(new BigDecimal(2), resultSet.getBigDecimal(2));
+        }
       }
     }
   }
