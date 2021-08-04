@@ -122,11 +122,14 @@ public class FinAppIT {
                   "Account",
                   KeySet.newBuilder().addKey(Key.of(accountId)).build(),
                   Arrays.asList("AccountType", "AccountStatus", "Balance"))) {
+        int count = 0;
         while (resultSet.next()) {
           assertEquals(0, resultSet.getLong(0));
           assertEquals(0, resultSet.getLong(1));
           assertEquals(new BigDecimal(2), resultSet.getBigDecimal(2));
+          count++;
         }
+        assertEquals(1, count);
       }
     }
   }
