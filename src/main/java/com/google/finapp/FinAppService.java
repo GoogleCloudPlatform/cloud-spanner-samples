@@ -32,29 +32,31 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
   }
 
   @Override
-  public void createCustomer(Customer customer, StreamObserver<CustomerResponse> responseObserver) {
-    ByteArray customerId;
+  public void createCustomer(Customer customer,
+      StreamObserver<CreateCustomerResponse> responseObserver) {
+    ByteArray customerId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     try {
-      customerId = spannerDao.createCustomer(
-          UuidConverter.getBytesFromUuid(UUID.randomUUID()),
+      spannerDao.createCustomer(
+          customerId,
           customer.getName(),
           customer.getAddress());
     } catch (SpannerDaoException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
-    CustomerResponse response = CustomerResponse.newBuilder()
+    CreateCustomerResponse response = CreateCustomerResponse.newBuilder()
         .setId(ByteString.copyFrom(customerId.toByteArray())).build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 
   @Override
-  public void createAccount(Account account, StreamObserver<AccountResponse> responseObserver) {
-    ByteArray accountId;
+  public void createAccount(Account account,
+      StreamObserver<CreateAccountResponse> responseObserver) {
+    ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     try {
-      accountId = spannerDao.createAccount(
-          UuidConverter.getBytesFromUuid(UUID.randomUUID()),
+      spannerDao.createAccount(
+          accountId,
           toStorageAccountType(account.getType()),
           toStorageAccountStatus(account.getStatus()),
           new BigDecimal(account.getBalance()));
@@ -71,7 +73,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
               .asException());
       return;
     }
-    AccountResponse response = AccountResponse.newBuilder()
+    CreateAccountResponse response = CreateAccountResponse.newBuilder()
         .setId(ByteString.copyFrom(accountId.toByteArray())).build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
@@ -79,19 +81,19 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
 
   @Override
   public void addAccountForCustomer(CustomerRole role,
-      StreamObserver<CustomerRoleResponse> responseObserver) {
-    ByteArray roleId;
+      StreamObserver<CreateCustomerRoleResponse> responseObserver) {
+    ByteArray roleId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     try {
-      roleId = spannerDao.addAccountForCustomer(
+      spannerDao.addAccountForCustomer(
           ByteArray.copyFrom(role.getCustomerId().toByteArray()),
           ByteArray.copyFrom(role.getAccountId().toByteArray()),
-          UuidConverter.getBytesFromUuid(UUID.randomUUID()),
+          roleId,
           role.getName());
     } catch (SpannerDaoException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
-    CustomerRoleResponse response = CustomerRoleResponse.newBuilder()
+    CreateCustomerRoleResponse response = CreateCustomerRoleResponse.newBuilder()
         .setId(ByteString.copyFrom(roleId.toByteArray())).build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
