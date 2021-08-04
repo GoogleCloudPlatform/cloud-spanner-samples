@@ -27,9 +27,15 @@ import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 import java.util.UUID;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -51,47 +57,12 @@ public class FinAppIT {
   @BeforeClass
   public static void setup() {
     final RemoteSpannerHelper testHelper = env.getTestHelper();
-    db = testHelper.createTestDatabase(
-        // taken directly from src/main/java/com/google/finapp/schema.sdl
-        "CREATE TABLE Account (\n"
-            + "  AccountId BYTES(16) NOT NULL,\n"
-            + "  AccountType INT64 NOT NULL,\n"
-            + "  CreationTimestamp TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp=true),\n"
-            + "  AccountStatus INT64 NOT NULL,\n"
-            + "  Balance NUMERIC NOT NULL\n"
-            + ") PRIMARY KEY (AccountId)\n",
-        "CREATE TABLE TransactionHistory (\n"
-            + "  AccountId BYTES(16) NOT NULL,\n"
-            + "  EventTimestamp TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp=true),\n"
-            + "  IsCredit BOOL NOT NULL,\n"
-            + "  Amount NUMERIC NOT NULL,\n"
-            + "  Description STRING(MAX)\n"
-            + ") PRIMARY KEY (AccountId, EventTimestamp DESC),\n"
-            + "  INTERLEAVE IN PARENT Account ON DELETE CASCADE\n",
-        "CREATE TABLE Customer (\n"
-            + "  CustomerId BYTES(16) NOT NULL,\n"
-            + "  Name STRING(MAX) NOT NULL,\n"
-            + "  Address STRING(MAX) NOT NULL,\n"
-            + ") PRIMARY KEY (CustomerId)\n",
-        "CREATE TABLE CustomerRole (\n"
-            + "  CustomerId BYTES(16) NOT NULL,\n"
-            + "  RoleId BYTES(16) NOT NULL,\n"
-            + "  Role STRING(MAX) NOT NULL,\n"
-            + "  AccountId BYTES(16) NOT NULL,\n"
-            + "  CONSTRAINT FK_AccountCustomerRole FOREIGN KEY (AccountId)\n"
-            + "    REFERENCES Account(AccountId),\n"
-            + ") PRIMARY KEY (CustomerId, RoleId),\n"
-            + "  INTERLEAVE IN PARENT Customer ON DELETE CASCADE\n",
-        "CREATE INDEX CustomerRoleByAccount ON CustomerRole(AccountId, CustomerId)\n",
-        "CREATE TABLE Statement (\n"
-            + "  AccountId BYTES(16) NOT NULL,\n"
-            + "  StatementId BYTES(16) NOT NULL,\n"
-            + "  Balance NUMERIC NOT NULL,\n"
-            + "  StatementWindowStart TIMESTAMP NOT NULL,\n"
-            + "  StatementWindowEnd TIMESTAMP NOT NULL,\n"
-            + "  StatementSummary BYTES(MAX) NOT NULL\n"
-            + ") PRIMARY KEY (AccountId, StatementId),\n"
-            + "  INTERLEAVE IN PARENT Account ON DELETE CASCADE");
+    try {
+      db = testHelper
+          .createTestDatabase(extractStatementsFromSDLFile("src/test/resources/schema.sdl"));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
     final String databaseId = db.getId().getDatabase();
     final String projectId = testHelper.getOptions().getProjectId();
     final String instanceId = testHelper.getInstanceId().getInstance();
@@ -131,5 +102,21 @@ public class FinAppIT {
         assertEquals(1, count);
       }
     }
+  }
+
+
+  static String[] extractStatementsFromSDLFile(String filename) throws FileNotFoundException {
+    File file = new File(filename);
+    BufferedReader reader = new BufferedReader(new FileReader(file));
+    StringBuilder builder = new StringBuilder();
+    try (Scanner scanner = new Scanner(reader)) {
+      while (scanner.hasNextLine()) {
+        String line = scanner.nextLine();
+        if (!line.startsWith("--")) { // ignore comments
+          builder.append(line);
+        }
+      }
+    }
+    return builder.toString().split(";"); // separate into individual statements
   }
 }
