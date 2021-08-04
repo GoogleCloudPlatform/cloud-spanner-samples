@@ -40,4 +40,4 @@ for client libraries to work.
 ## How to run the application tests
 
 1. Set up the emulator as described in #1 above.
-2. Run `mvn test`.
+2. Run `mvn integration-test`.
