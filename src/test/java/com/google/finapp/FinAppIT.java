@@ -55,14 +55,10 @@ public class FinAppIT {
   public static IntegrationTestEnv env = new IntegrationTestEnv();
 
   @BeforeClass
-  public static void setup() {
+  public static void setup() throws IOException {
     RemoteSpannerHelper testHelper = env.getTestHelper();
-    try {
-      db = testHelper
-          .createTestDatabase(extractStatementsFromSDLFile("src/test/resources/schema.sdl"));
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    db = testHelper
+        .createTestDatabase(extractStatementsFromSDLFile("src/test/resources/schema.sdl"));
     String databaseId = db.getId().getDatabase();
     String projectId = testHelper.getOptions().getProjectId();
     String instanceId = testHelper.getInstanceId().getInstance();
