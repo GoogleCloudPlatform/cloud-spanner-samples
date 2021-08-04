@@ -45,7 +45,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       return;
     }
     CreateCustomerResponse response = CreateCustomerResponse.newBuilder()
-        .setId(ByteString.copyFrom(customerId.toByteArray())).build();
+        .setCustomerId(ByteString.copyFrom(customerId.toByteArray())).build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
@@ -74,7 +74,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       return;
     }
     CreateAccountResponse response = CreateAccountResponse.newBuilder()
-        .setId(ByteString.copyFrom(accountId.toByteArray())).build();
+        .setAccountId(ByteString.copyFrom(accountId.toByteArray())).build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
@@ -94,7 +94,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       return;
     }
     CreateCustomerRoleResponse response = CreateCustomerRoleResponse.newBuilder()
-        .setId(ByteString.copyFrom(roleId.toByteArray())).build();
+        .setRoleId(ByteString.copyFrom(roleId.toByteArray())).build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
