@@ -98,10 +98,6 @@ public class FinAppIT {
     JDBCDao = new SpannerDaoJDBCImpl(projectId, instanceId, databaseId);
     databaseClient = testHelper.getDatabaseClient(db);
     JavaDao = new SpannerDaoImpl(databaseClient);
-    System.out
-        .printf("New database \"%s\" created for project \"%s\" instance \"%s\"\n", databaseId,
-            projectId,
-            instanceId);
   }
 
   @AfterClass
