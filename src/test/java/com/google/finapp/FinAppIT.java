@@ -59,10 +59,8 @@ public class FinAppIT {
     RemoteSpannerHelper testHelper = env.getTestHelper();
     db = testHelper
         .createTestDatabase(extractStatementsFromSDLFile("src/test/resources/schema.sdl"));
-    String databaseId = db.getId().getDatabase();
-    String projectId = testHelper.getOptions().getProjectId();
-    String instanceId = testHelper.getInstanceId().getInstance();
-    daoJDBC = new SpannerDaoJDBCImpl(projectId, instanceId, databaseId);
+    daoJDBC = new SpannerDaoJDBCImpl(testHelper.getOptions().getProjectId(),
+        testHelper.getInstanceId().getInstance(), db.getId().getDatabase());
     databaseClient = testHelper.getDatabaseClient(db);
     daoJava = new SpannerDaoImpl(databaseClient);
   }
