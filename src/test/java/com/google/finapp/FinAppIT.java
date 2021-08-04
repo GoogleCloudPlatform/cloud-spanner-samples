@@ -58,7 +58,7 @@ public class FinAppIT {
   public static void setup() throws IOException {
     RemoteSpannerHelper testHelper = env.getTestHelper();
     db = testHelper
-        .createTestDatabase(extractStatementsFromSDLFile("src/test/resources/schema.sdl"));
+        .createTestDatabase(extractStatementsFromSDLFile("src/main/java/com/google/finapp/schema.sdl"));
     daoJDBC = new SpannerDaoJDBCImpl(testHelper.getOptions().getProjectId(),
         testHelper.getInstanceId().getInstance(), db.getId().getDatabase());
     databaseClient = testHelper.getDatabaseClient(db);
