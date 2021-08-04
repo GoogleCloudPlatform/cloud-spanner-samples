@@ -59,7 +59,7 @@ message Account {
 }
 
 message CreateAccountResponse {
-  optional bytes id = 1;
+  optional bytes account_id = 1;
 }
 
 message CustomerRole {
@@ -69,5 +69,5 @@ message CustomerRole {
 }
 
 message CreateCustomerRoleResponse {
-  optional bytes id = 1;
+  optional bytes role_id = 1;
 }
