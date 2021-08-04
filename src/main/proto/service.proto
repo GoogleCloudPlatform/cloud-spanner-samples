@@ -24,11 +24,11 @@ option java_outer_classname = "ServiceProto";
 
 service FinApp {
 
-  rpc CreateCustomer(Customer) returns (CustomerResponse) {}
+  rpc CreateCustomer(Customer) returns (CreateCustomerResponse) {}
 
-  rpc CreateAccount(Account) returns (AccountResponse) {}
+  rpc CreateAccount(Account) returns (CreateAccountResponse) {}
 
-  rpc AddAccountForCustomer(CustomerRole) returns (CustomerRoleResponse) {}
+  rpc AddAccountForCustomer(CustomerRole) returns (CreateCustomerRoleResponse) {}
 }
 
 message Customer {
@@ -36,8 +36,8 @@ message Customer {
   optional string address = 2;
 }
 
-message CustomerResponse {
-  optional bytes id = 1;
+message CreateCustomerResponse {
+  optional bytes customer_id = 1;
 }
 
 message Account {
@@ -58,7 +58,7 @@ message Account {
   optional Status status = 3;
 }
 
-message AccountResponse {
+message CreateAccountResponse {
   optional bytes id = 1;
 }
 
@@ -68,6 +68,6 @@ message CustomerRole {
   optional string name = 3;
 }
 
-message CustomerRoleResponse {
+message CreateCustomerRoleResponse {
   optional bytes id = 1;
 }
