@@ -25,7 +25,7 @@ public interface SpannerDaoInterface {
   /**
    * Inserts a new row to the Customer table in the database.
    */
-  ByteArray createCustomer(ByteArray customerId, String name, String address)
+  void createCustomer(ByteArray customerId, String name, String address)
       throws SpannerDaoException;
 
   /**
@@ -35,14 +35,14 @@ public interface SpannerDaoInterface {
    * @param accountStatus indicates unspecified, active, or frozen Account status
    * @param balance non-negative account balance
    */
-  ByteArray createAccount(
+  void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerDaoException;
 
   /**
    * Inserts a new row to the CustomerRole table for a Customer in the database.
    */
-  ByteArray addAccountForCustomer(
+  void addAccountForCustomer(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
       throws SpannerDaoException;
 

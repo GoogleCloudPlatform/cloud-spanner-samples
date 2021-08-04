@@ -38,7 +38,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   }
 
   @Override
-  public ByteArray createCustomer(ByteArray customerId, String name, String address)
+  public void createCustomer(ByteArray customerId, String name, String address)
       throws SpannerDaoException {
     try {
       databaseClient.write(
@@ -54,11 +54,10 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
     } catch (SpannerException e) {
       throw new SpannerDaoException(e);
     }
-    return customerId;
   }
 
   @Override
-  public ByteArray createAccount(
+  public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerDaoException {
     if (balance.signum() == -1) {
@@ -84,11 +83,10 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
     } catch (SpannerException e) {
       throw new SpannerDaoException(e);
     }
-    return accountId;
   }
 
   @Override
-  public ByteArray addAccountForCustomer(
+  public void addAccountForCustomer(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
       throws SpannerDaoException {
     try {
@@ -107,7 +105,6 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
     } catch (SpannerException e) {
       throw new SpannerDaoException(e);
     }
-    return roleId;
   }
 
   @Override

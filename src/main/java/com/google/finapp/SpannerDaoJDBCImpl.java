@@ -48,7 +48,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     }
   }
 
-  public ByteArray createCustomer(ByteArray customerId, String name, String address)
+  public void createCustomer(ByteArray customerId, String name, String address)
       throws SpannerDaoException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement ps =
@@ -64,10 +64,9 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     } catch (SQLException e) {
       throw new SpannerDaoException(e);
     }
-    return customerId;
   }
 
-  public ByteArray createAccount(
+  public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerDaoException {
     if (balance.signum() == -1) {
@@ -90,10 +89,9 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     } catch (SQLException e) {
       throw new SpannerDaoException(e);
     }
-    return accountId;
   }
 
-  public ByteArray addAccountForCustomer(
+  public void addAccountForCustomer(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
       throws SpannerDaoException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
@@ -111,7 +109,6 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     } catch (SQLException e) {
       throw new SpannerDaoException(e);
     }
-    return roleId;
   }
 
   public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
