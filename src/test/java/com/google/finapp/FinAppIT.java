@@ -46,8 +46,8 @@ import org.junit.experimental.categories.Category;
 @Category(IntegrationTest.class)
 public class FinAppIT {
 
-  private static SpannerDaoInterface JDBCDao;
-  private static SpannerDaoInterface JavaDao;
+  private static SpannerDaoInterface daoJDBC;
+  private static SpannerDaoInterface daoJava;
   private static DatabaseClient databaseClient;
   private static Database db;
 
@@ -66,9 +66,9 @@ public class FinAppIT {
     final String databaseId = db.getId().getDatabase();
     final String projectId = testHelper.getOptions().getProjectId();
     final String instanceId = testHelper.getInstanceId().getInstance();
-    JDBCDao = new SpannerDaoJDBCImpl(projectId, instanceId, databaseId);
+    daoJDBC = new SpannerDaoJDBCImpl(projectId, instanceId, databaseId);
     databaseClient = testHelper.getDatabaseClient(db);
-    JavaDao = new SpannerDaoImpl(databaseClient);
+    daoJava = new SpannerDaoImpl(databaseClient);
   }
 
   @AfterClass
@@ -78,7 +78,7 @@ public class FinAppIT {
 
   @Test
   public void createAccountTest() throws SpannerDaoException {
-    for (SpannerDaoInterface spannerDao : List.of(JavaDao, JDBCDao)) {
+    for (SpannerDaoInterface spannerDao : List.of(daoJava, daoJDBC)) {
       ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
       spannerDao.createAccount(
           accountId,
