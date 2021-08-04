@@ -43,9 +43,10 @@ public class FinAppIT {
   private static SpannerDaoInterface JDBCDao;
   private static SpannerDaoInterface JavaDao;
   private static DatabaseClient databaseClient;
+  private static Database db;
+
   @ClassRule
   public static IntegrationTestEnv env = new IntegrationTestEnv();
-  private static Database db;
 
   @BeforeClass
   public static void setup() {
@@ -97,8 +98,10 @@ public class FinAppIT {
     JDBCDao = new SpannerDaoJDBCImpl(projectId, instanceId, databaseId);
     databaseClient = testHelper.getDatabaseClient(db);
     JavaDao = new SpannerDaoImpl(databaseClient);
-    System.out.printf("New database \"%s\" created for project \"%s\" instance \"%s\"\n", databaseId, projectId,
-        instanceId);
+    System.out
+        .printf("New database \"%s\" created for project \"%s\" instance \"%s\"\n", databaseId,
+            projectId,
+            instanceId);
   }
 
   @AfterClass

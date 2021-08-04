@@ -142,7 +142,7 @@
                 <configuration>
                     <systemPropertyVariables>
                         <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
-                        <spanner.testenv.instance>projects/gcloud-devel/instances/test-instance</spanner.testenv.instance>
+                        <spanner.testenv.instance>projects/test-project/instances/test-instance</spanner.testenv.instance>
                     </systemPropertyVariables>
                 </configuration>
                 <executions>
