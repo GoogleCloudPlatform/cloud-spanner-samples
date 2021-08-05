@@ -17,14 +17,10 @@ package com.google.finapp;
 import com.google.cloud.ByteArray;
 import java.math.BigDecimal;
 
-/**
- * The SpannerDaoInterface defines the methods to be used by its separate implementations.
- */
+/** The SpannerDaoInterface defines the methods to be used by its separate implementations. */
 public interface SpannerDaoInterface {
 
-  /**
-   * Inserts a new row to the Customer table in the database.
-   */
+  /** Inserts a new row to the Customer table in the database. */
   void createCustomer(ByteArray customerId, String name, String address) throws SpannerDaoException;
 
   /**
@@ -53,8 +49,8 @@ public interface SpannerDaoInterface {
    * @param fromAccountId unique account id where amount will be transferred from
    * @param toAccountId unique account id where amount will be transferred to
    * @param amount amount transferred from fromAccountId to toAccountId, must be less than or equal
-   * to fromAccountId's account balance, must be non-negative
+   *     to fromAccountId's account balance, must be non-negative
    */
-  void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId,
-      BigDecimal amount) throws SpannerDaoException;
+  void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
+      throws SpannerDaoException;
 }

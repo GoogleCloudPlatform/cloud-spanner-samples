@@ -14,8 +14,6 @@
 
 package com.google.finapp;
 
-import com.google.api.gax.grpc.GrpcTransportChannel;
-import com.google.api.gax.rpc.FixedTransportChannelProvider;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.DatabaseId;
 import com.google.cloud.spanner.Spanner;
@@ -23,7 +21,6 @@ import com.google.cloud.spanner.SpannerOptions;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import io.grpc.ManagedChannelBuilder;
 
 final class DatabaseModule extends AbstractModule {
 
@@ -44,8 +41,9 @@ final class DatabaseModule extends AbstractModule {
     } else {
       SpannerOptions spannerOptions = SpannerOptions.getDefaultInstance();
       Spanner spanner = spannerOptions.toBuilder().build().getService();
-      DatabaseClient client = spanner.getDatabaseClient(
-          DatabaseId.of(spannerProjectId, spannerInstanceId, spannerDatabaseId));
+      DatabaseClient client =
+          spanner.getDatabaseClient(
+              DatabaseId.of(spannerProjectId, spannerInstanceId, spannerDatabaseId));
       return new SpannerDaoImpl(client);
     }
   }
