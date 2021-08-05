@@ -19,10 +19,9 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
-
-import javax.inject.Qualifier;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import javax.inject.Qualifier;
 
 final class ArgsModule extends AbstractModule {
 
@@ -99,7 +98,9 @@ final class ArgsModule extends AbstractModule {
     @Parameter(names = {"--spanner_database_id"})
     String spannerDatabaseId;
 
-    @Parameter(names = {"--spanner_use_jdbc"}, arity = 0)
+    @Parameter(
+        names = {"--spanner_use_jdbc"},
+        arity = 0)
     boolean spannerUseJdbc = false;
   }
 

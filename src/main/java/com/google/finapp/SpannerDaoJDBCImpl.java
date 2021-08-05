@@ -70,9 +70,10 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerDaoException {
     if (balance.signum() == -1) {
-      throw new IllegalArgumentException(String.format(
-          "Account balance cannot be negative. accountId: %s, balance: %s", accountId.toString(),
-          balance.toString()));
+      throw new IllegalArgumentException(
+          String.format(
+              "Account balance cannot be negative. accountId: %s, balance: %s",
+              accountId.toString(), balance.toString()));
     }
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement ps =
@@ -114,8 +115,8 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
   public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SpannerDaoException {
     if (amount.signum() == -1) {
-      throw new IllegalArgumentException(String.format(
-          "Amount transferred cannot be negative. amount: %s", amount.toString()));
+      throw new IllegalArgumentException(
+          String.format("Amount transferred cannot be negative. amount: %s", amount.toString()));
     }
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement readStatement =
@@ -146,9 +147,10 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       }
       BigDecimal newSourceAmount = sourceAmount.subtract(amount);
       if (newSourceAmount.signum() == -1) {
-        throw new IllegalArgumentException(String.format(
-            "Account balance cannot be negative. original account balance: %s, amount transferred: %s",
-            sourceAmount.toString(), amount.toString()));
+        throw new IllegalArgumentException(
+            String.format(
+                "Account balance cannot be negative. original account balance: %s, amount transferred: %s",
+                sourceAmount.toString(), amount.toString()));
       }
       updateAccount(fromAccountIdArray, newSourceAmount, connection);
       updateAccount(toAccountIdArray, destAmount.add(amount), connection);
