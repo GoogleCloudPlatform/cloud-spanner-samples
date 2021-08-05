@@ -86,7 +86,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   }
 
   @Override
-  public void addAccountForCustomer(
+  public void createCustomerRole(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
       throws SpannerDaoException {
     try {

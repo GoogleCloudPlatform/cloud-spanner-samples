@@ -32,7 +32,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
   }
 
   @Override
-  public void createCustomer(Customer customer,
+  public void createCustomer(CreateCustomerRequest customer,
       StreamObserver<CreateCustomerResponse> responseObserver) {
     ByteArray customerId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     try {
@@ -51,7 +51,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
   }
 
   @Override
-  public void createAccount(Account account,
+  public void createAccount(CreateAccountRequest account,
       StreamObserver<CreateAccountResponse> responseObserver) {
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     try {
@@ -80,11 +80,11 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
   }
 
   @Override
-  public void addAccountForCustomer(CustomerRole role,
+  public void createCustomerRole(CreateCustomerRoleRequest role,
       StreamObserver<CreateCustomerRoleResponse> responseObserver) {
     ByteArray roleId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     try {
-      spannerDao.addAccountForCustomer(
+      spannerDao.createCustomerRole(
           ByteArray.copyFrom(role.getCustomerId().toByteArray()),
           ByteArray.copyFrom(role.getAccountId().toByteArray()),
           roleId,

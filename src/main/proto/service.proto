@@ -22,14 +22,14 @@ option java_outer_classname = "ServiceProto";
 
 service FinApp {
 
-  rpc CreateCustomer(Customer) returns (CreateCustomerResponse) {}
+  rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse) {}
 
-  rpc CreateAccount(Account) returns (CreateAccountResponse) {}
+  rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse) {}
 
-  rpc AddAccountForCustomer(CustomerRole) returns (CreateCustomerRoleResponse) {}
+  rpc CreateCustomerRole(CreateCustomerRoleRequest) returns (CreateCustomerRoleResponse) {}
 }
 
-message Customer {
+message CreateCustomerRequest {
   optional string name = 1;
   optional string address = 2;
 }
@@ -38,7 +38,7 @@ message CreateCustomerResponse {
   optional bytes customer_id = 1;
 }
 
-message Account {
+message CreateAccountRequest {
   optional string balance = 1;
 
   enum Type {
@@ -60,7 +60,7 @@ message CreateAccountResponse {
   optional bytes account_id = 1;
 }
 
-message CustomerRole {
+message CreateCustomerRoleRequest {
   optional bytes customer_id = 1;
   optional bytes account_id = 2;
   optional string name = 3;
