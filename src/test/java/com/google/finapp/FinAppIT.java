@@ -46,8 +46,7 @@ import org.junit.experimental.categories.Category;
 @Category(IntegrationTest.class)
 public class FinAppIT {
 
-  private static SpannerDaoInterface daoJDBC;
-  private static SpannerDaoInterface daoJava;
+  private static SpannerDaoInterface spannerDao;
   private static DatabaseClient databaseClient;
   private static Database db;
 
@@ -58,49 +57,19 @@ public class FinAppIT {
   public static void setup() throws IOException {
     RemoteSpannerHelper testHelper = env.getTestHelper();
     db = testHelper
-        .createTestDatabase(extractStatementsFromSDLFile("src/main/java/com/google/finapp/schema.sdl"));
-    daoJDBC = new SpannerDaoJDBCImpl(testHelper.getOptions().getProjectId(),
-        testHelper.getInstanceId().getInstance(), db.getId().getDatabase());
+        .createTestDatabase(
+            extractStatementsFromSDLFile("src/main/java/com/google/finapp/schema.sdl"));
     databaseClient = testHelper.getDatabaseClient(db);
-    daoJava = new SpannerDaoImpl(databaseClient);
-  }
-
-  @AfterClass
-  public static void tearDown() {
-    db.drop();
-  }
-
-  @Test
-  public void createAccount_createsSingleValidAccount() throws Exception {
-    for (SpannerDaoInterface spannerDao : List.of(daoJava, daoJDBC)) {
-      ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
-      BigDecimal bigDecimalTwo = new BigDecimal(2);
-      spannerDao.createAccount(
-          accountId,
-          AccountType.UNSPECIFIED_ACCOUNT_TYPE /* = 0*/,
-          AccountStatus.UNSPECIFIED_ACCOUNT_STATUS /* = 0*/,
-          bigDecimalTwo);
-      try (ResultSet resultSet =
-          databaseClient
-              .singleUse()
-              .read(
-                  "Account",
-                  KeySet.newBuilder().addKey(Key.of(accountId)).build(),
-                  Arrays.asList("AccountType", "AccountStatus", "Balance"))) {
-        int count = 0;
-        while (resultSet.next()) {
-          assertThat(resultSet.getLong(0)).isEqualTo(0);
-          assertThat(resultSet.getLong(1)).isEqualTo(0);
-          assertThat(resultSet.getBigDecimal(2)).isEqualTo(bigDecimalTwo);
-          count++;
-        }
-        assertThat(count).isEqualTo(1);
-      }
+    if (System.getProperty("SPANNER_USE_JDBC") == null) {
+      spannerDao = new SpannerDaoImpl(databaseClient);
+    } else {
+      spannerDao = new SpannerDaoJDBCImpl(testHelper.getOptions().getProjectId(),
+          testHelper.getInstanceId().getInstance(), db.getId().getDatabase());
     }
   }
 
-
-  private static List<String> extractStatementsFromSDLFile(String filename) throws FileNotFoundException {
+  private static List<String> extractStatementsFromSDLFile(String filename)
+      throws FileNotFoundException {
     File file = new File(filename);
     BufferedReader reader = new BufferedReader(new FileReader(file));
     StringBuilder builder = new StringBuilder();
@@ -113,5 +82,37 @@ public class FinAppIT {
       }
     }
     return List.of(builder.toString().split(";")); // separate into individual statements
+  }
+
+  @AfterClass
+  public static void tearDown() {
+    db.drop();
+  }
+
+  @Test
+  public void createAccount_createsSingleValidAccount() throws Exception {
+    ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal bigDecimalTwo = new BigDecimal(2);
+    spannerDao.createAccount(
+        accountId,
+        AccountType.UNSPECIFIED_ACCOUNT_TYPE /* = 0*/,
+        AccountStatus.UNSPECIFIED_ACCOUNT_STATUS /* = 0*/,
+        bigDecimalTwo);
+    try (ResultSet resultSet =
+        databaseClient
+            .singleUse()
+            .read(
+                "Account",
+                KeySet.newBuilder().addKey(Key.of(accountId)).build(),
+                Arrays.asList("AccountType", "AccountStatus", "Balance"))) {
+      int count = 0;
+      while (resultSet.next()) {
+        assertThat(resultSet.getLong(0)).isEqualTo(0);
+        assertThat(resultSet.getLong(1)).isEqualTo(0);
+        assertThat(resultSet.getBigDecimal(2)).isEqualTo(bigDecimalTwo);
+        count++;
+      }
+      assertThat(count).isEqualTo(1);
+    }
   }
 }
