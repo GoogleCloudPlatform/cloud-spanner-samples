@@ -46,8 +46,9 @@ public class FinAppIT {
     JDBCDao = new SpannerDaoJDBCImpl(spannerProjectId, spannerInstanceId, spannerDatabaseId);
     SpannerOptions spannerOptions = SpannerOptions.getDefaultInstance();
     Spanner spanner = spannerOptions.toBuilder().build().getService();
-    databaseClient = spanner
-        .getDatabaseClient(DatabaseId.of(spannerProjectId, spannerInstanceId, spannerDatabaseId));
+    databaseClient =
+        spanner.getDatabaseClient(
+            DatabaseId.of(spannerProjectId, spannerInstanceId, spannerDatabaseId));
     JavaDao = new SpannerDaoImpl(databaseClient);
   }
 

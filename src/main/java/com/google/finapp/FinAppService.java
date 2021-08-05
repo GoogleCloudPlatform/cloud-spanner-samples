@@ -72,8 +72,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
   }
 
   @Override
-  public void addAccountForCustomer(CustomerRole role,
-      StreamObserver<Empty> responseObserver) {
+  public void addAccountForCustomer(CustomerRole role, StreamObserver<Empty> responseObserver) {
     try {
       spannerDao.addAccountForCustomer(
           ByteArray.copyFrom(role.getCustomerId().toByteArray()),
