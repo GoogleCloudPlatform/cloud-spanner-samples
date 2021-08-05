@@ -100,7 +100,7 @@ public class FinAppIT {
   }
 
 
-  static String[] extractStatementsFromSDLFile(String filename) throws FileNotFoundException {
+  private static List<String> extractStatementsFromSDLFile(String filename) throws FileNotFoundException {
     File file = new File(filename);
     BufferedReader reader = new BufferedReader(new FileReader(file));
     StringBuilder builder = new StringBuilder();
@@ -112,6 +112,6 @@ public class FinAppIT {
         }
       }
     }
-    return builder.toString().split(";"); // separate into individual statements
+    return List.of(builder.toString().split(";")); // separate into individual statements
   }
 }
