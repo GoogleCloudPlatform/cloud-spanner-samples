@@ -71,7 +71,7 @@ public class FinAppIT {
   }
 
   @Test
-  public void createAccountTest() throws SpannerDaoException {
+  public void testBasicCreateAccount() throws Exception {
     for (SpannerDaoInterface spannerDao : List.of(daoJava, daoJDBC)) {
       ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
       BigDecimal bigDecimalTwo = new BigDecimal(2);
