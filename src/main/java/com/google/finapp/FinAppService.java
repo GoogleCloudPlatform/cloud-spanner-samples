@@ -19,7 +19,6 @@ import com.google.inject.Inject;
 import com.google.protobuf.Empty;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -73,8 +72,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
   }
 
   @Override
-  public void addAccountForCustomer(CustomerRole role,
-      StreamObserver<Empty> responseObserver) {
+  public void addAccountForCustomer(CustomerRole role, StreamObserver<Empty> responseObserver) {
     try {
       spannerDao.addAccountForCustomer(
           ByteArray.copyFrom(role.getCustomerId().toByteArray()),
