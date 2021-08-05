@@ -29,6 +29,8 @@ service FinApp {
   rpc CreateAccount(Account) returns (.google.protobuf.Empty) {}
 
   rpc AddAccountForCustomer(CustomerRole) returns (.google.protobuf.Empty) {}
+
+  rpc MoveAccountBalance(MoveAccountBalanceRequest) returns (.google.protobuf.Empty) {}
 }
 
 message Customer {
@@ -58,4 +60,10 @@ message CustomerRole {
   optional bytes customer_id = 1;
   optional bytes account_id = 2;
   optional string name = 3;
+}
+
+message MoveAccountBalanceRequest {
+  optional bytes from_account_id = 1;
+  optional bytes to_account_id = 2;
+  optional string amount = 3;
 }

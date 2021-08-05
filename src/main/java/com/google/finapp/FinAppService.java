@@ -19,7 +19,6 @@ import com.google.inject.Inject;
 import com.google.protobuf.Empty;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -81,6 +80,23 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
           ByteArray.copyFrom(role.getAccountId().toByteArray()),
           UuidConverter.getBytesFromUuid(UUID.randomUUID()),
           role.getName());
+    } catch (SpannerDaoException e) {
+      responseObserver.onError(Status.fromThrowable(e).asException());
+      return;
+    }
+    responseObserver.onNext(Empty.getDefaultInstance());
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void moveAccountBalance(MoveAccountBalanceRequest request,
+      StreamObserver<Empty> responseObserver) {
+    try {
+      spannerDao.moveAccountBalance(
+          ByteArray.copyFrom(request.getFromAccountId().toByteArray()),
+          ByteArray.copyFrom(request.getToAccountId().toByteArray()),
+          new BigDecimal(request.getAmount())
+      );
     } catch (SpannerDaoException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
