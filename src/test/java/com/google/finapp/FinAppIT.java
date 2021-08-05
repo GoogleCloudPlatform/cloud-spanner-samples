@@ -16,7 +16,7 @@
 
 package com.google.finapp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static com.google.common.truth.Truth.assertThat;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.Database;
@@ -74,11 +74,12 @@ public class FinAppIT {
   public void createAccountTest() throws SpannerDaoException {
     for (SpannerDaoInterface spannerDao : List.of(daoJava, daoJDBC)) {
       ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+      BigDecimal bigDecimalTwo = new BigDecimal(2);
       spannerDao.createAccount(
           accountId,
           AccountType.UNSPECIFIED_ACCOUNT_TYPE /* = 0*/,
           AccountStatus.UNSPECIFIED_ACCOUNT_STATUS /* = 0*/,
-          new BigDecimal(2));
+          bigDecimalTwo);
       try (ResultSet resultSet =
           databaseClient
               .singleUse()
@@ -88,12 +89,12 @@ public class FinAppIT {
                   Arrays.asList("AccountType", "AccountStatus", "Balance"))) {
         int count = 0;
         while (resultSet.next()) {
-          assertEquals(0, resultSet.getLong(0));
-          assertEquals(0, resultSet.getLong(1));
-          assertEquals(new BigDecimal(2), resultSet.getBigDecimal(2));
+          assertThat(resultSet.getLong(0)).isEqualTo(0);
+          assertThat(resultSet.getLong(1)).isEqualTo(0);
+          assertThat(resultSet.getBigDecimal(2)).isEqualTo(bigDecimalTwo);
           count++;
         }
-        assertEquals(1, count);
+        assertThat(count).isEqualTo(1);
       }
     }
   }
