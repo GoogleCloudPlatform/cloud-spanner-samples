@@ -60,7 +60,8 @@ public class FinAppIT {
         .createTestDatabase(
             extractStatementsFromSDLFile("src/main/java/com/google/finapp/schema.sdl"));
     databaseClient = testHelper.getDatabaseClient(db);
-    if (System.getProperty("SPANNER_USE_JDBC") == null) {
+    if (System.getProperty("SPANNER_USE_JDBC") == null || System.getProperty("SPANNER_USE_JDBC")
+        .equalsIgnoreCase("false")) {
       spannerDao = new SpannerDaoImpl(databaseClient);
     } else {
       spannerDao = new SpannerDaoJDBCImpl(testHelper.getOptions().getProjectId(),
