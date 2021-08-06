@@ -51,14 +51,13 @@ public class FinAppIT {
   private DatabaseClient databaseClient;
   private static Database db;
 
-  @ClassRule
-  public static IntegrationTestEnv env = new IntegrationTestEnv();
+  @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
 
   @BeforeClass
   public static void setup() throws IOException {
     RemoteSpannerHelper testHelper = env.getTestHelper();
-    db = testHelper
-        .createTestDatabase(
+    db =
+        testHelper.createTestDatabase(
             extractStatementsFromSDLFile("src/main/java/com/google/finapp/schema.sdl"));
   }
 
@@ -66,12 +65,15 @@ public class FinAppIT {
   public void setupSpannerDao() {
     RemoteSpannerHelper testHelper = env.getTestHelper();
     databaseClient = testHelper.getDatabaseClient(db);
-    if (System.getProperty("SPANNER_USE_JDBC") == null || System.getProperty("SPANNER_USE_JDBC")
-        .equalsIgnoreCase("false")) {
+    if (System.getProperty("SPANNER_USE_JDBC") == null
+        || System.getProperty("SPANNER_USE_JDBC").equalsIgnoreCase("false")) {
       spannerDao = new SpannerDaoImpl(databaseClient);
     } else {
-      spannerDao = new SpannerDaoJDBCImpl(testHelper.getOptions().getProjectId(),
-          testHelper.getInstanceId().getInstance(), db.getId().getDatabase());
+      spannerDao =
+          new SpannerDaoJDBCImpl(
+              testHelper.getOptions().getProjectId(),
+              testHelper.getInstanceId().getInstance(),
+              db.getId().getDatabase());
     }
   }
 
