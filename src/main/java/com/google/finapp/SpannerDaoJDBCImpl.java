@@ -15,6 +15,7 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
+import com.google.cloud.Timestamp;
 import com.google.inject.Inject;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -160,6 +161,9 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       throw new SpannerDaoException(e);
     }
   }
+
+  public void getRecentTransactionsForAccount(ByteArray accountId, Timestamp sinceTimestamp)
+      throws SpannerDaoException {}
 
   private void updateAccount(byte[] accountId, BigDecimal newBalance, Connection connection)
       throws SQLException {

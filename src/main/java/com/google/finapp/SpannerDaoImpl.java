@@ -15,6 +15,7 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
@@ -148,6 +149,10 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
       throw new SpannerDaoException(e);
     }
   }
+
+  @Override
+  public void getRecentTransactionsForAccount(ByteArray accountId, Timestamp sinceTimestamp)
+      throws SpannerDaoException {}
 
   private ImmutableMap<ByteArray, BigDecimal> readAccountBalances(
       ByteArray fromAccountId, ByteArray toAccountId, TransactionContext transaction) {
