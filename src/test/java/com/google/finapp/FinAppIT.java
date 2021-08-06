@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -46,8 +47,8 @@ import org.junit.experimental.categories.Category;
 @Category(IntegrationTest.class)
 public class FinAppIT {
 
-  private static SpannerDaoInterface spannerDao;
-  private static DatabaseClient databaseClient;
+  private SpannerDaoInterface spannerDao;
+  private DatabaseClient databaseClient;
   private static Database db;
 
   @ClassRule
@@ -59,6 +60,11 @@ public class FinAppIT {
     db = testHelper
         .createTestDatabase(
             extractStatementsFromSDLFile("src/main/java/com/google/finapp/schema.sdl"));
+  }
+
+  @Before
+  public void setupSpannerDao() {
+    RemoteSpannerHelper testHelper = env.getTestHelper();
     databaseClient = testHelper.getDatabaseClient(db);
     if (System.getProperty("SPANNER_USE_JDBC") == null || System.getProperty("SPANNER_USE_JDBC")
         .equalsIgnoreCase("false")) {
