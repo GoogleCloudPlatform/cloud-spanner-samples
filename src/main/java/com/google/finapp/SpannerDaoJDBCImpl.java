@@ -22,6 +22,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Map;
 
 final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
 
@@ -112,7 +113,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     }
   }
 
-  public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
+  public Map<ByteArray, BigDecimal> moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SpannerDaoException {
     if (amount.signum() == -1) {
       throw new IllegalArgumentException(
@@ -146,6 +147,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
             String.format("Account not found: %s", toAccountId.toString()));
       }
       BigDecimal newSourceAmount = sourceAmount.subtract(amount);
+      BigDecimal newDestAmount = destAmount.add(amount);
       if (newSourceAmount.signum() == -1) {
         throw new IllegalArgumentException(
             String.format(
@@ -153,9 +155,10 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
                 sourceAmount.toString(), amount.toString()));
       }
       updateAccount(fromAccountIdArray, newSourceAmount, connection);
-      updateAccount(toAccountIdArray, destAmount.add(amount), connection);
+      updateAccount(toAccountIdArray, newDestAmount, connection);
       insertTransaction(fromAccountIdArray, toAccountIdArray, amount, connection);
       connection.commit();
+      return Map.of(fromAccountId, newSourceAmount, toAccountId, destAmount);
     } catch (SQLException e) {
       throw new SpannerDaoException(e);
     }

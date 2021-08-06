@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import java.math.BigDecimal;
+import java.util.Map;
 
 final class SpannerDaoImpl implements SpannerDaoInterface {
 
@@ -109,12 +110,14 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   }
 
   @Override
-  public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
+  public Map<ByteArray, BigDecimal> moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SpannerDaoException {
     if (amount.signum() == -1) {
       throw new IllegalArgumentException(
           String.format("Amount transferred cannot be negative. amount: %s", amount.toString()));
     }
+    ImmutableMap.Builder<ByteArray, BigDecimal> accountBalancesBuilder = ImmutableMap.builder();
+
     try {
       databaseClient
           .readWriteTransaction()
@@ -125,6 +128,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                     readAccountBalances(fromAccountId, toAccountId, transaction);
 
                 BigDecimal newSourceAmount = accountBalances.get(fromAccountId).subtract(amount);
+                BigDecimal newDestAmount = accountBalances.get(toAccountId).add(amount);
 
                 if (newSourceAmount.signum() == -1) {
                   throw new IllegalArgumentException(
@@ -137,13 +141,17 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                     ImmutableList.of(
                         buildUpdateAccountMutation(fromAccountId, newSourceAmount),
                         buildUpdateAccountMutation(
-                            toAccountId, accountBalances.get(toAccountId).add(amount)),
+                            toAccountId, newDestAmount),
                         buildInsertTransactionHistoryMutation(
                             fromAccountId, amount, /* isCredit= */ true),
                         buildInsertTransactionHistoryMutation(
                             toAccountId, amount, /* isCredit= */ false)));
+
+                accountBalancesBuilder.put(fromAccountId, newSourceAmount);
+                accountBalancesBuilder.put(toAccountId, newDestAmount);
                 return null;
               });
+      return accountBalancesBuilder.build();
     } catch (SpannerException e) {
       throw new SpannerDaoException(e);
     }

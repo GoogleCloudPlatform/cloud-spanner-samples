@@ -79,3 +79,8 @@ message MoveAccountBalanceRequest {
   optional bytes to_account_id = 2;
   optional string amount = 3;
 }
+
+message MoveAccountBalanceResponse {
+  optional string from_account_id_balance = 1;
+  optional string to_account_id_balance = 2;
+}
