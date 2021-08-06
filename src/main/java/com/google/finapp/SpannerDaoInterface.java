@@ -34,9 +34,7 @@ public interface SpannerDaoInterface {
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerDaoException;
 
-  /**
-   * Inserts a new row to the CustomerRole table for a Customer in the database.
-   */
+  /** Inserts a new row to the CustomerRole table for a Customer in the database. */
   void createCustomerRole(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
       throws SpannerDaoException;

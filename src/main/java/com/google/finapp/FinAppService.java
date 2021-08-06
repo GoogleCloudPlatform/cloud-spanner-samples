@@ -32,27 +32,26 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
   }
 
   @Override
-  public void createCustomer(CreateCustomerRequest customer,
-      StreamObserver<CreateCustomerResponse> responseObserver) {
+  public void createCustomer(
+      CreateCustomerRequest customer, StreamObserver<CreateCustomerResponse> responseObserver) {
     ByteArray customerId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     try {
-      spannerDao.createCustomer(
-          customerId,
-          customer.getName(),
-          customer.getAddress());
+      spannerDao.createCustomer(customerId, customer.getName(), customer.getAddress());
     } catch (SpannerDaoException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
-    CreateCustomerResponse response = CreateCustomerResponse.newBuilder()
-        .setCustomerId(ByteString.copyFrom(customerId.toByteArray())).build();
+    CreateCustomerResponse response =
+        CreateCustomerResponse.newBuilder()
+            .setCustomerId(ByteString.copyFrom(customerId.toByteArray()))
+            .build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 
   @Override
-  public void createAccount(CreateAccountRequest account,
-      StreamObserver<CreateAccountResponse> responseObserver) {
+  public void createAccount(
+      CreateAccountRequest account, StreamObserver<CreateAccountResponse> responseObserver) {
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     try {
       spannerDao.createAccount(
@@ -73,15 +72,17 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
               .asException());
       return;
     }
-    CreateAccountResponse response = CreateAccountResponse.newBuilder()
-        .setAccountId(ByteString.copyFrom(accountId.toByteArray())).build();
+    CreateAccountResponse response =
+        CreateAccountResponse.newBuilder()
+            .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
+            .build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 
   @Override
-  public void createCustomerRole(CreateCustomerRoleRequest role,
-      StreamObserver<CreateCustomerRoleResponse> responseObserver) {
+  public void createCustomerRole(
+      CreateCustomerRoleRequest role, StreamObserver<CreateCustomerRoleResponse> responseObserver) {
     ByteArray roleId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     try {
       spannerDao.createCustomerRole(
@@ -93,13 +94,15 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
-    CreateCustomerRoleResponse response = CreateCustomerRoleResponse.newBuilder()
-        .setRoleId(ByteString.copyFrom(roleId.toByteArray())).build();
+    CreateCustomerRoleResponse response =
+        CreateCustomerRoleResponse.newBuilder()
+            .setRoleId(ByteString.copyFrom(roleId.toByteArray()))
+            .build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 
-  private static AccountType toStorageAccountType(Account.Type apiAccountType) {
+  private static AccountType toStorageAccountType(CreateAccountRequest.Type apiAccountType) {
     switch (apiAccountType) {
       case CHECKING:
         return AccountType.CHECKING;
@@ -110,7 +113,8 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     }
   }
 
-  private static AccountStatus toStorageAccountStatus(Account.Status apiAccountStatus) {
+  private static AccountStatus toStorageAccountStatus(
+      CreateAccountRequest.Status apiAccountStatus) {
     switch (apiAccountStatus) {
       case ACTIVE:
         return AccountStatus.ACTIVE;
