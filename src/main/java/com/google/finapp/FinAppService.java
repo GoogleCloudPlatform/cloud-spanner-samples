@@ -88,14 +88,13 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
   }
 
   @Override
-  public void moveAccountBalance(MoveAccountBalanceRequest request,
-      StreamObserver<Empty> responseObserver) {
+  public void moveAccountBalance(
+      MoveAccountBalanceRequest request, StreamObserver<Empty> responseObserver) {
     try {
       spannerDao.moveAccountBalance(
           ByteArray.copyFrom(request.getFromAccountId().toByteArray()),
           ByteArray.copyFrom(request.getToAccountId().toByteArray()),
-          new BigDecimal(request.getAmount())
-      );
+          new BigDecimal(request.getAmount()));
     } catch (SpannerDaoException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
