@@ -21,6 +21,7 @@ import com.google.protobuf.Empty;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.UUID;
 
 final class FinAppService extends FinAppGrpc.FinAppImplBase {
@@ -106,15 +107,22 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
   @Override
   public void moveAccountBalance(
       MoveAccountBalanceRequest request, StreamObserver<Empty> responseObserver) {
+    Map<ByteArray, BigDecimal> accountBalances;
+    ByteArray fromAccountId = ByteArray.copyFrom(request.getFromAccountId().toByteArray());
+    ByteArray toAccountId = ByteArray.copyFrom(request.getToAccountId().toByteArray());
     try {
-      spannerDao.moveAccountBalance(
-          ByteArray.copyFrom(request.getFromAccountId().toByteArray()),
-          ByteArray.copyFrom(request.getToAccountId().toByteArray()),
-          new BigDecimal(request.getAmount()));
+      accountBalances =
+          spannerDao.moveAccountBalance(
+              fromAccountId, toAccountId, new BigDecimal(request.getAmount()));
     } catch (SpannerDaoException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
+    MoveAccountBalanceResponse response =
+        MoveAccountBalanceResponse.newBuilder()
+            .setFromAccountIdBalance(accountBalances.get(fromAccountId).toString())
+            .setToAccountIdBalance(accountBalances.get(toAccountId).toString())
+            .build();
     responseObserver.onNext(Empty.getDefaultInstance());
     responseObserver.onCompleted();
   }

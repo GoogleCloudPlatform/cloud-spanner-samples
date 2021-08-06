@@ -110,7 +110,8 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   }
 
   @Override
-  public Map<ByteArray, BigDecimal> moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
+  public Map<ByteArray, BigDecimal> moveAccountBalance(
+      ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SpannerDaoException {
     if (amount.signum() == -1) {
       throw new IllegalArgumentException(
@@ -140,8 +141,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                 transaction.buffer(
                     ImmutableList.of(
                         buildUpdateAccountMutation(fromAccountId, newSourceAmount),
-                        buildUpdateAccountMutation(
-                            toAccountId, newDestAmount),
+                        buildUpdateAccountMutation(toAccountId, newDestAmount),
                         buildInsertTransactionHistoryMutation(
                             fromAccountId, amount, /* isCredit= */ true),
                         buildInsertTransactionHistoryMutation(

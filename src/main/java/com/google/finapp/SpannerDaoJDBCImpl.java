@@ -113,7 +113,8 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     }
   }
 
-  public Map<ByteArray, BigDecimal> moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
+  public Map<ByteArray, BigDecimal> moveAccountBalance(
+      ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SpannerDaoException {
     if (amount.signum() == -1) {
       throw new IllegalArgumentException(
