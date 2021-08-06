@@ -92,7 +92,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     }
   }
 
-  public void addAccountForCustomer(
+  public void createCustomerRole(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
       throws SpannerDaoException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
