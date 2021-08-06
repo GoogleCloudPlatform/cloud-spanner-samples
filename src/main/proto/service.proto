@@ -16,8 +16,6 @@ syntax = "proto2";
 
 package com.google.finapp;
 
-import "google/protobuf/empty.proto";
-
 option java_multiple_files = true;
 option java_package = "com.google.finapp";
 option java_outer_classname = "ServiceProto";
@@ -30,7 +28,7 @@ service FinApp {
 
   rpc CreateCustomerRole(CreateCustomerRoleRequest) returns (CreateCustomerRoleResponse) {}
 
-  rpc MoveAccountBalance(MoveAccountBalanceRequest) returns (.google.protobuf.Empty) {}
+  rpc MoveAccountBalance(MoveAccountBalanceRequest) returns (MoveAccountBalanceResponse) {}
 }
 
 message CreateCustomerRequest {

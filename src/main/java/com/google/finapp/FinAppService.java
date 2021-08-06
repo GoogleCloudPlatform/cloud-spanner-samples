@@ -17,7 +17,6 @@ package com.google.finapp;
 import com.google.cloud.ByteArray;
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.Empty;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import java.math.BigDecimal;
@@ -106,7 +105,8 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
 
   @Override
   public void moveAccountBalance(
-      MoveAccountBalanceRequest request, StreamObserver<Empty> responseObserver) {
+      MoveAccountBalanceRequest request,
+      StreamObserver<MoveAccountBalanceResponse> responseObserver) {
     Map<ByteArray, BigDecimal> accountBalances;
     ByteArray fromAccountId = ByteArray.copyFrom(request.getFromAccountId().toByteArray());
     ByteArray toAccountId = ByteArray.copyFrom(request.getToAccountId().toByteArray());
@@ -123,7 +123,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
             .setFromAccountIdBalance(accountBalances.get(fromAccountId).toString())
             .setToAccountIdBalance(accountBalances.get(toAccountId).toString())
             .build();
-    responseObserver.onNext(Empty.getDefaultInstance());
+    responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 
