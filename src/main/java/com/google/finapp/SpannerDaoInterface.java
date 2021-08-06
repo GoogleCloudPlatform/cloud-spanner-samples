@@ -35,7 +35,7 @@ public interface SpannerDaoInterface {
       throws SpannerDaoException;
 
   /** Inserts a new row to the CustomerRole table for a Customer in the database. */
-  void addAccountForCustomer(
+  void createCustomerRole(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
       throws SpannerDaoException;
 

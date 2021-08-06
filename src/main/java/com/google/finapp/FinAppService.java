@@ -16,7 +16,7 @@ package com.google.finapp;
 
 import com.google.cloud.ByteArray;
 import com.google.inject.Inject;
-import com.google.protobuf.Empty;
+import com.google.protobuf.ByteString;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import java.math.BigDecimal;
@@ -32,25 +32,30 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
   }
 
   @Override
-  public void createCustomer(Customer customer, StreamObserver<Empty> responseObserver) {
+  public void createCustomer(
+      CreateCustomerRequest customer, StreamObserver<CreateCustomerResponse> responseObserver) {
+    ByteArray customerId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     try {
-      spannerDao.createCustomer(
-          UuidConverter.getBytesFromUuid(UUID.randomUUID()),
-          customer.getName(),
-          customer.getAddress());
+      spannerDao.createCustomer(customerId, customer.getName(), customer.getAddress());
     } catch (SpannerDaoException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
-    responseObserver.onNext(Empty.getDefaultInstance());
+    CreateCustomerResponse response =
+        CreateCustomerResponse.newBuilder()
+            .setCustomerId(ByteString.copyFrom(customerId.toByteArray()))
+            .build();
+    responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 
   @Override
-  public void createAccount(Account account, StreamObserver<Empty> responseObserver) {
+  public void createAccount(
+      CreateAccountRequest account, StreamObserver<CreateAccountResponse> responseObserver) {
+    ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     try {
       spannerDao.createAccount(
-          UuidConverter.getBytesFromUuid(UUID.randomUUID()),
+          accountId,
           toStorageAccountType(account.getType()),
           toStorageAccountStatus(account.getStatus()),
           new BigDecimal(account.getBalance()));
@@ -67,27 +72,37 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
               .asException());
       return;
     }
-    responseObserver.onNext(Empty.getDefaultInstance());
+    CreateAccountResponse response =
+        CreateAccountResponse.newBuilder()
+            .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
+            .build();
+    responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 
   @Override
-  public void addAccountForCustomer(CustomerRole role, StreamObserver<Empty> responseObserver) {
+  public void createCustomerRole(
+      CreateCustomerRoleRequest role, StreamObserver<CreateCustomerRoleResponse> responseObserver) {
+    ByteArray roleId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     try {
-      spannerDao.addAccountForCustomer(
+      spannerDao.createCustomerRole(
           ByteArray.copyFrom(role.getCustomerId().toByteArray()),
           ByteArray.copyFrom(role.getAccountId().toByteArray()),
-          UuidConverter.getBytesFromUuid(UUID.randomUUID()),
+          roleId,
           role.getName());
     } catch (SpannerDaoException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
-    responseObserver.onNext(Empty.getDefaultInstance());
+    CreateCustomerRoleResponse response =
+        CreateCustomerRoleResponse.newBuilder()
+            .setRoleId(ByteString.copyFrom(roleId.toByteArray()))
+            .build();
+    responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
 
-  private static AccountType toStorageAccountType(Account.Type apiAccountType) {
+  private static AccountType toStorageAccountType(CreateAccountRequest.Type apiAccountType) {
     switch (apiAccountType) {
       case CHECKING:
         return AccountType.CHECKING;
@@ -98,7 +113,8 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     }
   }
 
-  private static AccountStatus toStorageAccountStatus(Account.Status apiAccountStatus) {
+  private static AccountStatus toStorageAccountStatus(
+      CreateAccountRequest.Status apiAccountStatus) {
     switch (apiAccountStatus) {
       case ACTIVE:
         return AccountStatus.ACTIVE;

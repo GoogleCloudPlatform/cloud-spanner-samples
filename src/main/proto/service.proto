@@ -16,27 +16,29 @@ syntax = "proto2";
 
 package com.google.finapp;
 
-import "google/protobuf/empty.proto";
-
 option java_multiple_files = true;
 option java_package = "com.google.finapp";
 option java_outer_classname = "ServiceProto";
 
 service FinApp {
 
-  rpc CreateCustomer(Customer) returns (.google.protobuf.Empty) {}
+  rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse) {}
 
-  rpc CreateAccount(Account) returns (.google.protobuf.Empty) {}
+  rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse) {}
 
-  rpc AddAccountForCustomer(CustomerRole) returns (.google.protobuf.Empty) {}
+  rpc CreateCustomerRole(CreateCustomerRoleRequest) returns (CreateCustomerRoleResponse) {}
 }
 
-message Customer {
+message CreateCustomerRequest {
   optional string name = 1;
   optional string address = 2;
 }
 
-message Account {
+message CreateCustomerResponse {
+  optional bytes customer_id = 1;
+}
+
+message CreateAccountRequest {
   optional string balance = 1;
 
   enum Type {
@@ -54,8 +56,16 @@ message Account {
   optional Status status = 3;
 }
 
-message CustomerRole {
+message CreateAccountResponse {
+  optional bytes account_id = 1;
+}
+
+message CreateCustomerRoleRequest {
   optional bytes customer_id = 1;
   optional bytes account_id = 2;
   optional string name = 3;
+}
+
+message CreateCustomerRoleResponse {
+  optional bytes role_id = 1;
 }
