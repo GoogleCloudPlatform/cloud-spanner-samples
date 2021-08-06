@@ -15,6 +15,7 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
+import com.google.cloud.Timestamp;
 import java.math.BigDecimal;
 
 /** The SpannerDaoInterface defines the methods to be used by its separate implementations. */
@@ -50,5 +51,13 @@ public interface SpannerDaoInterface {
    *     to fromAccountId's account balance, must be non-negative
    */
   void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
+      throws SpannerDaoException;
+
+  /**
+   * Uses
+   *
+   * @param sinceTimestamp
+   */
+  void getRecentTransactionsForAccount(ByteArray accountId, Timestamp sinceTimestamp)
       throws SpannerDaoException;
 }
