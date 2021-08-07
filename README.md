@@ -41,3 +41,4 @@ for client libraries to work.
 
 1. Set up the emulator as described in #1 above.
 2. Run `mvn integration-test`.
+> To run the tests using the JDBC implementation of the application instead of the Java client implementation, run `mvn integration-test -DSPANNER_USE_JDBC=true`
