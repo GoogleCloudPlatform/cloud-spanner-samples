@@ -101,12 +101,12 @@ public class FinAppIT {
   @Test
   public void createAccount_createsSingleValidAccount() throws Exception {
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
-    BigDecimal bigDecimalTwo = new BigDecimal(2);
+    BigDecimal amount = new BigDecimal(2);
     spannerDao.createAccount(
         accountId,
         AccountType.UNSPECIFIED_ACCOUNT_TYPE /* = 0*/,
         AccountStatus.UNSPECIFIED_ACCOUNT_STATUS /* = 0*/,
-        bigDecimalTwo);
+        amount);
     try (ResultSet resultSet =
         databaseClient
             .singleUse()
@@ -118,7 +118,7 @@ public class FinAppIT {
       while (resultSet.next()) {
         assertThat(resultSet.getLong(0)).isEqualTo(0);
         assertThat(resultSet.getLong(1)).isEqualTo(0);
-        assertThat(resultSet.getBigDecimal(2)).isEqualTo(bigDecimalTwo);
+        assertThat(resultSet.getBigDecimal(2)).isEqualTo(amount);
         count++;
       }
       assertThat(count).isEqualTo(1);
