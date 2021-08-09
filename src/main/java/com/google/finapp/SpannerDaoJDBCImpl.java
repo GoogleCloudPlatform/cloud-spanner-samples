@@ -152,7 +152,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       if (newSourceAmount.signum() == -1) {
         throw new IllegalArgumentException(
             String.format(
-                "Account balance cannot be negative. original account balance: %s, amount transferred: %s",
+                "Cannot transfer amount greater than original balance. fromAccount balance: %s, amount: %s",
                 sourceAmount.toString(), amount.toString()));
       }
       updateAccount(fromAccountIdArray, newSourceAmount, connection);
