@@ -133,7 +133,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                 if (newSourceAmount.signum() == -1) {
                   throw new IllegalArgumentException(
                       String.format(
-                          "Account balance cannot be negative. original account balance: %s, amount transferred: %s",
+                          "Cannot transfer amount greater than original balance. fromAccount balance: %s, amount: %s",
                           accountBalances.get(fromAccountId).toString(), amount.toString()));
                 }
 
@@ -152,6 +152,11 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
               });
       return accountBalancesBuilder.build();
     } catch (SpannerException e) {
+      // filter for IllegalArgumentExceptions thrown in lambda function above
+      Throwable cause = e.getCause();
+      if (cause instanceof IllegalArgumentException) {
+        throw new IllegalArgumentException(cause.getMessage());
+      }
       throw new SpannerDaoException(e);
     }
   }
