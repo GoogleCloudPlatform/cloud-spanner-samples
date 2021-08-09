@@ -15,8 +15,8 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
+import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
-import java.util.Map;
 
 /** The SpannerDaoInterface defines the methods to be used by its separate implementations. */
 public interface SpannerDaoInterface {
@@ -48,8 +48,8 @@ public interface SpannerDaoInterface {
    * @param fromAccountId unique account id where amount will be transferred from
    * @param toAccountId unique account id where amount will be transferred to
    * @param amount amount transferred from fromAccountId to toAccountId, must be less than or equal
-   *     to fromAccountId's account balance, must be non-negative
+   * @return
    */
-  Map<ByteArray, BigDecimal> moveAccountBalance(
+  ImmutableMap<ByteArray, BigDecimal> moveAccountBalance(
       ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws SpannerDaoException;
 }

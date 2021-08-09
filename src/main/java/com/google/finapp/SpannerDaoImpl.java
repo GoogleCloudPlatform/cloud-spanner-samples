@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import java.math.BigDecimal;
-import java.util.Map;
 
 final class SpannerDaoImpl implements SpannerDaoInterface {
 
@@ -110,7 +109,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   }
 
   @Override
-  public Map<ByteArray, BigDecimal> moveAccountBalance(
+  public ImmutableMap<ByteArray, BigDecimal> moveAccountBalance(
       ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SpannerDaoException {
     if (amount.signum() == -1) {

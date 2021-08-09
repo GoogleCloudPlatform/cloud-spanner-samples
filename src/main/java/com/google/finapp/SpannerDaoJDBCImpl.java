@@ -15,6 +15,7 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -22,7 +23,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Map;
 
 final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
 
@@ -113,7 +113,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     }
   }
 
-  public Map<ByteArray, BigDecimal> moveAccountBalance(
+  public ImmutableMap<ByteArray, BigDecimal> moveAccountBalance(
       ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SpannerDaoException {
     if (amount.signum() == -1) {
@@ -159,7 +159,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       updateAccount(toAccountIdArray, newDestAmount, connection);
       insertTransaction(fromAccountIdArray, toAccountIdArray, amount, connection);
       connection.commit();
-      return Map.of(fromAccountId, newSourceAmount, toAccountId, destAmount);
+      return ImmutableMap.of(fromAccountId, newSourceAmount, toAccountId, destAmount);
     } catch (SQLException e) {
       throw new SpannerDaoException(e);
     }
