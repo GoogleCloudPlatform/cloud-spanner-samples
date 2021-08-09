@@ -22,6 +22,7 @@ import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.Value;
 import com.google.common.collect.ImmutableList;
@@ -151,8 +152,26 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   }
 
   @Override
-  public void getRecentTransactionsForAccount(ByteArray accountId, Timestamp sinceTimestamp)
-      throws SpannerDaoException {}
+  public ResultSet getRecentTransactionsForAccount(
+      ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp)
+      throws SpannerDaoException {
+    try {
+      ResultSet resultSet =
+          databaseClient
+              .singleUse()
+              .executeQuery(
+                  Statement.of(
+                      String.format(
+                          "SELECT AccountId, EventTimestamp "
+                              + "FROM TransactionHistory "
+                              + "WHERE AccountId = %s AND %s < EventTimestamp < %s "
+                              + "ORDER BY EventTimestamp",
+                          accountId, beginTimestamp, endTimestamp)));
+      return resultSet;
+    } catch (SpannerException e) {
+      throw new SpannerDaoException(e);
+    }
+  }
 
   private ImmutableMap<ByteArray, BigDecimal> readAccountBalances(
       ByteArray fromAccountId, ByteArray toAccountId, TransactionContext transaction) {
