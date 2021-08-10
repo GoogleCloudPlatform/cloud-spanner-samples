@@ -161,6 +161,9 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     }
   }
 
+  public void createTransactionForAccount(ByteArray accountId, BigDecimal amount, boolean isCredit)
+      throws SpannerDaoException {}
+
   private void updateAccount(byte[] accountId, BigDecimal newBalance, Connection connection)
       throws SQLException {
     try (PreparedStatement preparedStatement =

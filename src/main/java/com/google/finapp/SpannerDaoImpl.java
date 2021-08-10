@@ -149,6 +149,10 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
     }
   }
 
+  @Override
+  public void createTransactionForAccount(ByteArray accountId, BigDecimal amount, boolean isCredit)
+      throws SpannerDaoException {}
+
   private ImmutableMap<ByteArray, BigDecimal> readAccountBalances(
       ByteArray fromAccountId, ByteArray toAccountId, TransactionContext transaction) {
     ResultSet resultSet =
