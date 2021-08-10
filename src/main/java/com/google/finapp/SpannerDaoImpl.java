@@ -151,7 +151,59 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
 
   @Override
   public void createTransactionForAccount(ByteArray accountId, BigDecimal amount, boolean isCredit)
-      throws SpannerDaoException {}
+      throws SpannerDaoException {
+    if (amount.signum() == -1) {
+      throw new IllegalArgumentException(
+          String.format("Amount transferred cannot be negative. amount: %s", amount.toString()));
+    }
+    try {
+      databaseClient
+          .readWriteTransaction()
+          .run(
+              transaction -> {
+                // Get account balances.
+                ResultSet resultSet =
+                    transaction.read(
+                        "Account",
+                        KeySet.newBuilder().addKey(Key.of(accountId)).build(),
+                        ImmutableList.of("Balance"));
+                BigDecimal oldBalance = null;
+                while (resultSet.next()) {
+                  oldBalance = resultSet.getBigDecimal("Balance");
+                }
+                if (oldBalance == null) {
+                  throw new IllegalArgumentException(
+                      String.format("Account not found: %s", accountId.toString()));
+                }
+                BigDecimal newBalance;
+                if (isCredit) {
+                  newBalance = oldBalance.subtract(amount);
+                } else {
+                  newBalance = oldBalance.add(amount);
+                }
+
+                if (newBalance.signum() == -1) {
+                  throw new IllegalArgumentException(
+                      String.format(
+                          "Account balance cannot be negative. original account balance: %s, amount transferred: %s",
+                          oldBalance.toString(), amount.toString()));
+                }
+
+                transaction.buffer(
+                    ImmutableList.of(
+                        buildUpdateAccountMutation(accountId, newBalance),
+                        buildInsertTransactionHistoryMutation(accountId, amount, isCredit)));
+                return null;
+              });
+    } catch (SpannerException e) {
+      // filter for IllegalArgumentExceptions thrown in lambda function above
+      Throwable cause = e.getCause();
+      if (cause instanceof IllegalArgumentException) {
+        throw new IllegalArgumentException(cause.getMessage());
+      }
+      throw new SpannerDaoException(e);
+    }
+  }
 
   private ImmutableMap<ByteArray, BigDecimal> readAccountBalances(
       ByteArray fromAccountId, ByteArray toAccountId, TransactionContext transaction) {
