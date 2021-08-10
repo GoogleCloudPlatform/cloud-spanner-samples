@@ -69,3 +69,26 @@ message CreateCustomerRoleRequest {
 message CreateCustomerRoleResponse {
   optional bytes role_id = 1;
 }
+
+message Timestamp {
+  required int64 seconds = 1;
+  required int32 nanos = 2;
+}
+
+message TransactionEntry {
+  optional bytes account_id = 1;
+  optional Timestamp event_timestamp = 2;
+  optional bool is_credit = 3;
+  optional string amount = 4;
+  optional string description = 5;
+}
+
+message GetRecentTransactionsForAccountRequest {
+  optional bytes account_id = 1;
+  optional Timestamp begin_timestamp = 2;
+  optional Timestamp end_timestamp = 3;
+}
+
+message GetRecentTransactionsForAccountResponse {
+  repeated TransactionEntry transaction_entry = 1;
+}
