@@ -154,7 +154,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       }
       updateAccount(fromAccountIdArray, newSourceAmount, connection);
       updateAccount(toAccountIdArray, destAmount.add(amount), connection);
-      insertTransaction(fromAccountIdArray, toAccountIdArray, amount, connection);
+      insertTransferTransactions(fromAccountIdArray, toAccountIdArray, amount, connection);
       connection.commit();
     } catch (SQLException e) {
       throw new SpannerDaoException(e);
@@ -162,7 +162,45 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
   }
 
   public void createTransactionForAccount(ByteArray accountId, BigDecimal amount, boolean isCredit)
-      throws SpannerDaoException {}
+      throws SpannerDaoException {
+    if (amount.signum() == -1) {
+      throw new IllegalArgumentException(
+          String.format("Amount transferred cannot be negative. amount: %s", amount.toString()));
+    }
+    try (Connection connection = DriverManager.getConnection(this.connectionUrl);
+        PreparedStatement readStatement =
+            connection.prepareStatement("SELECT Balance FROM Account WHERE AccountId = ?")) {
+      connection.setAutoCommit(false);
+      byte[] accountIdArray = accountId.toByteArray();
+      readStatement.setBytes(1, accountIdArray);
+      java.sql.ResultSet resultSet = readStatement.executeQuery();
+      BigDecimal oldBalance = null;
+      while (resultSet.next()) {
+        oldBalance = resultSet.getBigDecimal("Balance");
+      }
+      if (oldBalance == null) {
+        throw new IllegalArgumentException(
+            String.format("Account not found: %s", accountId.toString()));
+      }
+      BigDecimal newBalance;
+      if (isCredit) {
+        newBalance = oldBalance.subtract(amount);
+      } else {
+        newBalance = oldBalance.add(amount);
+      }
+      if (newBalance.signum() == -1) {
+        throw new IllegalArgumentException(
+            String.format(
+                "Account balance cannot be negative. original account balance: %s, amount transferred: %s",
+                oldBalance.toString(), amount.toString()));
+      }
+      updateAccount(accountIdArray, newBalance, connection);
+      insertTransaction(accountIdArray, amount, isCredit, connection);
+      connection.commit();
+    } catch (SQLException e) {
+      throw new SpannerDaoException(e);
+    }
+  }
 
   private void updateAccount(byte[] accountId, BigDecimal newBalance, Connection connection)
       throws SQLException {
@@ -174,7 +212,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     }
   }
 
-  private void insertTransaction(
+  private void insertTransferTransactions(
       byte[] fromAccountId, byte[] toAccountId, BigDecimal amount, Connection connection)
       throws SQLException {
     try (PreparedStatement preparedStatement =
@@ -188,6 +226,20 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       preparedStatement.setBytes(4, toAccountId);
       preparedStatement.setBigDecimal(5, amount);
       preparedStatement.setBoolean(6, /* isCredit = */ false);
+      preparedStatement.executeUpdate();
+    }
+  }
+
+  private void insertTransaction(
+      byte[] accountId, BigDecimal amount, boolean isCredit, Connection connection)
+      throws SQLException {
+    try (PreparedStatement preparedStatement =
+        connection.prepareStatement(
+            "INSERT INTO TransactionHistory (AccountId, Amount, IsCredit, EventTimestamp)"
+                + "VALUES (?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
+      preparedStatement.setBytes(1, accountId);
+      preparedStatement.setBigDecimal(2, amount);
+      preparedStatement.setBoolean(3, isCredit);
       preparedStatement.executeUpdate();
     }
   }
