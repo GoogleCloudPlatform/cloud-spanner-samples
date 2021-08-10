@@ -25,8 +25,11 @@ import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
+import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
+import com.google.common.collect.ImmutableList;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -122,6 +125,64 @@ public class FinAppIT {
         count++;
       }
       assertThat(count).isEqualTo(1);
+    }
+  }
+
+  @Test
+  public void moveAccountBalance_validTransfer() throws Exception {
+    ByteArray fromAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    ByteArray toAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal fromAccountBalance = new BigDecimal(20);
+    BigDecimal toAccountBalance = new BigDecimal(0);
+    BigDecimal amount = new BigDecimal(10);
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(fromAccountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(fromAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build(),
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(toAccountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(toAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build()));
+    spannerDao.moveAccountBalance(fromAccountId, toAccountId, amount);
+    try (ResultSet resultSet =
+        databaseClient
+            .singleUse()
+            .read(
+                "Account",
+                KeySet.newBuilder()
+                    .addKey(Key.of(fromAccountId))
+                    .addKey(Key.of(toAccountId))
+                    .build(),
+                Arrays.asList("AccountId", "Balance"))) {
+      int count = 0;
+      while (resultSet.next()) {
+        if (resultSet.getBytes(0).equals(fromAccountId)) {
+          assertThat(resultSet.getBigDecimal(1)).isEqualTo(fromAccountBalance.subtract(amount));
+          count++;
+        } else if (resultSet.getBytes(0).equals(toAccountId)) {
+          assertThat(resultSet.getBigDecimal(1)).isEqualTo(toAccountBalance.add(amount));
+          count++;
+        }
+      }
+      assertThat(count).isEqualTo(2);
     }
   }
 }
