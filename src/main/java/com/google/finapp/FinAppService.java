@@ -15,12 +15,12 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import java.math.BigDecimal;
-import java.util.Map;
 import java.util.UUID;
 
 final class FinAppService extends FinAppGrpc.FinAppImplBase {
@@ -107,7 +107,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
   public void moveAccountBalance(
       MoveAccountBalanceRequest request,
       StreamObserver<MoveAccountBalanceResponse> responseObserver) {
-    Map<ByteArray, BigDecimal> accountBalances;
+    ImmutableMap<ByteArray, BigDecimal> accountBalances;
     ByteArray fromAccountId = ByteArray.copyFrom(request.getFromAccountId().toByteArray());
     ByteArray toAccountId = ByteArray.copyFrom(request.getToAccountId().toByteArray());
     try {
