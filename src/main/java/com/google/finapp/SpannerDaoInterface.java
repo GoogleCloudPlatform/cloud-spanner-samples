@@ -57,7 +57,7 @@ public interface SpannerDaoInterface {
    * adding the amount if not isCredit. Adds the transaction to the TransactionHistory table.
    *
    * @param amount amount added to or removed from the account, must be less than or equal to the
-   *     account's balance, must be non-negative
+   *     account's balance if isCredit, must be non-negative
    * @param isCredit boolean for if the amount should be removed from the account
    * @return new balance of the account after the transaction
    */
