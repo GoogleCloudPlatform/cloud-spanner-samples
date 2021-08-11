@@ -159,7 +159,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       updateAccount(toAccountIdArray, newDestAmount, connection);
       insertTransaction(fromAccountIdArray, toAccountIdArray, amount, connection);
       connection.commit();
-      return ImmutableMap.of(fromAccountId, newSourceAmount, toAccountId, destAmount);
+      return ImmutableMap.of(fromAccountId, newSourceAmount, toAccountId, newDestAmount);
     } catch (SQLException e) {
       throw new SpannerDaoException(e);
     }

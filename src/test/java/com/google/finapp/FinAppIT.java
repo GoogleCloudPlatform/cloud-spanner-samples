@@ -31,6 +31,7 @@ import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -162,7 +163,7 @@ public class FinAppIT {
                 .set("CreationTimestamp")
                 .to(Value.COMMIT_TIMESTAMP)
                 .build()));
-    spannerDao.moveAccountBalance(fromAccountId, toAccountId, amount);
+    ImmutableMap result = spannerDao.moveAccountBalance(fromAccountId, toAccountId, amount);
     try (ResultSet resultSet =
         databaseClient
             .singleUse()
@@ -184,6 +185,9 @@ public class FinAppIT {
         }
       }
       assertThat(count).isEqualTo(2);
+      assertThat(result.keySet()).containsExactly(fromAccountId, toAccountId);
+      assertThat(result.get(fromAccountId)).isEqualTo(fromAccountBalance.subtract(amount));
+      assertThat(result.get(toAccountId)).isEqualTo(toAccountBalance.add(amount));
     }
   }
 
