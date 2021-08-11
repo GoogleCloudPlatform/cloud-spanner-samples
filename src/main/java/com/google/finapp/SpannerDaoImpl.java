@@ -165,7 +165,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                 ResultSet resultSet =
                     transaction.read(
                         "Account",
-                        KeySet.newBuilder().addKey(Key.of(accountId)).build(),
+                        KeySet.singleKey(Key.of(accountId)),
                         ImmutableList.of("Balance"));
                 BigDecimal oldBalance = null;
                 while (resultSet.next()) {
