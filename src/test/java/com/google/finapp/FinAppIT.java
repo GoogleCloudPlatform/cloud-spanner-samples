@@ -17,6 +17,7 @@
 package com.google.finapp;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.Database;
@@ -227,5 +228,55 @@ public class FinAppIT {
       }
       assertThat(count).isEqualTo(2);
     }
+  }
+
+  @Test
+  public void createTransactionForAccount_negativeAmount_throwsException() throws Exception {
+    ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal oldAccountBalance = new BigDecimal(20);
+    BigDecimal amount = new BigDecimal(-10);
+    boolean isCredit = false;
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(accountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(oldAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build()));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> spannerDao.createTransactionForAccount(accountId, amount, isCredit));
+  }
+
+  @Test
+  public void createTransactionForAccount_tooLargeAmount_throwsException() throws Exception {
+    ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal oldAccountBalance = new BigDecimal(20);
+    BigDecimal amount = new BigDecimal(30);
+    boolean isCredit = true;
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(accountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(oldAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build()));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> spannerDao.createTransactionForAccount(accountId, amount, isCredit));
   }
 }
