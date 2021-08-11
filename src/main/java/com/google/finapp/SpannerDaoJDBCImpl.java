@@ -161,8 +161,8 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     }
   }
 
-  public void createTransactionForAccount(ByteArray accountId, BigDecimal amount, boolean isCredit)
-      throws SpannerDaoException {
+  public BigDecimal createTransactionForAccount(
+      ByteArray accountId, BigDecimal amount, boolean isCredit) throws SpannerDaoException {
     if (amount.signum() == -1) {
       throw new IllegalArgumentException(
           String.format("Amount transferred cannot be negative. amount: %s", amount.toString()));
@@ -197,6 +197,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       updateAccount(accountIdArray, newBalance, connection);
       insertTransaction(accountIdArray, amount, isCredit, connection);
       connection.commit();
+      return newBalance;
     } catch (SQLException e) {
       throw new SpannerDaoException(e);
     }

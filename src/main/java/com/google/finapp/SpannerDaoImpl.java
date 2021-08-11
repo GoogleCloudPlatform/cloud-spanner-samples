@@ -14,6 +14,7 @@
 
 package com.google.finapp;
 
+
 import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
@@ -27,6 +28,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 final class SpannerDaoImpl implements SpannerDaoInterface {
 
@@ -150,13 +153,14 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   }
 
   @Override
-  public void createTransactionForAccount(ByteArray accountId, BigDecimal amount, boolean isCredit)
-      throws SpannerDaoException {
+  public BigDecimal createTransactionForAccount(
+      ByteArray accountId, BigDecimal amount, boolean isCredit) throws SpannerDaoException {
     if (amount.signum() == -1) {
       throw new IllegalArgumentException(
           String.format("Amount transferred cannot be negative. amount: %s", amount.toString()));
     }
     try {
+      List<BigDecimal> newBalanceList = new ArrayList();
       databaseClient
           .readWriteTransaction()
           .run(
@@ -188,13 +192,14 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                           "Account balance cannot be negative. original account balance: %s, amount transferred: %s",
                           oldBalance.toString(), amount.toString()));
                 }
-
                 transaction.buffer(
                     ImmutableList.of(
                         buildUpdateAccountMutation(accountId, newBalance),
                         buildInsertTransactionHistoryMutation(accountId, amount, isCredit)));
+                newBalanceList.add(newBalance);
                 return null;
               });
+      return newBalanceList.get(0);
     } catch (SpannerException e) {
       // filter for IllegalArgumentExceptions thrown in lambda function above
       Throwable cause = e.getCause();

@@ -59,8 +59,8 @@ public interface SpannerDaoInterface {
    * @param amount amount added to or removed from the account, must be less than or equal to the
    *     account's balance, must be non-negative
    * @param isCredit boolean for if the amount should be removed from the account
-   * @throws SpannerDaoException
+   * @return new balance of the account after the transaction
    */
-  void createTransactionForAccount(ByteArray accountId, BigDecimal amount, boolean isCredit)
+  BigDecimal createTransactionForAccount(ByteArray accountId, BigDecimal amount, boolean isCredit)
       throws SpannerDaoException;
 }
