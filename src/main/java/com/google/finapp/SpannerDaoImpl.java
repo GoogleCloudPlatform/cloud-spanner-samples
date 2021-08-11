@@ -131,7 +131,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                 if (newSourceAmount.signum() == -1) {
                   throw new IllegalArgumentException(
                       String.format(
-                          "Account balance cannot be negative. original account balance: %s, amount transferred: %s",
+                          "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
                           accountBalances.get(fromAccountId).toString(), amount.toString()));
                 }
 
@@ -188,7 +188,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                 if (newBalance.signum() == -1) {
                   throw new IllegalArgumentException(
                       String.format(
-                          "Account balance cannot be negative. original account balance: %s, amount transferred: %s",
+                          "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
                           oldBalance.toString(), amount.toString()));
                 }
                 transaction.buffer(
