@@ -25,8 +25,12 @@ import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
+import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
+import com.google.common.collect.ImmutableList;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -122,6 +126,54 @@ public class FinAppIT {
         count++;
       }
       assertThat(count).isEqualTo(1);
+    }
+  }
+
+  @Test
+  public void createTransactionForAccount_isCredit_createsTransaction() throws Exception {
+    ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal oldAccountBalance = new BigDecimal(20);
+    BigDecimal amount = new BigDecimal(10);
+    boolean isCredit = true;
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(accountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(oldAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build()));
+    spannerDao.createTransactionForAccount(accountId, amount, isCredit);
+    try (ReadOnlyTransaction transaction = databaseClient.readOnlyTransaction();
+        ResultSet transactionResultSet =
+            transaction.read(
+                "TransactionHistory",
+                KeySet.all(),
+                Arrays.asList("Amount", "IsCredit", "AccountId"));
+        ResultSet accountResultSet =
+            transaction.read(
+                "Account",
+                KeySet.newBuilder().addKey(Key.of(accountId)).build(),
+                Arrays.asList("Balance")); ) {
+      int count = 0;
+      while (transactionResultSet.next()) {
+        if (transactionResultSet.getBytes(2).equals(accountId)) {
+          assertThat(transactionResultSet.getBigDecimal(0)).isEqualTo(amount);
+          assertThat(transactionResultSet.getBoolean(1)).isEqualTo(isCredit);
+          count++;
+        }
+      }
+      while (accountResultSet.next()) {
+        assertThat(accountResultSet.getBigDecimal(0)).isEqualTo(oldAccountBalance.subtract(amount));
+        count++;
+      }
+      assertThat(count).isEqualTo(2);
     }
   }
 }
