@@ -15,6 +15,7 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -112,7 +113,8 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     }
   }
 
-  public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
+  public ImmutableMap<ByteArray, BigDecimal> moveAccountBalance(
+      ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SpannerDaoException {
     if (amount.signum() == -1) {
       throw new IllegalArgumentException(
@@ -146,16 +148,18 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
             String.format("Account not found: %s", toAccountId.toString()));
       }
       BigDecimal newSourceAmount = sourceAmount.subtract(amount);
+      BigDecimal newDestAmount = destAmount.add(amount);
       if (newSourceAmount.signum() == -1) {
         throw new IllegalArgumentException(
             String.format(
-                "Account balance cannot be negative. original account balance: %s, amount transferred: %s",
+                "Cannot transfer amount greater than original balance. fromAccount balance: %s, amount: %s",
                 sourceAmount.toString(), amount.toString()));
       }
       updateAccount(fromAccountIdArray, newSourceAmount, connection);
-      updateAccount(toAccountIdArray, destAmount.add(amount), connection);
+      updateAccount(toAccountIdArray, newDestAmount, connection);
       insertTransaction(fromAccountIdArray, toAccountIdArray, amount, connection);
       connection.commit();
+      return ImmutableMap.of(fromAccountId, newSourceAmount, toAccountId, newDestAmount);
     } catch (SQLException e) {
       throw new SpannerDaoException(e);
     }
