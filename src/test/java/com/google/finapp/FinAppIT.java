@@ -117,7 +117,7 @@ public class FinAppIT {
             .singleUse()
             .read(
                 "Account",
-                KeySet.newBuilder().addKey(Key.of(accountId)).build(),
+                KeySet.singleKey(Key.of(accountId)),
                 Arrays.asList("AccountType", "AccountStatus", "Balance"))) {
       int count = 0;
       while (resultSet.next()) {
@@ -161,9 +161,7 @@ public class FinAppIT {
                 Arrays.asList("Amount", "IsCredit", "AccountId"));
         ResultSet accountResultSet =
             transaction.read(
-                "Account",
-                KeySet.newBuilder().addKey(Key.of(accountId)).build(),
-                Arrays.asList("Balance")); ) {
+                "Account", KeySet.singleKey(Key.of(accountId)), Arrays.asList("Balance")); ) {
       int count = 0;
       while (transactionResultSet.next()) {
         if (transactionResultSet.getBytes(2).equals(accountId)) {
@@ -211,9 +209,7 @@ public class FinAppIT {
                 Arrays.asList("Amount", "IsCredit", "AccountId"));
         ResultSet accountResultSet =
             transaction.read(
-                "Account",
-                KeySet.newBuilder().addKey(Key.of(accountId)).build(),
-                Arrays.asList("Balance")); ) {
+                "Account", KeySet.singleKey(Key.of(accountId)), Arrays.asList("Balance")); ) {
       int count = 0;
       while (transactionResultSet.next()) {
         if (transactionResultSet.getBytes(2).equals(accountId)) {
