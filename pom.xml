@@ -2,12 +2,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.example</groupId>
-  <artifactId>finapp-parent</artifactId>
+  <artifactId>finapp</artifactId>
   <packaging>pom</packaging>
   <version>1.0-SNAPSHOT</version>
   
   <name>finapp</name>
-
 
 
   <properties>
@@ -42,23 +41,6 @@
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-surefire-plugin</artifactId>
               <version>3.0.0-M5</version>
-          </plugin>
-          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-failsafe-plugin</artifactId>
-              <configuration>
-                  <systemPropertyVariables>
-                      <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
-                      <spanner.testenv.instance>projects/test-project/instances/test-instance</spanner.testenv.instance>
-                  </systemPropertyVariables>
-              </configuration>
-              <executions>
-                  <execution>
-                      <goals>
-                          <goal>integration-test</goal>
-                      </goals>
-                  </execution>
-              </executions>
           </plugin>
           <plugin>
               <artifactId>maven-assembly-plugin</artifactId>

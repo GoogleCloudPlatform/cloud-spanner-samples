@@ -6,10 +6,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.example</groupId>
-    <artifactId>finapp</artifactId>
+    <artifactId>server</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-    <name>finapp</name>
+    <name>server</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
