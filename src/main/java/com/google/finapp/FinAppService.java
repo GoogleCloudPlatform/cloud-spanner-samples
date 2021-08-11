@@ -123,7 +123,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
               .withCause(e)
               .withDescription(
                   String.format(
-                      "Invalid balance - %s. Expected a NUMERIC value", request.getAmount()))
+                      "Invalid amount - %s. Expected a NUMERIC value", request.getAmount()))
               .asException());
       return;
     } catch (IllegalArgumentException e) {
