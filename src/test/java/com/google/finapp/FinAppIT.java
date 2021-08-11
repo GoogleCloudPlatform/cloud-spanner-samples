@@ -149,7 +149,9 @@ public class FinAppIT {
                 .set("CreationTimestamp")
                 .to(Value.COMMIT_TIMESTAMP)
                 .build()));
-    spannerDao.createTransactionForAccount(accountId, amount, isCredit);
+    BigDecimal outputNewBalance =
+        spannerDao.createTransactionForAccount(accountId, amount, isCredit);
+    assertThat(outputNewBalance).isEqualTo(oldAccountBalance.subtract(amount));
     try (ReadOnlyTransaction transaction = databaseClient.readOnlyTransaction();
         ResultSet transactionResultSet =
             transaction.read(
@@ -197,7 +199,9 @@ public class FinAppIT {
                 .set("CreationTimestamp")
                 .to(Value.COMMIT_TIMESTAMP)
                 .build()));
-    spannerDao.createTransactionForAccount(accountId, amount, isCredit);
+    BigDecimal outputNewBalance =
+        spannerDao.createTransactionForAccount(accountId, amount, isCredit);
+    assertThat(outputNewBalance).isEqualTo(oldAccountBalance.add(amount));
     try (ReadOnlyTransaction transaction = databaseClient.readOnlyTransaction();
         ResultSet transactionResultSet =
             transaction.read(

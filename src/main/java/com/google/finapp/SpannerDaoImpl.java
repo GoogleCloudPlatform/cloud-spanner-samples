@@ -14,7 +14,6 @@
 
 package com.google.finapp;
 
-
 import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
