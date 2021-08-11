@@ -130,7 +130,7 @@ public class FinAppIT {
   }
 
   @Test
-  public void createTransactionForAccount_isCredit_createsTransaction() throws Exception {
+  public void createTransactionForAccount_isCredit_subtractsFromAccountBalance() throws Exception {
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     BigDecimal oldAccountBalance = new BigDecimal(20);
     BigDecimal amount = new BigDecimal(10);
@@ -171,6 +171,54 @@ public class FinAppIT {
       }
       while (accountResultSet.next()) {
         assertThat(accountResultSet.getBigDecimal(0)).isEqualTo(oldAccountBalance.subtract(amount));
+        count++;
+      }
+      assertThat(count).isEqualTo(2);
+    }
+  }
+
+  @Test
+  public void createTransactionForAccount_notIsCredit_addsToAccountBalance() throws Exception {
+    ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal oldAccountBalance = new BigDecimal(20);
+    BigDecimal amount = new BigDecimal(10);
+    boolean isCredit = false;
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(accountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(oldAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build()));
+    spannerDao.createTransactionForAccount(accountId, amount, isCredit);
+    try (ReadOnlyTransaction transaction = databaseClient.readOnlyTransaction();
+        ResultSet transactionResultSet =
+            transaction.read(
+                "TransactionHistory",
+                KeySet.all(),
+                Arrays.asList("Amount", "IsCredit", "AccountId"));
+        ResultSet accountResultSet =
+            transaction.read(
+                "Account",
+                KeySet.newBuilder().addKey(Key.of(accountId)).build(),
+                Arrays.asList("Balance")); ) {
+      int count = 0;
+      while (transactionResultSet.next()) {
+        if (transactionResultSet.getBytes(2).equals(accountId)) {
+          assertThat(transactionResultSet.getBigDecimal(0)).isEqualTo(amount);
+          assertThat(transactionResultSet.getBoolean(1)).isEqualTo(isCredit);
+          count++;
+        }
+      }
+      while (accountResultSet.next()) {
+        assertThat(accountResultSet.getBigDecimal(0)).isEqualTo(oldAccountBalance.add(amount));
         count++;
       }
       assertThat(count).isEqualTo(2);
