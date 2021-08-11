@@ -16,8 +16,6 @@ syntax = "proto2";
 
 package com.google.finapp;
 
-import "google/protobuf/empty.proto";
-
 option java_multiple_files = true;
 option java_package = "com.google.finapp";
 option java_outer_classname = "ServiceProto";
@@ -30,7 +28,7 @@ service FinApp {
 
   rpc CreateCustomerRole(CreateCustomerRoleRequest) returns (CreateCustomerRoleResponse) {}
 
-  rpc CreateTransactionForAccount(CreateTransactionForAccountRequest) returns (.google.protobuf.Empty) {}
+  rpc CreateTransactionForAccount(CreateTransactionForAccountRequest) returns (CreateTransactionForAccountResponse) {}
 }
 
 message CreateCustomerRequest {
@@ -76,6 +74,10 @@ message CreateCustomerRoleResponse {
 
 message CreateTransactionForAccountRequest {
   optional bytes account_id = 1;
-  optional string amount = 2;
+  optional string amount = 2; // Digits[.[Digits]] or [Digits].Digits
   optional bool is_credit = 3;
+}
+
+message CreateTransactionForAccountResponse {
+  optional string new_balance = 1; // Digits[.[Digits]] or [Digits].Digits
 }
