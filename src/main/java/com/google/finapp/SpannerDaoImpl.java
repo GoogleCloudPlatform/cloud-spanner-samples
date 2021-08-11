@@ -109,12 +109,15 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   }
 
   @Override
-  public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
+  public ImmutableMap<ByteArray, BigDecimal> moveAccountBalance(
+      ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
       throws SpannerDaoException {
     if (amount.signum() == -1) {
       throw new IllegalArgumentException(
           String.format("Amount transferred cannot be negative. amount: %s", amount.toString()));
     }
+    ImmutableMap.Builder<ByteArray, BigDecimal> accountBalancesBuilder = ImmutableMap.builder();
+
     try {
       databaseClient
           .readWriteTransaction()
@@ -125,26 +128,35 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                     readAccountBalances(fromAccountId, toAccountId, transaction);
 
                 BigDecimal newSourceAmount = accountBalances.get(fromAccountId).subtract(amount);
+                BigDecimal newDestAmount = accountBalances.get(toAccountId).add(amount);
 
                 if (newSourceAmount.signum() == -1) {
                   throw new IllegalArgumentException(
                       String.format(
-                          "Account balance cannot be negative. original account balance: %s, amount transferred: %s",
+                          "Cannot transfer amount greater than original balance. fromAccount balance: %s, amount: %s",
                           accountBalances.get(fromAccountId).toString(), amount.toString()));
                 }
 
                 transaction.buffer(
                     ImmutableList.of(
                         buildUpdateAccountMutation(fromAccountId, newSourceAmount),
-                        buildUpdateAccountMutation(
-                            toAccountId, accountBalances.get(toAccountId).add(amount)),
+                        buildUpdateAccountMutation(toAccountId, newDestAmount),
                         buildInsertTransactionHistoryMutation(
                             fromAccountId, amount, /* isCredit= */ true),
                         buildInsertTransactionHistoryMutation(
                             toAccountId, amount, /* isCredit= */ false)));
+
+                accountBalancesBuilder.put(fromAccountId, newSourceAmount);
+                accountBalancesBuilder.put(toAccountId, newDestAmount);
                 return null;
               });
+      return accountBalancesBuilder.build();
     } catch (SpannerException e) {
+      // filter for IllegalArgumentExceptions thrown in lambda function above
+      Throwable cause = e.getCause();
+      if (cause instanceof IllegalArgumentException) {
+        throw new IllegalArgumentException(cause.getMessage());
+      }
       throw new SpannerDaoException(e);
     }
   }

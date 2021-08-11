@@ -27,6 +27,8 @@ service FinApp {
   rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse) {}
 
   rpc CreateCustomerRole(CreateCustomerRoleRequest) returns (CreateCustomerRoleResponse) {}
+
+  rpc MoveAccountBalance(MoveAccountBalanceRequest) returns (MoveAccountBalanceResponse) {}
 }
 
 message CreateCustomerRequest {
@@ -39,7 +41,7 @@ message CreateCustomerResponse {
 }
 
 message CreateAccountRequest {
-  optional string balance = 1;
+  optional string balance = 1; // Digits[.[Digits]] or [Digits].Digits
 
   enum Type {
     UNSPECIFIED_ACCOUNT_TYPE = 0;
@@ -68,4 +70,15 @@ message CreateCustomerRoleRequest {
 
 message CreateCustomerRoleResponse {
   optional bytes role_id = 1;
+}
+
+message MoveAccountBalanceRequest {
+  optional bytes from_account_id = 1;
+  optional bytes to_account_id = 2;
+  optional string amount = 3; // Digits[.[Digits]] or [Digits].Digits
+}
+
+message MoveAccountBalanceResponse {
+  optional string from_account_id_balance = 1; // Digits[.[Digits]] or [Digits].Digits
+  optional string to_account_id_balance = 2; // Digits[.[Digits]] or [Digits].Digits
 }
