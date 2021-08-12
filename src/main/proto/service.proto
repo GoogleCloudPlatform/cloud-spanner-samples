@@ -29,6 +29,8 @@ service FinApp {
   rpc CreateCustomerRole(CreateCustomerRoleRequest) returns (CreateCustomerRoleResponse) {}
 
   rpc MoveAccountBalance(MoveAccountBalanceRequest) returns (MoveAccountBalanceResponse) {}
+
+  rpc GetRecentTransactionHistoryForAccount(GetRecentTransactionsForAccountRequest) returns (GetRecentTransactionsForAccountResponse) {}
 }
 
 message CreateCustomerRequest {
