@@ -28,6 +28,7 @@ import com.google.cloud.spanner.Value;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
+import com.google.protobuf.ByteString;
 import java.math.BigDecimal;
 
 final class SpannerDaoImpl implements SpannerDaoInterface {
@@ -152,7 +153,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   }
 
   @Override
-  public ResultSet getRecentTransactionsForAccount(
+  public ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
       ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp)
       throws SpannerDaoException {
     try {
@@ -162,15 +163,31 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
               .executeQuery(
                   Statement.of(
                       String.format(
-                          "SELECT AccountId, EventTimestamp "
+                          "SELECT * "
                               + "FROM TransactionHistory "
-                              + "WHERE AccountId = %s AND %s < EventTimestamp < %s "
+                              + "WHERE AccountId = %s AND EventTimestamp BETWEEN %s AND %s "
                               + "ORDER BY EventTimestamp",
                           accountId, beginTimestamp, endTimestamp)));
-      return resultSet;
+      return readTransactionHistories(resultSet);
     } catch (SpannerException e) {
       throw new SpannerDaoException(e);
     }
+  }
+
+  private ImmutableList<TransactionEntry> readTransactionHistories(ResultSet resultSet) {
+    ImmutableList.Builder<TransactionEntry> transactionHistoriesBuilder = ImmutableList.builder();
+    while (resultSet.next()) {
+      transactionHistoriesBuilder.add(TransactionEntry.newBuilder()
+          .setAccountId(ByteString.copyFrom(resultSet.getBytes("AccountId").toByteArray()))
+          .setEventTimestamp(com.google.finapp.Timestamp.newBuilder()
+              .setNanos(resultSet.getTimestamp("EventTimestamp").getNanos())
+              .setSeconds(resultSet.getTimestamp("EventTimestamp").getSeconds()))
+          .setIsCredit(resultSet.getBoolean("IsCredit"))
+          .setAmount(resultSet.getString("Amount"))
+          .setDescription(resultSet.getString("Description"))
+          .build());
+    }
+    return transactionHistoriesBuilder.build();
   }
 
   private ImmutableMap<ByteArray, BigDecimal> readAccountBalances(
