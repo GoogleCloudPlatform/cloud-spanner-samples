@@ -16,16 +16,9 @@
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>8</source>
-                    <target>8</target>
-                </configuration>
-                <groupId>org.apache.maven.plugins</groupId>
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <groupId>org.apache.maven.plugins</groupId>
-                <version>3.0.0-M5</version>
             </plugin>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
@@ -85,6 +78,8 @@
             </plugin>
             <plugin>
                 <artifactId>fmt-maven-plugin</artifactId>
+                <groupId>com.coveo</groupId>
+                <version>2.11</version>
                 <executions>
                     <execution>
                         <goals>
@@ -92,8 +87,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <groupId>com.coveo</groupId>
-                <version>2.11</version>
             </plugin>
         </plugins>
     </build>
