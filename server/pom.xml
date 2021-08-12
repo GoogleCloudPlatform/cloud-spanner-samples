@@ -16,6 +16,110 @@
     <name>server</name>
     <version>1.0-SNAPSHOT</version>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <artifactId>libraries-bom</artifactId>
+                <groupId>com.google.cloud</groupId>
+                <scope>import</scope>
+                <type>pom</type>
+                <version>20.3.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!--spanner JDBC dependency -->
+        <dependency>
+            <artifactId>google-cloud-spanner-jdbc</artifactId>
+            <groupId>com.google.cloud</groupId>
+        </dependency>
+        <!-- testing -->
+        <dependency>
+            <artifactId>junit</artifactId>
+            <groupId>junit</groupId>
+            <scope>test</scope>
+            <version>4.13.1</version>
+        </dependency>
+        <!-- spanner dependency -->
+        <dependency>
+            <artifactId>google-cloud-spanner</artifactId>
+            <groupId>com.google.cloud</groupId>
+        </dependency>
+
+        <dependency>
+            <artifactId>guava</artifactId>
+            <groupId>com.google.guava</groupId>
+            <version>30.1.1-jre</version>
+        </dependency>
+
+        <dependency>
+            <artifactId>protobuf-java</artifactId>
+            <groupId>com.google.protobuf</groupId>
+            <version>3.16.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>grpc-netty-shaded</artifactId>
+            <groupId>io.grpc</groupId>
+            <version>1.38.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>grpc-protobuf</artifactId>
+            <groupId>io.grpc</groupId>
+            <version>1.38.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>grpc-stub</artifactId>
+            <groupId>io.grpc</groupId>
+            <version>1.38.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>grpc-services</artifactId>
+            <groupId>io.grpc</groupId>
+            <version>1.38.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>grpc-grpclb</artifactId>
+            <groupId>io.grpc</groupId>
+            <scope>runtime</scope>
+            <version>1.38.0</version>
+        </dependency>
+        <dependency> <!-- necessary for Java 9+ -->
+            <artifactId>annotations-api</artifactId>
+            <groupId>org.apache.tomcat</groupId>
+            <scope>provided</scope>
+            <version>6.0.53</version>
+        </dependency>
+        <dependency>
+            <artifactId>guice</artifactId>
+            <groupId>com.google.inject</groupId>
+            <version>5.0.1</version>
+        </dependency>
+        <dependency>
+            <artifactId>jcommander</artifactId>
+            <groupId>com.beust</groupId>
+            <version>1.81</version>
+        </dependency>
+        <dependency>
+            <artifactId>junit-jupiter-params</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <scope>test</scope>
+            <version>5.7.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>google-cloud-spanner</artifactId>
+            <groupId>com.google.cloud</groupId>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
+            <artifactId>truth</artifactId>
+            <groupId>com.google.truth</groupId>
+            <scope>test</scope>
+            <version>1.1.3</version>
+        </dependency>
+    </dependencies>
+
     <build>
         <extensions>
             <extension>
