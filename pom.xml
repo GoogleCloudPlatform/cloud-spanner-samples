@@ -1,152 +1,154 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.example</groupId>
-  <artifactId>finapp</artifactId>
-  <packaging>pom</packaging>
-  <version>1.0-SNAPSHOT</version>
-  
-  <name>finapp</name>
-
-
-  <properties>
-      <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <maven.compiler.source>1.7</maven.compiler.source>
-      <maven.compiler.target>1.7</maven.compiler.target>
-  </properties>
-        
-
-  <modules>
-    <module>server</module>
-    <module>workload</module>
-  </modules>
-
-  <dependencyManagement>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <artifactId>finapp</artifactId>
+    <build>
+        <extensions>
+            <extension>
+                <artifactId>os-maven-plugin</artifactId>
+                <groupId>kr.motd.maven</groupId>
+                <version>1.6.2</version>
+            </extension>
+        </extensions>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+            </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <version>3.0.0-M5</version>
+            </plugin>
+        </plugins>
+    </build>
     <dependencies>
-      <dependency>
-        <groupId>com.google.cloud</groupId>
-        <artifactId>libraries-bom</artifactId>
-        <version>20.3.0</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
+        <!--spanner JDBC dependency -->
+        <dependency>
+            <artifactId>google-cloud-spanner-jdbc</artifactId>
+            <groupId>com.google.cloud</groupId>
+        </dependency>
+        <!-- testing -->
+        <dependency>
+            <artifactId>junit</artifactId>
+            <groupId>junit</groupId>
+            <scope>test</scope>
+            <version>4.13.1</version>
+        </dependency>
+        <!-- spanner dependency -->
+        <dependency>
+            <artifactId>google-cloud-spanner</artifactId>
+            <groupId>com.google.cloud</groupId>
+        </dependency>
+
+        <dependency>
+            <artifactId>guava</artifactId>
+            <groupId>com.google.guava</groupId>
+            <version>30.1.1-jre</version>
+        </dependency>
+
+        <dependency>
+            <artifactId>protobuf-java</artifactId>
+            <groupId>com.google.protobuf</groupId>
+            <version>3.16.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>grpc-netty-shaded</artifactId>
+            <groupId>io.grpc</groupId>
+            <version>1.38.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>grpc-protobuf</artifactId>
+            <groupId>io.grpc</groupId>
+            <version>1.38.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>grpc-stub</artifactId>
+            <groupId>io.grpc</groupId>
+            <version>1.38.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>grpc-services</artifactId>
+            <groupId>io.grpc</groupId>
+            <version>1.38.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>grpc-grpclb</artifactId>
+            <groupId>io.grpc</groupId>
+            <scope>runtime</scope>
+            <version>1.38.0</version>
+        </dependency>
+        <dependency> <!-- necessary for Java 9+ -->
+            <artifactId>annotations-api</artifactId>
+            <groupId>org.apache.tomcat</groupId>
+            <scope>provided</scope>
+            <version>6.0.53</version>
+        </dependency>
+        <dependency>
+            <artifactId>guice</artifactId>
+            <groupId>com.google.inject</groupId>
+            <version>5.0.1</version>
+        </dependency>
+        <dependency>
+            <artifactId>jcommander</artifactId>
+            <groupId>com.beust</groupId>
+            <version>1.81</version>
+        </dependency>
+        <dependency>
+            <artifactId>junit-jupiter-params</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <scope>test</scope>
+            <version>5.7.0</version>
+        </dependency>
+        <dependency>
+            <artifactId>google-cloud-spanner</artifactId>
+            <groupId>com.google.cloud</groupId>
+            <scope>test</scope>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
+            <artifactId>truth</artifactId>
+            <groupId>com.google.truth</groupId>
+            <scope>test</scope>
+            <version>1.1.3</version>
+        </dependency>
     </dependencies>
-  </dependencyManagement>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <artifactId>libraries-bom</artifactId>
+                <groupId>com.google.cloud</groupId>
+                <scope>import</scope>
+                <type>pom</type>
+                <version>20.3.0</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <groupId>org.example</groupId>
 
-  <dependencies>
-    <!--spanner JDBC dependency -->
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-spanner-jdbc</artifactId>
-    </dependency>
-    <!-- testing -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.13.1</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- spanner dependency -->
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-spanner</artifactId>
-    </dependency>
+    <modelVersion>4.0.0</modelVersion>
 
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>30.1.1-jre</version>
-    </dependency>
 
-    <dependency>
-      <groupId>com.google.protobuf</groupId>
-      <artifactId>protobuf-java</artifactId>
-      <version>3.16.0</version>
-    </dependency>
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-netty-shaded</artifactId>
-      <version>1.38.0</version>
-    </dependency>
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-protobuf</artifactId>
-      <version>1.38.0</version>
-    </dependency>
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-stub</artifactId>
-      <version>1.38.0</version>
-    </dependency>
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-services</artifactId>
-      <version>1.38.0</version>
-    </dependency>
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-grpclb</artifactId>
-      <version>1.38.0</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency> <!-- necessary for Java 9+ -->
-      <groupId>org.apache.tomcat</groupId>
-      <artifactId>annotations-api</artifactId>
-      <version>6.0.53</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.inject</groupId>
-      <artifactId>guice</artifactId>
-      <version>5.0.1</version>
-    </dependency>
-    <dependency>
-      <groupId>com.beust</groupId>
-      <artifactId>jcommander</artifactId>
-      <version>1.81</version>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-params</artifactId>
-      <version>5.7.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.cloud</groupId>
-      <artifactId>google-cloud-spanner</artifactId>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.truth</groupId>
-      <artifactId>truth</artifactId>
-      <version>1.1.3</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+    <modules>
+        <module>server</module>
+        <module>workload</module>
+    </modules>
 
-  <build>
-      <extensions>
-          <extension>
-              <groupId>kr.motd.maven</groupId>
-              <artifactId>os-maven-plugin</artifactId>
-              <version>1.6.2</version>
-          </extension>
-      </extensions>
-      <plugins>
-          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <configuration>
-                  <source>8</source>
-                  <target>8</target>
-              </configuration>
-          </plugin>
-          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-surefire-plugin</artifactId>
-              <version>3.0.0-M5</version>
-          </plugin>
-      </plugins>
-  </build>
+
+    <name>finapp</name>
+
+    <packaging>pom</packaging>
+
+    <properties>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <version>1.0-SNAPSHOT</version>
 </project>

@@ -1,56 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <artifactId>server</artifactId>
-    <version>1.0-SNAPSHOT</version>
-
-    <name>server</name>
-
-    <parent>
-        <groupId>org.example</groupId>
-        <artifactId>finapp</artifactId>
-        <version>1.0-SNAPSHOT</version>
-    </parent>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-    </properties>
 
     <build>
         <extensions>
             <extension>
-                <groupId>kr.motd.maven</groupId>
                 <artifactId>os-maven-plugin</artifactId>
+                <groupId>kr.motd.maven</groupId>
                 <version>1.6.2</version>
             </extension>
         </extensions>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <source>8</source>
                     <target>8</target>
                 </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
                 <version>3.0.0-M5</version>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <systemPropertyVariables>
-                        <spanner.testenv.config.class>com.google.cloud.spanner.GceTestEnvConfig</spanner.testenv.config.class>
-                        <spanner.testenv.instance>projects/test-project/instances/test-instance</spanner.testenv.instance>
+                        <spanner.testenv.config.class>
+                            com.google.cloud.spanner.GceTestEnvConfig
+                        </spanner.testenv.config.class>
+                        <spanner.testenv.instance>
+                            projects/test-project/instances/test-instance
+                        </spanner.testenv.instance>
                     </systemPropertyVariables>
                 </configuration>
                 <executions>
@@ -60,6 +46,7 @@
                         </goals>
                     </execution>
                 </executions>
+                <groupId>org.apache.maven.plugins</groupId>
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -75,13 +62,15 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.xolstice.maven.plugins</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
-                <version>0.6.1</version>
                 <configuration>
-                    <protocArtifact>com.google.protobuf:protoc:3.12.0:exe:${os.detected.classifier}</protocArtifact>
+                    <pluginArtifact>
+                        io.grpc:protoc-gen-grpc-java:1.38.0:exe:${os.detected.classifier}
+                    </pluginArtifact>
                     <pluginId>grpc-java</pluginId>
-                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.38.0:exe:${os.detected.classifier}</pluginArtifact>
+                    <protocArtifact>
+                        com.google.protobuf:protoc:3.12.0:exe:${os.detected.classifier}
+                    </protocArtifact>
                 </configuration>
                 <executions>
                     <execution>
@@ -91,11 +80,11 @@
                         </goals>
                     </execution>
                 </executions>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <version>0.6.1</version>
             </plugin>
             <plugin>
-                <groupId>com.coveo</groupId>
                 <artifactId>fmt-maven-plugin</artifactId>
-                <version>2.11</version>
                 <executions>
                     <execution>
                         <goals>
@@ -103,7 +92,26 @@
                         </goals>
                     </execution>
                 </executions>
+                <groupId>com.coveo</groupId>
+                <version>2.11</version>
             </plugin>
         </plugins>
     </build>
+    <modelVersion>4.0.0</modelVersion>
+
+    <name>server</name>
+
+    <parent>
+        <artifactId>finapp</artifactId>
+        <groupId>org.example</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <properties>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <version>1.0-SNAPSHOT</version>
 </project>
