@@ -16,11 +16,14 @@ package com.google.finapp;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
+import com.google.protobuf.ByteString;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 
@@ -162,8 +165,41 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     }
   }
 
-  public void getRecentTransactionsForAccount(ByteArray accountId, Timestamp sinceTimestamp)
-      throws SpannerDaoException {}
+  public ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
+      ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp)
+      throws SpannerDaoException {
+    try (Connection connection = DriverManager.getConnection(this.connectionUrl);
+        PreparedStatement readStatement =
+            connection.prepareStatement(
+                "SELECT * "
+                    + "FROM TransactionHistory "
+                    + "WHERE AccountId = ? AND EventTimestamp BETWEEN ? AND ? "
+                    + "ORDER BY EventTimestamp")) {
+      connection.setAutoCommit(false);
+      byte[] accountIdArray = accountId.toByteArray();
+      java.sql.Timestamp javaBeginTimestamp = beginTimestamp.toSqlTimestamp();
+      java.sql.Timestamp javaEndTimestamp = endTimestamp.toSqlTimestamp();
+      readStatement.setBytes(1, accountIdArray);
+      readStatement.setTimestamp(2, javaBeginTimestamp);
+      readStatement.setTimestamp(3, javaEndTimestamp);
+      ResultSet resultSet = readStatement.executeQuery();
+      ImmutableList.Builder<TransactionEntry> transactionHistoriesBuilder = ImmutableList.builder();
+      while (resultSet.next()) {
+        transactionHistoriesBuilder.add(TransactionEntry.newBuilder()
+            .setAccountId(ByteString.copyFrom(resultSet.getBytes("AccountId")))
+            .setEventTimestamp(com.google.finapp.Timestamp.newBuilder()
+                .setNanos(resultSet.getTimestamp("EventTimestamp").getNanos())
+                .setSeconds(resultSet.getTimestamp("EventTimestamp").getSeconds()))
+            .setIsCredit(resultSet.getBoolean("IsCredit"))
+            .setAmount(resultSet.getString("Amount"))
+            .setDescription(resultSet.getString("Description"))
+            .build());
+      }
+      return transactionHistoriesBuilder.build();
+    } catch (SQLException e) {
+      throw new SpannerDaoException(e);
+    }
+  }
 
   private void updateAccount(byte[] accountId, BigDecimal newBalance, Connection connection)
       throws SQLException {
