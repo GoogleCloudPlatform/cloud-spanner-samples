@@ -17,6 +17,7 @@
 package com.google.finapp;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.spanner.Database;
@@ -25,8 +26,12 @@ import com.google.cloud.spanner.IntegrationTest;
 import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
+import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
+import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -123,5 +128,144 @@ public class FinAppIT {
       }
       assertThat(count).isEqualTo(1);
     }
+  }
+
+  @Test
+  public void moveAccountBalance_validTransfer() throws Exception {
+    ByteArray fromAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    ByteArray toAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal fromAccountBalance = new BigDecimal(20);
+    BigDecimal toAccountBalance = new BigDecimal(0);
+    BigDecimal amount = new BigDecimal(10);
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(fromAccountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(fromAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build(),
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(toAccountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(toAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build()));
+    ImmutableMap result = spannerDao.moveAccountBalance(fromAccountId, toAccountId, amount);
+    try (ResultSet resultSet =
+        databaseClient
+            .singleUse()
+            .read(
+                "Account",
+                KeySet.newBuilder()
+                    .addKey(Key.of(fromAccountId))
+                    .addKey(Key.of(toAccountId))
+                    .build(),
+                Arrays.asList("AccountId", "Balance"))) {
+      int count = 0;
+      while (resultSet.next()) {
+        if (resultSet.getBytes(0).equals(fromAccountId)) {
+          assertThat(resultSet.getBigDecimal(1)).isEqualTo(fromAccountBalance.subtract(amount));
+          count++;
+        } else if (resultSet.getBytes(0).equals(toAccountId)) {
+          assertThat(resultSet.getBigDecimal(1)).isEqualTo(toAccountBalance.add(amount));
+          count++;
+        }
+      }
+      assertThat(count).isEqualTo(2);
+      assertThat(result.keySet()).containsExactly(fromAccountId, toAccountId);
+      assertThat(result.get(fromAccountId)).isEqualTo(fromAccountBalance.subtract(amount));
+      assertThat(result.get(toAccountId)).isEqualTo(toAccountBalance.add(amount));
+    }
+  }
+
+  @Test
+  public void moveAccountBalance_negativeAmount_throwsException() throws Exception {
+    ByteArray fromAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    ByteArray toAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal fromAccountBalance = new BigDecimal(20);
+    BigDecimal toAccountBalance = new BigDecimal(0);
+    BigDecimal amount = new BigDecimal(-10);
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(fromAccountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(fromAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build(),
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(toAccountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(toAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build()));
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> spannerDao.moveAccountBalance(fromAccountId, toAccountId, amount));
+  }
+
+  @Test
+  public void moveAccountBalance_tooLargeAmount_throwsException() throws Exception {
+    ByteArray fromAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    ByteArray toAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal fromAccountBalance = new BigDecimal(20);
+    BigDecimal toAccountBalance = new BigDecimal(0);
+    BigDecimal amount = new BigDecimal(25);
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(fromAccountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(fromAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build(),
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(toAccountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(toAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build()));
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> spannerDao.moveAccountBalance(fromAccountId, toAccountId, amount));
   }
 }

@@ -15,6 +15,7 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
+import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
 import io.grpc.Status;
@@ -97,6 +98,43 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     CreateCustomerRoleResponse response =
         CreateCustomerRoleResponse.newBuilder()
             .setRoleId(ByteString.copyFrom(roleId.toByteArray()))
+            .build();
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void moveAccountBalance(
+      MoveAccountBalanceRequest request,
+      StreamObserver<MoveAccountBalanceResponse> responseObserver) {
+    ImmutableMap<ByteArray, BigDecimal> accountBalances;
+    ByteArray fromAccountId = ByteArray.copyFrom(request.getFromAccountId().toByteArray());
+    ByteArray toAccountId = ByteArray.copyFrom(request.getToAccountId().toByteArray());
+    try {
+      accountBalances =
+          spannerDao.moveAccountBalance(
+              fromAccountId, toAccountId, new BigDecimal(request.getAmount()));
+    } catch (SpannerDaoException e) {
+      responseObserver.onError(Status.fromThrowable(e).asException());
+      return;
+    } catch (NumberFormatException e) {
+      responseObserver.onError(
+          Status.INVALID_ARGUMENT
+              .withCause(e)
+              .withDescription(
+                  String.format(
+                      "Invalid amount - %s. Expected a NUMERIC value", request.getAmount()))
+              .asException());
+      return;
+    } catch (IllegalArgumentException e) {
+      responseObserver.onError(
+          Status.INVALID_ARGUMENT.withCause(e).withDescription(e.getMessage()).asException());
+      return;
+    }
+    MoveAccountBalanceResponse response =
+        MoveAccountBalanceResponse.newBuilder()
+            .setFromAccountIdBalance(accountBalances.get(fromAccountId).toString())
+            .setToAccountIdBalance(accountBalances.get(toAccountId).toString())
             .build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
