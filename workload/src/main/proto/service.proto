@@ -1,0 +1,84 @@
+// Copyright 2021 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto2";
+
+package com.google.finapp.workload;
+
+option java_multiple_files = true;
+option java_package = "com.google.finapp.workload";
+option java_outer_classname = "ServiceProto";
+
+service FinApp {
+
+  rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse) {}
+
+  rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse) {}
+
+  rpc CreateCustomerRole(CreateCustomerRoleRequest) returns (CreateCustomerRoleResponse) {}
+
+  rpc MoveAccountBalance(MoveAccountBalanceRequest) returns (MoveAccountBalanceResponse) {}
+}
+
+message CreateCustomerRequest {
+  optional string name = 1;
+  optional string address = 2;
+}
+
+message CreateCustomerResponse {
+  optional bytes customer_id = 1;
+}
+
+message CreateAccountRequest {
+  optional string balance = 1; // Digits[.[Digits]] or [Digits].Digits
+
+  enum Type {
+    UNSPECIFIED_ACCOUNT_TYPE = 0;
+    CHECKING = 1;
+    SAVING = 2;
+  }
+  optional Type type = 2;
+
+  enum Status {
+    UNSPECIFIED_ACCOUNT_STATUS = 0;
+    ACTIVE = 1;
+    FROZEN = 2;
+  }
+  optional Status status = 3;
+}
+
+message CreateAccountResponse {
+  optional bytes account_id = 1;
+}
+
+message CreateCustomerRoleRequest {
+  optional bytes customer_id = 1;
+  optional bytes account_id = 2;
+  optional string name = 3;
+}
+
+message CreateCustomerRoleResponse {
+  optional bytes role_id = 1;
+}
+
+message MoveAccountBalanceRequest {
+  optional bytes from_account_id = 1;
+  optional bytes to_account_id = 2;
+  optional string amount = 3; // Digits[.[Digits]] or [Digits].Digits
+}
+
+message MoveAccountBalanceResponse {
+  optional string from_account_id_balance = 1; // Digits[.[Digits]] or [Digits].Digits
+  optional string to_account_id_balance = 2; // Digits[.[Digits]] or [Digits].Digits
+}
