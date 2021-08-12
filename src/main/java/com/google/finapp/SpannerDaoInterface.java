@@ -16,6 +16,7 @@ package com.google.finapp;
 
 import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
+import com.google.common.collect.ImmutableList;
 import java.math.BigDecimal;
 
 /** The SpannerDaoInterface defines the methods to be used by its separate implementations. */
@@ -58,8 +59,9 @@ public interface SpannerDaoInterface {
    *
    * @param beginTimestamp timestamp for where query begins
    * @param endTimestamp timestamp for where query ends, default will be most recent transaction
+   * @returns ImmutableList of TransactionEntry objects from the range of timestamps given
    */
-  void getRecentTransactionsForAccount(
+  ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
       ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp)
       throws SpannerDaoException;
 }
