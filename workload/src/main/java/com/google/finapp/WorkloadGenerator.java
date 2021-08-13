@@ -1,10 +1,14 @@
 package com.google.finapp;
 
 import com.google.finapp.CreateAccountRequest.Status;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 
 public class WorkloadGenerator {
   public static void main(String[] argv) {
-    WorkloadClient client = new WorkloadClient("localhost", 8080);
+    ManagedChannel channel =
+        ManagedChannelBuilder.forAddress("localhost", 8080).usePlaintext().build();
+    WorkloadClient client = new WorkloadClient(channel);
     System.out.println(
         client.createAccount(
             "324",
