@@ -8,8 +8,12 @@ public class WorkloadClient {
 
   private final ManagedChannel channel;
 
-  public WorkloadClient(ManagedChannel channel) {
+  private WorkloadClient(ManagedChannel channel) {
     this.channel = channel;
+  }
+
+  public static WorkloadClient getWorkloadClient(ManagedChannel channel) {
+    return new WorkloadClient(channel);
   }
 
   public ByteString createAccount(
