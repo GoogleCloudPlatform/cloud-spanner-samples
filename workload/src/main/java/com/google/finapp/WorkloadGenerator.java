@@ -14,5 +14,11 @@ public class WorkloadGenerator {
             "324",
             CreateAccountRequest.Type.UNSPECIFIED_ACCOUNT_TYPE,
             Status.UNSPECIFIED_ACCOUNT_STATUS));
+    System.out.println(
+        new WorkloadClient(channel)
+            .createAccount(
+                "32455",
+                CreateAccountRequest.Type.UNSPECIFIED_ACCOUNT_TYPE,
+                Status.UNSPECIFIED_ACCOUNT_STATUS));
   }
 }

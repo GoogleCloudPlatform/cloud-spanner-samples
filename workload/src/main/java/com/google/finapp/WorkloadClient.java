@@ -22,7 +22,6 @@ public class WorkloadClient {
             .setStatus(status)
             .build();
     CreateAccountResponse response = blockingStub.createAccount(request);
-    channel.shutdown(); // or shutdownNow?
     return response.getAccountId();
   }
 }
