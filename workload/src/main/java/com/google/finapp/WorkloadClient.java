@@ -1,22 +1,20 @@
 package com.google.finapp;
 
 import com.google.finapp.FinAppGrpc.FinAppBlockingStub;
-import com.google.finapp.FinAppGrpc.FinAppStub;
 import com.google.protobuf.ByteString;
 import io.grpc.*;
 
 public class WorkloadClient {
 
-  private final FinAppBlockingStub blockingStub;
-  private final FinAppStub asyncStub;
+  private final ManagedChannel channel;
 
   public WorkloadClient(ManagedChannel channel) {
-    blockingStub = FinAppGrpc.newBlockingStub(channel);
-    asyncStub = FinAppGrpc.newStub(channel);
+    this.channel = channel;
   }
 
   public ByteString createAccount(
       String balance, CreateAccountRequest.Type type, CreateAccountRequest.Status status) {
+    FinAppBlockingStub blockingStub = FinAppGrpc.newBlockingStub(channel);
     CreateAccountRequest request =
         CreateAccountRequest.newBuilder()
             .setBalance(balance)
@@ -24,6 +22,7 @@ public class WorkloadClient {
             .setStatus(status)
             .build();
     CreateAccountResponse response = blockingStub.createAccount(request);
+    channel.shutdown(); // or shutdownNow?
     return response.getAccountId();
   }
 }
