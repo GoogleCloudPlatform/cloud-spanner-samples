@@ -189,15 +189,17 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   private ImmutableList<TransactionEntry> readTransactionHistories(ResultSet resultSet) {
     ImmutableList.Builder<TransactionEntry> transactionHistoriesBuilder = ImmutableList.builder();
     while (resultSet.next()) {
-      transactionHistoriesBuilder.add(TransactionEntry.newBuilder()
-          .setAccountId(ByteString.copyFrom(resultSet.getBytes("AccountId").toByteArray()))
-          .setEventTimestamp(com.google.finapp.Timestamp.newBuilder()
-              .setNanos(resultSet.getTimestamp("EventTimestamp").getNanos())
-              .setSeconds(resultSet.getTimestamp("EventTimestamp").getSeconds()))
-          .setIsCredit(resultSet.getBoolean("IsCredit"))
-          .setAmount(resultSet.getString("Amount"))
-          .setDescription(resultSet.getString("Description"))
-          .build());
+      transactionHistoriesBuilder.add(
+          TransactionEntry.newBuilder()
+              .setAccountId(ByteString.copyFrom(resultSet.getBytes("AccountId").toByteArray()))
+              .setEventTimestamp(
+                  com.google.finapp.Timestamp.newBuilder()
+                      .setNanos(resultSet.getTimestamp("EventTimestamp").getNanos())
+                      .setSeconds(resultSet.getTimestamp("EventTimestamp").getSeconds()))
+              .setIsCredit(resultSet.getBoolean("IsCredit"))
+              .setAmount(resultSet.getString("Amount"))
+              .setDescription(resultSet.getString("Description"))
+              .build());
     }
     return transactionHistoriesBuilder.build();
   }

@@ -15,6 +15,8 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
+import com.google.cloud.Timestamp;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
@@ -135,6 +137,33 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
         MoveAccountBalanceResponse.newBuilder()
             .setFromAccountIdBalance(accountBalances.get(fromAccountId).toString())
             .setToAccountIdBalance(accountBalances.get(toAccountId).toString())
+            .build();
+    responseObserver.onNext(response);
+    responseObserver.onCompleted();
+  }
+
+  @Override
+  public void getRecentTransactionsForAccount(
+      GetRecentTransactionsForAccountRequest request,
+      StreamObserver<GetRecentTransactionsForAccountResponse> responseObserver) {
+    ImmutableList<TransactionEntry> transactionEntries;
+    ByteArray accountId = ByteArray.copyFrom(request.getAccountId().toByteArray());
+    Timestamp beginTimestamp =
+        Timestamp.ofTimeSecondsAndNanos(
+            request.getBeginTimestamp().getSeconds(), request.getBeginTimestamp().getNanos());
+    Timestamp endTimestamp =
+        Timestamp.ofTimeSecondsAndNanos(
+            request.getEndTimestamp().getSeconds(), request.getEndTimestamp().getNanos());
+    try {
+      transactionEntries =
+          spannerDao.getRecentTransactionsForAccount(accountId, beginTimestamp, endTimestamp);
+    } catch (SpannerDaoException e) {
+      responseObserver.onError(Status.fromThrowable(e).asException());
+      return;
+    }
+    GetRecentTransactionsForAccountResponse response =
+        GetRecentTransactionsForAccountResponse.newBuilder()
+            .addAllTransactionEntry(transactionEntries)
             .build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();

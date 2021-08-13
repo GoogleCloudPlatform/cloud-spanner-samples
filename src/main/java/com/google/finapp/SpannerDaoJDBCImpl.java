@@ -189,15 +189,17 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       ResultSet resultSet = readStatement.executeQuery();
       ImmutableList.Builder<TransactionEntry> transactionHistoriesBuilder = ImmutableList.builder();
       while (resultSet.next()) {
-        transactionHistoriesBuilder.add(TransactionEntry.newBuilder()
-            .setAccountId(ByteString.copyFrom(resultSet.getBytes("AccountId")))
-            .setEventTimestamp(com.google.finapp.Timestamp.newBuilder()
-                .setNanos(resultSet.getTimestamp("EventTimestamp").getNanos())
-                .setSeconds(resultSet.getTimestamp("EventTimestamp").getSeconds()))
-            .setIsCredit(resultSet.getBoolean("IsCredit"))
-            .setAmount(resultSet.getString("Amount"))
-            .setDescription(resultSet.getString("Description"))
-            .build());
+        transactionHistoriesBuilder.add(
+            TransactionEntry.newBuilder()
+                .setAccountId(ByteString.copyFrom(resultSet.getBytes("AccountId")))
+                .setEventTimestamp(
+                    com.google.finapp.Timestamp.newBuilder()
+                        .setNanos(resultSet.getTimestamp("EventTimestamp").getNanos())
+                        .setSeconds(resultSet.getTimestamp("EventTimestamp").getSeconds()))
+                .setIsCredit(resultSet.getBoolean("IsCredit"))
+                .setAmount(resultSet.getString("Amount"))
+                .setDescription(resultSet.getString("Description"))
+                .build());
       }
       return transactionHistoriesBuilder.build();
     } catch (SQLException e) {

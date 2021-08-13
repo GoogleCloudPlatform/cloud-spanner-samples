@@ -30,7 +30,7 @@ service FinApp {
 
   rpc MoveAccountBalance(MoveAccountBalanceRequest) returns (MoveAccountBalanceResponse) {}
 
-  rpc GetRecentTransactionHistoryForAccount(GetRecentTransactionsForAccountRequest) returns (GetRecentTransactionsForAccountResponse) {}
+  rpc GetRecentTransactionsForAccount(GetRecentTransactionsForAccountRequest) returns (GetRecentTransactionsForAccountResponse) {}
 }
 
 message CreateCustomerRequest {

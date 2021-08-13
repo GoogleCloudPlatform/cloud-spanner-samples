@@ -53,7 +53,7 @@ public interface SpannerDaoInterface {
    * @return mapping of both accounts' balances after the transfer was made, keyed by id
    */
   ImmutableMap<ByteArray, BigDecimal> moveAccountBalance(
-          ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws SpannerDaoException;
+      ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws SpannerDaoException;
 
   /**
    * Uses accountId to fetch TransactionHistory based on range pf timestamps.
