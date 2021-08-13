@@ -179,7 +179,6 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
                     + "FROM TransactionHistory "
                     + "WHERE AccountId = ? AND EventTimestamp BETWEEN ? AND ? "
                     + "ORDER BY EventTimestamp")) {
-      connection.setAutoCommit(false);
       byte[] accountIdArray = accountId.toByteArray();
       java.sql.Timestamp javaBeginTimestamp = beginTimestamp.toSqlTimestamp();
       java.sql.Timestamp javaEndTimestamp = endTimestamp.toSqlTimestamp();
