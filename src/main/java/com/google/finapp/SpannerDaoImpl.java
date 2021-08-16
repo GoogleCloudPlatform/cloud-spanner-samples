@@ -179,7 +179,9 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                               + "FROM TransactionHistory "
                               + "WHERE AccountId = %s AND EventTimestamp BETWEEN %s AND %s "
                               + "ORDER BY EventTimestamp",
-                          accountId, beginTimestamp, endTimestamp)));
+                          accountId.toString(),
+                          beginTimestamp.toString(),
+                          endTimestamp.toString())));
       return readTransactionHistories(resultSet);
     } catch (SpannerException e) {
       throw new SpannerDaoException(e);
