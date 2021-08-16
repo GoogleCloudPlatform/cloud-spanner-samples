@@ -168,20 +168,22 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   public ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
       ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp)
       throws SpannerDaoException {
+    Statement statement =
+        Statement.newBuilder(
+                "SELECT * "
+                    + "FROM TransactionHistory "
+                    + "WHERE AccountId = @accountId AND "
+                    + "EventTimestamp BETWEEN @beginTimestamp AND @endTimestamp "
+                    + "ORDER BY EventTimestamp")
+            .bind("accountId")
+            .to(accountId)
+            .bind("beginTimestamp")
+            .to(beginTimestamp.toString())
+            .bind("endTimestamp")
+            .to(endTimestamp.toString())
+            .build();
     try {
-      ResultSet resultSet =
-          databaseClient
-              .singleUse()
-              .executeQuery(
-                  Statement.of(
-                      String.format(
-                          "SELECT * "
-                              + "FROM TransactionHistory "
-                              + "WHERE AccountId = %s AND EventTimestamp BETWEEN %s AND %s "
-                              + "ORDER BY EventTimestamp",
-                          accountId.toString(),
-                          beginTimestamp.toString(),
-                          endTimestamp.toString())));
+      ResultSet resultSet = databaseClient.singleUse().executeQuery(statement);
       return readTransactionHistories(resultSet);
     } catch (SpannerException e) {
       throw new SpannerDaoException(e);
