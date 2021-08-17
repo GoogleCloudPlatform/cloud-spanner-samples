@@ -156,10 +156,6 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     } catch (SpannerDaoException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
-    } catch (IllegalArgumentException e) {
-      responseObserver.onError(
-          Status.INVALID_ARGUMENT.withCause(e).withDescription(e.getMessage()).asException());
-      return;
     }
     GetRecentTransactionsForAccountResponse response =
         GetRecentTransactionsForAccountResponse.newBuilder()
