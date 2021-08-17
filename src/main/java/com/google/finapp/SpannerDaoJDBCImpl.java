@@ -197,7 +197,6 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
                         .setSeconds(resultSet.getTimestamp("EventTimestamp").getSeconds()))
                 .setIsCredit(resultSet.getBoolean("IsCredit"))
                 .setAmount(resultSet.getString("Amount"))
-                .setDescription(resultSet.getString("Description"))
                 .build());
       }
       return transactionHistoriesBuilder.build();

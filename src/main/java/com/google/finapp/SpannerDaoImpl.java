@@ -184,28 +184,23 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
             .build();
     try {
       ResultSet resultSet = databaseClient.singleUse().executeQuery(statement);
-      return readTransactionHistories(resultSet);
+      ImmutableList.Builder<TransactionEntry> transactionHistoriesBuilder = ImmutableList.builder();
+      while (resultSet.next()) {
+        transactionHistoriesBuilder.add(
+            TransactionEntry.newBuilder()
+                .setAccountId(ByteString.copyFrom(resultSet.getBytes("AccountId").toByteArray()))
+                .setEventTimestamp(
+                    com.google.finapp.Timestamp.newBuilder()
+                        .setNanos(resultSet.getTimestamp("EventTimestamp").getNanos())
+                        .setSeconds(resultSet.getTimestamp("EventTimestamp").getSeconds()))
+                .setIsCredit(resultSet.getBoolean("IsCredit"))
+                .setAmount(resultSet.getBigDecimal("Amount").toString())
+                .build());
+      }
+      return transactionHistoriesBuilder.build();
     } catch (SpannerException e) {
       throw new SpannerDaoException(e);
     }
-  }
-
-  private ImmutableList<TransactionEntry> readTransactionHistories(ResultSet resultSet) {
-    ImmutableList.Builder<TransactionEntry> transactionHistoriesBuilder = ImmutableList.builder();
-    while (resultSet.next()) {
-      transactionHistoriesBuilder.add(
-          TransactionEntry.newBuilder()
-              .setAccountId(ByteString.copyFrom(resultSet.getBytes("AccountId").toByteArray()))
-              .setEventTimestamp(
-                  com.google.finapp.Timestamp.newBuilder()
-                      .setNanos(resultSet.getTimestamp("EventTimestamp").getNanos())
-                      .setSeconds(resultSet.getTimestamp("EventTimestamp").getSeconds()))
-              .setIsCredit(resultSet.getBoolean("IsCredit"))
-              .setAmount(resultSet.getString("Amount"))
-              .setDescription(resultSet.getString("Description"))
-              .build());
-    }
-    return transactionHistoriesBuilder.build();
   }
 
   private ImmutableMap<ByteArray, BigDecimal> readAccountBalances(
