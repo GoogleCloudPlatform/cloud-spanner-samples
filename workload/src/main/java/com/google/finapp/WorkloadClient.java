@@ -1,5 +1,6 @@
 package com.google.finapp;
 
+import com.google.cloud.ByteArray;
 import com.google.finapp.FinAppGrpc.FinAppBlockingStub;
 import com.google.protobuf.ByteString;
 import io.grpc.*;
@@ -26,6 +27,20 @@ public class WorkloadClient {
             .setStatus(status)
             .build();
     CreateAccountResponse response = blockingStub.createAccount(request);
+    System.out.println(ByteArray.copyFrom(response.getAccountId().toByteArray()));
     return response.getAccountId();
+  }
+
+  public void moveAccountBalance(ByteString fromAccountId, ByteString toAccountId, String amount) {
+    FinAppBlockingStub blockingStub = FinAppGrpc.newBlockingStub(channel);
+    MoveAccountBalanceRequest request =
+        MoveAccountBalanceRequest.newBuilder()
+            .setAmount(amount)
+            .setFromAccountId(fromAccountId)
+            .setToAccountId(toAccountId)
+            .build();
+    MoveAccountBalanceResponse response = blockingStub.moveAccountBalance(request);
+    System.out.println(
+        response.getFromAccountIdBalance() + " and " + response.getToAccountIdBalance());
   }
 }

@@ -37,6 +37,12 @@
             <artifactId>google-cloud-core</artifactId>
             <version>1.95.2</version>
         </dependency>
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+            <version>3.8.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <parent>
