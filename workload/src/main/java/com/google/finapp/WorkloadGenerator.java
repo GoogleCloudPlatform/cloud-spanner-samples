@@ -26,7 +26,7 @@ public class WorkloadGenerator {
     }
     Random random = new Random();
     int numIds = ids.size();
-    for (int i = 0; i < 1000; i++) {
+    while (true) {
       ByteString fromId = ids.get(random.nextInt(numIds));
       ByteString toId = ids.get(random.nextInt(numIds));
       if (fromId.equals(toId)) {
