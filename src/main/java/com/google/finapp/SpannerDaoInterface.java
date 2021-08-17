@@ -56,10 +56,10 @@ public interface SpannerDaoInterface {
       ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws SpannerDaoException;
 
   /**
-   * Uses accountId to fetch TransactionHistory based on range pf timestamps.
+   * Uses accountId to fetch TransactionHistory based on range of timestamps.
    *
    * @param beginTimestamp timestamp for where query begins
-   * @param endTimestamp timestamp for where query ends, default will be most recent transaction
+   * @param endTimestamp timestamp for where query ends
    * @returns ImmutableList of TransactionEntry objects from the range of timestamps given
    */
   ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
