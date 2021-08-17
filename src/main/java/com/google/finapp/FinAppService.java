@@ -148,21 +148,22 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       StreamObserver<GetRecentTransactionsForAccountResponse> responseObserver) {
     ImmutableList<TransactionEntry> transactionEntries;
     ByteArray accountId = ByteArray.copyFrom(request.getAccountId().toByteArray());
-    Timestamp beginTimestamp =
-        Timestamp.ofTimeSecondsAndNanos(
-            request.getBeginTimestamp().getSeconds(), request.getBeginTimestamp().getNanos());
-    Timestamp endTimestamp =
-        Timestamp.ofTimeSecondsAndNanos(
-            request.getEndTimestamp().getSeconds(), request.getEndTimestamp().getNanos());
+    Timestamp beginTimestamp = Timestamp.parseTimestamp(request.getBeginTimestamp());
+    Timestamp endTimestamp = Timestamp.parseTimestamp(request.getEndTimestamp());
     try {
       transactionEntries =
           spannerDao.getRecentTransactionsForAccount(accountId, beginTimestamp, endTimestamp);
     } catch (SpannerDaoException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
+    } catch (IllegalArgumentException e) {
+      responseObserver.onError(
+          Status.INVALID_ARGUMENT.withCause(e).withDescription(e.getMessage()).asException());
+      return;
     }
     GetRecentTransactionsForAccountResponse response =
         GetRecentTransactionsForAccountResponse.newBuilder()
+            .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
             .addAllTransactionEntry(transactionEntries)
             .build();
     responseObserver.onNext(response);
