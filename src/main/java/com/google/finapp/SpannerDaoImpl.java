@@ -27,8 +27,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 final class SpannerDaoImpl implements SpannerDaoInterface {
 
@@ -171,46 +169,45 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
           String.format("Amount transferred cannot be negative. amount: %s", amount.toString()));
     }
     try {
-      List<BigDecimal> newBalanceList = new ArrayList();
-      databaseClient
-          .readWriteTransaction()
-          .run(
-              transaction -> {
-                // Get account balances.
-                ResultSet resultSet =
-                    transaction.read(
-                        "Account",
-                        KeySet.singleKey(Key.of(accountId)),
-                        ImmutableList.of("Balance"));
-                BigDecimal oldBalance = null;
-                while (resultSet.next()) {
-                  oldBalance = resultSet.getBigDecimal("Balance");
-                }
-                if (oldBalance == null) {
-                  throw new IllegalArgumentException(
-                      String.format("Account not found: %s", accountId.toString()));
-                }
-                BigDecimal newBalance;
-                if (isCredit) {
-                  newBalance = oldBalance.subtract(amount);
-                } else {
-                  newBalance = oldBalance.add(amount);
-                }
+      BigDecimal finalBalance =
+          databaseClient
+              .readWriteTransaction()
+              .run(
+                  transaction -> {
+                    // Get account balances.
+                    ResultSet resultSet =
+                        transaction.read(
+                            "Account",
+                            KeySet.singleKey(Key.of(accountId)),
+                            ImmutableList.of("Balance"));
+                    BigDecimal oldBalance = null;
+                    while (resultSet.next()) {
+                      oldBalance = resultSet.getBigDecimal("Balance");
+                    }
+                    if (oldBalance == null) {
+                      throw new IllegalArgumentException(
+                          String.format("Account not found: %s", accountId.toString()));
+                    }
+                    BigDecimal newBalance;
+                    if (isCredit) {
+                      newBalance = oldBalance.subtract(amount);
+                    } else {
+                      newBalance = oldBalance.add(amount);
+                    }
 
-                if (newBalance.signum() == -1) {
-                  throw new IllegalArgumentException(
-                      String.format(
-                          "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
-                          oldBalance.toString(), amount.toString()));
-                }
-                transaction.buffer(
-                    ImmutableList.of(
-                        buildUpdateAccountMutation(accountId, newBalance),
-                        buildInsertTransactionHistoryMutation(accountId, amount, isCredit)));
-                newBalanceList.add(newBalance);
-                return null;
-              });
-      return newBalanceList.get(0);
+                    if (newBalance.signum() == -1) {
+                      throw new IllegalArgumentException(
+                          String.format(
+                              "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
+                              oldBalance.toString(), amount.toString()));
+                    }
+                    transaction.buffer(
+                        ImmutableList.of(
+                            buildUpdateAccountMutation(accountId, newBalance),
+                            buildInsertTransactionHistoryMutation(accountId, amount, isCredit)));
+                    return newBalance;
+                  });
+      return finalBalance;
     } catch (SpannerException e) {
       // filter for IllegalArgumentExceptions thrown in lambda function above
       Throwable cause = e.getCause();
