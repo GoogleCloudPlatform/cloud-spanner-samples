@@ -12,7 +12,6 @@ public class WorkloadGenerator {
   public static void main(String[] argv) {
     ManagedChannel channel =
         ManagedChannelBuilder.forAddress("localhost", 8080).usePlaintext().build();
-    // WorkloadClient client = WorkloadClient.getWorkloadClient(channel);
     List<ByteString> ids = new ArrayList();
     for (int i = 0; i < 200; i++) {
       ids.add(
@@ -32,27 +31,5 @@ public class WorkloadGenerator {
       }
       WorkloadClient.getWorkloadClient(channel).moveAccountBalance(fromId, toId, "20");
     }
-
-    // for (int i = 0; i < 5; i++) {
-    //   new Thread(
-    //           () ->
-    //               WorkloadClient.getWorkloadClient(channel)
-    //                   .createAccount(
-    //                       "1000",
-    //                       CreateAccountRequest.Type.UNSPECIFIED_ACCOUNT_TYPE,
-    //                       Status.UNSPECIFIED_ACCOUNT_STATUS))
-    //       .start();
-    // }
-    // System.out.println(
-    //     client.createAccount(
-    //         "324",
-    //         CreateAccountRequest.Type.UNSPECIFIED_ACCOUNT_TYPE,
-    //         Status.UNSPECIFIED_ACCOUNT_STATUS));
-    // System.out.println(
-    //     WorkloadClient.getWorkloadClient(channel)
-    //         .createAccount(
-    //             "32455",
-    //             CreateAccountRequest.Type.UNSPECIFIED_ACCOUNT_TYPE,
-    //             Status.UNSPECIFIED_ACCOUNT_STATUS));
   }
 }
