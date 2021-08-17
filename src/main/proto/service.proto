@@ -95,15 +95,15 @@ message TransactionEntry {
   optional Timestamp event_timestamp = 2;
   optional bool is_credit = 3;
   optional string amount = 4;
-  optional string description = 5;
 }
 
 message GetRecentTransactionsForAccountRequest {
   optional bytes account_id = 1;
-  optional Timestamp begin_timestamp = 2;
-  optional Timestamp end_timestamp = 3;
+  optional string begin_timestamp = 2; // RFC 3339 string format
+  optional string end_timestamp = 3; // RFC 3339 string format
 }
 
 message GetRecentTransactionsForAccountResponse {
-  repeated TransactionEntry transaction_entry = 1;
+  optional bytes account_id = 1;
+  repeated TransactionEntry transaction_entry = 2;
 }
