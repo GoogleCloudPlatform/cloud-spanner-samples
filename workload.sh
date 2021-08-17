@@ -1,8 +1,6 @@
 #!/bin/bash
 
-gcloud config set auth/disable_credentials true
 gcloud config set project $1
-gcloud config set api_endpoint_overrides/spanner http://localhost:9020/
 gcloud spanner instances create $2 --config=regional-us-west1 --description="$2" --nodes=1
 gcloud config set spanner/instance $2
 gcloud spanner databases create $3 --ddl-file server/src/main/java/com/google/finapp/schema.sdl
