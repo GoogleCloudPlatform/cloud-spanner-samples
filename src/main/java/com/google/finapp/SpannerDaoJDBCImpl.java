@@ -180,11 +180,11 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
                     + "WHERE AccountId = ? AND EventTimestamp BETWEEN ? AND ? "
                     + "ORDER BY EventTimestamp")) {
       byte[] accountIdArray = accountId.toByteArray();
-      java.sql.Timestamp javaBeginTimestamp = beginTimestamp.toSqlTimestamp();
-      java.sql.Timestamp javaEndTimestamp = endTimestamp.toSqlTimestamp();
+      java.sql.Timestamp sqlBeginTimestamp = beginTimestamp.toSqlTimestamp();
+      java.sql.Timestamp sqlEndTimestamp = endTimestamp.toSqlTimestamp();
       readStatement.setBytes(1, accountIdArray);
-      readStatement.setTimestamp(2, javaBeginTimestamp);
-      readStatement.setTimestamp(3, javaEndTimestamp);
+      readStatement.setTimestamp(2, sqlBeginTimestamp);
+      readStatement.setTimestamp(3, sqlEndTimestamp);
       ResultSet resultSet = readStatement.executeQuery();
       ImmutableList.Builder<TransactionEntry> transactionHistoriesBuilder = ImmutableList.builder();
       while (resultSet.next()) {
