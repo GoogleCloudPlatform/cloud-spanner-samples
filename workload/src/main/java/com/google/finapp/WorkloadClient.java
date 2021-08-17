@@ -3,7 +3,7 @@ package com.google.finapp;
 import com.google.cloud.ByteArray;
 import com.google.finapp.FinAppGrpc.FinAppBlockingStub;
 import com.google.protobuf.ByteString;
-import io.grpc.*;
+import io.grpc.ManagedChannel;
 
 public class WorkloadClient {
 
