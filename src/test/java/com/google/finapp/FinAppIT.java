@@ -273,7 +273,7 @@ public class FinAppIT {
   @Test
   public void createTransactionForAccount_isCredit_subtractsFromAccountBalance() throws Exception {
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
-    BigDecimal oldAccountBalance = new BigDecimal(20);
+    BigDecimal oldAccountBalance = new BigDecimal(60);
     BigDecimal amount = new BigDecimal(10);
     boolean isCredit = true;
     databaseClient.write(
@@ -321,7 +321,7 @@ public class FinAppIT {
   @Test
   public void createTransactionForAccount_notIsCredit_addsToAccountBalance() throws Exception {
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
-    BigDecimal oldAccountBalance = new BigDecimal(20);
+    BigDecimal oldAccountBalance = new BigDecimal(75);
     BigDecimal amount = new BigDecimal(10);
     boolean isCredit = false;
     databaseClient.write(
