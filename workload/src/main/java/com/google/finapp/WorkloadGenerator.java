@@ -14,12 +14,15 @@ public class WorkloadGenerator {
         ManagedChannelBuilder.forAddress("localhost", 8080).usePlaintext().build();
     List<ByteString> ids = new ArrayList();
     for (int i = 0; i < 200; i++) {
-      ids.add(
+      ByteString response =
           WorkloadClient.getWorkloadClient(channel)
               .createAccount(
                   "1000",
                   CreateAccountRequest.Type.UNSPECIFIED_ACCOUNT_TYPE,
-                  Status.UNSPECIFIED_ACCOUNT_STATUS));
+                  Status.UNSPECIFIED_ACCOUNT_STATUS);
+      if (response != null) {
+        ids.add(response);
+      }
     }
     Random random = new Random();
     int numIds = ids.size();
