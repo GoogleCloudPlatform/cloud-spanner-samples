@@ -12,7 +12,7 @@ public class WorkloadGenerator {
   public static void main(String[] argv) {
     ManagedChannel channel =
         ManagedChannelBuilder.forAddress("localhost", 8080).usePlaintext().build();
-    List<ByteString> ids = new ArrayList();
+    List<ByteString> ids = new ArrayList<>();
     for (int i = 0; i < 200; i++) {
       ByteString response =
           WorkloadClient.getWorkloadClient(channel)
