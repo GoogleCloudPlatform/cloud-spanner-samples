@@ -27,6 +27,9 @@ public class WorkloadGenerator {
     for (int i = 0; i < 1000; i++) {
       ByteString fromId = ids.get(random.nextInt(numIds));
       ByteString toId = ids.get(random.nextInt(numIds));
+      if (fromId.equals(toId)) {
+        continue;
+      }
       WorkloadClient.getWorkloadClient(channel).moveAccountBalance(fromId, toId, "20");
     }
 
