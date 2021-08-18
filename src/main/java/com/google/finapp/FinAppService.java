@@ -159,7 +159,6 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     }
     GetRecentTransactionsForAccountResponse response =
         GetRecentTransactionsForAccountResponse.newBuilder()
-            .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
             .addAllTransactionEntry(transactionEntries)
             .build();
     responseObserver.onNext(response);

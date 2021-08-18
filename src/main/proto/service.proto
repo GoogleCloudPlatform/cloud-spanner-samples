@@ -104,6 +104,5 @@ message GetRecentTransactionsForAccountRequest {
 }
 
 message GetRecentTransactionsForAccountResponse {
-  optional bytes account_id = 1;
   repeated TransactionEntry transaction_entry = 2;
 }
