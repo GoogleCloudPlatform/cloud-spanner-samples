@@ -22,6 +22,8 @@ option java_outer_classname = "ServiceProto";
 
 service FinApp {
 
+  rpc Ping(Empty) returns (PingResponse) {}
+
   rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse) {}
 
   rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse) {}
@@ -29,6 +31,12 @@ service FinApp {
   rpc CreateCustomerRole(CreateCustomerRoleRequest) returns (CreateCustomerRoleResponse) {}
 
   rpc MoveAccountBalance(MoveAccountBalanceRequest) returns (MoveAccountBalanceResponse) {}
+}
+
+message Empty {}
+
+message PingResponse {
+  optional string pong = 1;
 }
 
 message CreateCustomerRequest {

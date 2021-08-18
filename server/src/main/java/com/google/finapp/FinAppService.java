@@ -33,6 +33,12 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
   }
 
   @Override
+  public void ping(Empty empty, StreamObserver<PingResponse> responseObserver) {
+    responseObserver.onNext(PingResponse.getDefaultInstance());
+    responseObserver.onCompleted();
+  }
+
+  @Override
   public void createCustomer(
       CreateCustomerRequest customer, StreamObserver<CreateCustomerResponse> responseObserver) {
     ByteArray customerId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
