@@ -303,18 +303,24 @@ public class FinAppIT {
             transaction.read(
                 "Account", KeySet.singleKey(Key.of(accountId)), Arrays.asList("Balance")); ) {
       int count = 0;
+      boolean transactionSeen = false;
+      boolean accountSeen = false;
       while (transactionResultSet.next()) {
         if (transactionResultSet.getBytes(2).equals(accountId)) {
           assertThat(transactionResultSet.getBigDecimal(0)).isEqualTo(amount);
           assertThat(transactionResultSet.getBoolean(1)).isEqualTo(isCredit);
           count++;
+          transactionSeen = true;
         }
       }
       while (accountResultSet.next()) {
         assertThat(accountResultSet.getBigDecimal(0)).isEqualTo(oldAccountBalance.subtract(amount));
         count++;
+        accountSeen = true;
       }
       assertThat(count).isEqualTo(2);
+      assertThat(transactionSeen).isTrue();
+      assertThat(accountSeen).isTrue();
     }
   }
 
@@ -351,18 +357,24 @@ public class FinAppIT {
             transaction.read(
                 "Account", KeySet.singleKey(Key.of(accountId)), Arrays.asList("Balance")); ) {
       int count = 0;
+      boolean transactionSeen = false;
+      boolean accountSeen = false;
       while (transactionResultSet.next()) {
         if (transactionResultSet.getBytes(2).equals(accountId)) {
           assertThat(transactionResultSet.getBigDecimal(0)).isEqualTo(amount);
           assertThat(transactionResultSet.getBoolean(1)).isEqualTo(isCredit);
           count++;
+          transactionSeen = true;
         }
       }
       while (accountResultSet.next()) {
         assertThat(accountResultSet.getBigDecimal(0)).isEqualTo(oldAccountBalance.add(amount));
         count++;
+        accountSeen = true;
       }
       assertThat(count).isEqualTo(2);
+      assertThat(transactionSeen).isTrue();
+      assertThat(accountSeen).isTrue();
     }
   }
 
