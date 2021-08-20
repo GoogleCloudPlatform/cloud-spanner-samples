@@ -27,6 +27,7 @@ import com.google.cloud.spanner.IntegrationTestEnv;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
+import com.google.cloud.spanner.ReadOnlyTransaction;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
@@ -117,7 +118,7 @@ public class FinAppIT {
             .singleUse()
             .read(
                 "Account",
-                KeySet.newBuilder().addKey(Key.of(accountId)).build(),
+                KeySet.singleKey(Key.of(accountId)),
                 Arrays.asList("AccountType", "AccountStatus", "Balance"))) {
       int count = 0;
       while (resultSet.next()) {
@@ -267,5 +268,163 @@ public class FinAppIT {
     assertThrows(
         IllegalArgumentException.class,
         () -> spannerDao.moveAccountBalance(fromAccountId, toAccountId, amount));
+  }
+
+  @Test
+  public void createTransactionForAccount_isCredit_subtractsFromAccountBalance() throws Exception {
+    ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal oldAccountBalance = new BigDecimal(60);
+    BigDecimal amount = new BigDecimal(10);
+    boolean isCredit = true;
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(accountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(oldAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build()));
+    BigDecimal outputNewBalance =
+        spannerDao.createTransactionForAccount(accountId, amount, isCredit);
+    assertThat(outputNewBalance).isEqualTo(oldAccountBalance.subtract(amount));
+    try (ReadOnlyTransaction transaction = databaseClient.readOnlyTransaction();
+        ResultSet transactionResultSet =
+            transaction.read(
+                "TransactionHistory",
+                KeySet.all(),
+                Arrays.asList("Amount", "IsCredit", "AccountId"));
+        ResultSet accountResultSet =
+            transaction.read(
+                "Account", KeySet.singleKey(Key.of(accountId)), Arrays.asList("Balance")); ) {
+      int count = 0;
+      boolean transactionSeen = false;
+      boolean accountSeen = false;
+      while (transactionResultSet.next()) {
+        if (transactionResultSet.getBytes(2).equals(accountId)) {
+          assertThat(transactionResultSet.getBigDecimal(0)).isEqualTo(amount);
+          assertThat(transactionResultSet.getBoolean(1)).isEqualTo(isCredit);
+          count++;
+          transactionSeen = true;
+        }
+      }
+      while (accountResultSet.next()) {
+        assertThat(accountResultSet.getBigDecimal(0)).isEqualTo(oldAccountBalance.subtract(amount));
+        count++;
+        accountSeen = true;
+      }
+      assertThat(count).isEqualTo(2);
+      assertThat(transactionSeen).isTrue();
+      assertThat(accountSeen).isTrue();
+    }
+  }
+
+  @Test
+  public void createTransactionForAccount_notIsCredit_addsToAccountBalance() throws Exception {
+    ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal oldAccountBalance = new BigDecimal(75);
+    BigDecimal amount = new BigDecimal(10);
+    boolean isCredit = false;
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(accountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(oldAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build()));
+    BigDecimal outputNewBalance =
+        spannerDao.createTransactionForAccount(accountId, amount, isCredit);
+    assertThat(outputNewBalance).isEqualTo(oldAccountBalance.add(amount));
+    try (ReadOnlyTransaction transaction = databaseClient.readOnlyTransaction();
+        ResultSet transactionResultSet =
+            transaction.read(
+                "TransactionHistory",
+                KeySet.all(),
+                Arrays.asList("Amount", "IsCredit", "AccountId"));
+        ResultSet accountResultSet =
+            transaction.read(
+                "Account", KeySet.singleKey(Key.of(accountId)), Arrays.asList("Balance")); ) {
+      int count = 0;
+      boolean transactionSeen = false;
+      boolean accountSeen = false;
+      while (transactionResultSet.next()) {
+        if (transactionResultSet.getBytes(2).equals(accountId)) {
+          assertThat(transactionResultSet.getBigDecimal(0)).isEqualTo(amount);
+          assertThat(transactionResultSet.getBoolean(1)).isEqualTo(isCredit);
+          count++;
+          transactionSeen = true;
+        }
+      }
+      while (accountResultSet.next()) {
+        assertThat(accountResultSet.getBigDecimal(0)).isEqualTo(oldAccountBalance.add(amount));
+        count++;
+        accountSeen = true;
+      }
+      assertThat(count).isEqualTo(2);
+      assertThat(transactionSeen).isTrue();
+      assertThat(accountSeen).isTrue();
+    }
+  }
+
+  @Test
+  public void createTransactionForAccount_negativeAmount_throwsException() throws Exception {
+    ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal oldAccountBalance = new BigDecimal(20);
+    BigDecimal amount = new BigDecimal(-10);
+    boolean isCredit = false;
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(accountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(oldAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build()));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> spannerDao.createTransactionForAccount(accountId, amount, isCredit));
+  }
+
+  @Test
+  public void createTransactionForAccount_tooLargeAmount_throwsException() throws Exception {
+    ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal oldAccountBalance = new BigDecimal(20);
+    BigDecimal amount = new BigDecimal(30);
+    boolean isCredit = true;
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(accountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(oldAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build()));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> spannerDao.createTransactionForAccount(accountId, amount, isCredit));
   }
 }
