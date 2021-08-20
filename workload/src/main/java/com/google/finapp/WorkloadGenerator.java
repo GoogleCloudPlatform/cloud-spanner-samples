@@ -9,9 +9,11 @@ import java.util.List;
 import java.util.Random;
 
 public class WorkloadGenerator {
-  public static void main(String[] argv) {
+  public static void main(String[] args) {
+    String addressName = args[0];
+    int port = Integer.parseInt(args[1]);
     ManagedChannel channel =
-        ManagedChannelBuilder.forAddress("localhost", 8080).usePlaintext().build();
+        ManagedChannelBuilder.forAddress(addressName, port).usePlaintext().build();
     List<ByteString> ids = new ArrayList<>();
     for (int i = 0; i < 200; i++) {
       ByteString response =
