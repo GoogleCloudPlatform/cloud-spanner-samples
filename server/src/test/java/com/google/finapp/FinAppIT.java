@@ -105,6 +105,29 @@ public class FinAppIT {
   }
 
   @Test
+  public void createCustomer_createsSingleValidCustomer() throws Exception {
+    ByteArray customerId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    String name = "customer name";
+    String address = "customer address";
+    spannerDao.createCustomer(customerId, name, address);
+    try (ResultSet resultSet =
+        databaseClient
+            .singleUse()
+            .read(
+                "Customer",
+                KeySet.singleKey(Key.of(customerId)),
+                Arrays.asList("Name", "Address"))) {
+      int count = 0;
+      while (resultSet.next()) {
+        assertThat(resultSet.getString(0)).isEqualTo(name);
+        assertThat(resultSet.getString(1)).isEqualTo(address);
+        count++;
+      }
+      assertThat(count).isEqualTo(1);
+    }
+  }
+
+  @Test
   public void createAccount_createsSingleValidAccount() throws Exception {
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     BigDecimal amount = new BigDecimal(2);
