@@ -26,6 +26,9 @@ public class WorkloadGenerator {
     }
     Random random = new Random();
     int numIds = ids.size();
+    if (numIds == 0) {
+      throw new RuntimeException("No accounts were created successfully.");
+    }
     while (true) {
       ByteString fromId = ids.get(random.nextInt(numIds));
       ByteString toId = ids.get(random.nextInt(numIds));
