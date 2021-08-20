@@ -105,7 +105,7 @@ public class FinAppIT {
   }
 
   @Test
-  public void createCustomer_createsSingleValidCustomer() throws Exception {
+  public void createCustomer_createsValidCustomer() throws Exception {
     ByteArray customerId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     String name = "customer name";
     String address = "customer address";
@@ -128,7 +128,7 @@ public class FinAppIT {
   }
 
   @Test
-  public void createAccount_createsSingleValidAccount() throws Exception {
+  public void createAccount_createsValidAccount() throws Exception {
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     BigDecimal amount = new BigDecimal(2);
     spannerDao.createAccount(
@@ -148,6 +148,52 @@ public class FinAppIT {
         assertThat(resultSet.getLong(0)).isEqualTo(0);
         assertThat(resultSet.getLong(1)).isEqualTo(0);
         assertThat(resultSet.getBigDecimal(2)).isEqualTo(amount);
+        count++;
+      }
+      assertThat(count).isEqualTo(1);
+    }
+  }
+
+  @Test
+  public void createCustomerRole_createsValidCustomerRole() throws Exception {
+    ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    ByteArray customerId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    ByteArray roleId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    String roleName = "role name";
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(accountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(new BigDecimal(60))
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build(),
+            Mutation.newInsertBuilder("Customer")
+                .set("CustomerId")
+                .to(customerId)
+                .set("Name")
+                .to("customer name")
+                .set("Address")
+                .to("customer address")
+                .build()));
+    spannerDao.createCustomerRole(customerId, accountId, roleId, roleName);
+    try (ResultSet resultSet =
+        databaseClient
+            .singleUse()
+            .read(
+                "CustomerRole",
+                KeySet.singleKey(Key.of(customerId, roleId)),
+                Arrays.asList("Role", "AccountId"))) {
+      int count = 0;
+      while (resultSet.next()) {
+        assertThat(resultSet.getString(0)).isEqualTo(roleName);
+        assertThat(resultSet.getBytes(1)).isEqualTo(accountId);
         count++;
       }
       assertThat(count).isEqualTo(1);
