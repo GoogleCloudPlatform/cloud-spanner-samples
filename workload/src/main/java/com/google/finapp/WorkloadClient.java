@@ -35,7 +35,8 @@ public class WorkloadClient {
   }
 
   public ByteString createAccount(
-      String balance, CreateAccountRequest.Type type, CreateAccountRequest.Status status) {
+      String balance, CreateAccountRequest.Type type, CreateAccountRequest.Status status)
+      throws StatusRuntimeException {
     FinAppBlockingStub blockingStub = FinAppGrpc.newBlockingStub(channel);
     CreateAccountRequest request =
         CreateAccountRequest.newBuilder()
@@ -49,11 +50,12 @@ public class WorkloadClient {
       return response.getAccountId();
     } catch (StatusRuntimeException e) {
       logger.log(Level.SEVERE, String.format("Error creating account %s", request));
-      return null;
+      throw e;
     }
   }
 
-  public void moveAccountBalance(ByteString fromAccountId, ByteString toAccountId, String amount) {
+  public void moveAccountBalance(ByteString fromAccountId, ByteString toAccountId, String amount)
+      throws StatusRuntimeException {
     FinAppBlockingStub blockingStub = FinAppGrpc.newBlockingStub(channel);
     MoveAccountBalanceRequest request =
         MoveAccountBalanceRequest.newBuilder()
@@ -64,10 +66,9 @@ public class WorkloadClient {
     try {
       MoveAccountBalanceResponse response = blockingStub.moveAccountBalance(request);
       logger.log(Level.INFO, String.format("Move made %s", response));
-      return;
     } catch (StatusRuntimeException e) {
       logger.log(Level.SEVERE, String.format("Error making move %s", request));
-      return;
+      throw e;
     }
   }
 }

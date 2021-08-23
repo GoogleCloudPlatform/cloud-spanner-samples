@@ -17,13 +17,17 @@ package com.google.finapp;
 import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class WorkloadMain {
   private static final String DEFAULT_ACCOUNT_BALANCE = "10000";
   private static final String DEFAULT_TRANSFER_AMOUNT = "20";
+  private static final Logger logger = Logger.getLogger(WorkloadMain.class.getName());
 
   private static class WorkloadGenerator {
     private final ManagedChannel channel;
@@ -34,15 +38,21 @@ public class WorkloadMain {
     }
 
     void seedData() {
+      int numFailedCreateAccounts = 0;
       for (int i = 0; i < 200; i++) {
-        ByteString response =
-            WorkloadClient.getWorkloadClient(channel)
-                .createAccount(
-                    DEFAULT_ACCOUNT_BALANCE,
-                    CreateAccountRequest.Type.UNSPECIFIED_ACCOUNT_TYPE,
-                    CreateAccountRequest.Status.UNSPECIFIED_ACCOUNT_STATUS);
-        if (response != null) {
+        try {
+          ByteString response =
+              WorkloadClient.getWorkloadClient(channel)
+                  .createAccount(
+                      DEFAULT_ACCOUNT_BALANCE,
+                      CreateAccountRequest.Type.UNSPECIFIED_ACCOUNT_TYPE,
+                      CreateAccountRequest.Status.UNSPECIFIED_ACCOUNT_STATUS);
           ids.add(response);
+        } catch (StatusRuntimeException e) {
+          numFailedCreateAccounts++;
+          logger.log(
+              Level.WARNING,
+              String.format("CreateAccount failed. Total count: %d", numFailedCreateAccounts));
         }
       }
     }
