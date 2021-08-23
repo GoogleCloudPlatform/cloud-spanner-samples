@@ -20,6 +20,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
 import com.google.cloud.ByteArray;
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.Database;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.IntegrationTest;
@@ -267,5 +268,46 @@ public class FinAppIT {
     assertThrows(
         IllegalArgumentException.class,
         () -> spannerDao.moveAccountBalance(fromAccountId, toAccountId, amount));
+  }
+
+  @Test
+  public void getRecentTransactionsForAccount_valid() throws Exception {
+    ByteArray fromAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    ByteArray toAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal fromAccountBalance = new BigDecimal(20);
+    BigDecimal toAccountBalance = new BigDecimal(0);
+    BigDecimal amount = new BigDecimal(10);
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(fromAccountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(fromAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build(),
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(toAccountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(toAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build()));
+    ImmutableMap result = spannerDao.moveAccountBalance(fromAccountId, toAccountId, amount);
+    ImmutableList history =
+        spannerDao.getRecentTransactionsForAccount(
+            fromAccountId, Timestamp.MIN_VALUE, Timestamp.MAX_VALUE);
+    assertThat(history).hasSize(1);
+    assertThat(history.get(0)).isInstanceOf(TransactionEntry.class);
   }
 }
