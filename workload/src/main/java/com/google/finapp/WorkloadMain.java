@@ -32,7 +32,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-public class WorkloadMain {
+public final class WorkloadMain {
   private static final String DEFAULT_ACCOUNT_BALANCE = "10000";
   private static final String DEFAULT_TRANSFER_AMOUNT = "20";
   private static final Logger logger = Logger.getLogger(WorkloadMain.class.getName());
