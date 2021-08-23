@@ -18,11 +18,19 @@ import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 public class WorkloadMain {
   private static final String DEFAULT_ACCOUNT_BALANCE = "10000";
@@ -76,12 +84,56 @@ public class WorkloadMain {
   }
 
   public static void main(String[] args) {
-    String addressName = args[0];
-    int port = Integer.parseInt(args[1]);
+    CommandLine cmd = parseArgs(args);
+    String addressName = cmd.getOptionValue("a");
+    int port;
+    try {
+      port = ((Long) cmd.getParsedOptionValue("p")).intValue();
+    } catch (ParseException e) {
+      throw new IllegalArgumentException("Input value for port cannot be parsed.", e);
+    }
     ManagedChannel channel =
         ManagedChannelBuilder.forAddress(addressName, port).usePlaintext().build();
     WorkloadGenerator workloadGenerator = new WorkloadGenerator(channel);
     workloadGenerator.seedData();
     workloadGenerator.startSteadyLoad();
+  }
+
+  private static CommandLine parseArgs(String[] args) {
+    Options options = new Options();
+
+    options.addOption(
+        Option.builder("a")
+            .longOpt("address-name")
+            .desc("server address name")
+            .required(true)
+            .type(String.class)
+            .hasArg()
+            .build());
+
+    options.addOption(
+        Option.builder("p")
+            .longOpt("port")
+            .desc("server port")
+            .required(true)
+            .type(Number.class)
+            .hasArg()
+            .build());
+
+    CommandLineParser parser = new DefaultParser();
+    HelpFormatter formatter = new HelpFormatter();
+
+    try {
+      return parser.parse(options, args);
+    } catch (ParseException e) {
+      System.out.println(e.getMessage());
+      formatter.printHelp(
+          String.format(
+              "java -jar %s",
+              Paths.get("WorkloadMain.java").toAbsolutePath().normalize().toString()),
+          options); // TODO: update syntax
+      System.exit(1);
+      return null;
+    }
   }
 }
