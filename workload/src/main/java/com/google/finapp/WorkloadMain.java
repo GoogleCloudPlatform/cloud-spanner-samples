@@ -53,8 +53,8 @@ public final class WorkloadMain {
               WorkloadClient.getWorkloadClient(channel)
                   .createAccount(
                       DEFAULT_ACCOUNT_BALANCE,
-                      CreateAccountRequest.Type.UNSPECIFIED_ACCOUNT_TYPE,
-                      CreateAccountRequest.Status.UNSPECIFIED_ACCOUNT_STATUS);
+                      CreateAccountRequest.Type.CHECKING,
+                      CreateAccountRequest.Status.ACTIVE);
           ids.add(response);
         } catch (StatusRuntimeException e) {
           numFailedCreateAccounts++;

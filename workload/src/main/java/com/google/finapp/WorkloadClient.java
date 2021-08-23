@@ -23,11 +23,11 @@ import java.util.logging.Logger;
 
 public class WorkloadClient {
 
-  private final ManagedChannel channel;
-  private static Logger logger = Logger.getLogger(WorkloadClient.class.getName());
+  private final FinAppBlockingStub blockingStub;
+  private static final Logger logger = Logger.getLogger(WorkloadClient.class.getName());
 
   private WorkloadClient(ManagedChannel channel) {
-    this.channel = channel;
+    this.blockingStub = FinAppGrpc.newBlockingStub(channel);
   }
 
   public static WorkloadClient getWorkloadClient(ManagedChannel channel) {
@@ -37,7 +37,6 @@ public class WorkloadClient {
   public ByteString createAccount(
       String balance, CreateAccountRequest.Type type, CreateAccountRequest.Status status)
       throws StatusRuntimeException {
-    FinAppBlockingStub blockingStub = FinAppGrpc.newBlockingStub(channel);
     CreateAccountRequest request =
         CreateAccountRequest.newBuilder()
             .setBalance(balance)
@@ -56,7 +55,6 @@ public class WorkloadClient {
 
   public void moveAccountBalance(ByteString fromAccountId, ByteString toAccountId, String amount)
       throws StatusRuntimeException {
-    FinAppBlockingStub blockingStub = FinAppGrpc.newBlockingStub(channel);
     MoveAccountBalanceRequest request =
         MoveAccountBalanceRequest.newBuilder()
             .setAmount(amount)
