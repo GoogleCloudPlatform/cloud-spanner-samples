@@ -37,6 +37,17 @@ for client libraries to work.
         "name: 'google' address: 'amphitheatre pkwy'"
     ```
 
+## How to run the workload generator
+
+1. Run the application in a separate terminal.
+
+2. In the `cloud-spanner-samples/workload` directory, run
+ 
+    ```
+    $ mvn clean compile assembly:single
+    $ java -jar target/workload-1.0-SNAPSHOT-jar-with-dependencies.jar --address-name localhost --port 8080 --num-accounts 200 
+    ```
+
 ## How to run the application tests
 
 1. Set up the emulator as described in #1 above.
