@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Random;
 
 public class WorkloadGenerator {
+  private static final String DEFAULT_ACCOUNT_BALANCE = "10000";
+
   public static void main(String[] args) {
     String addressName = args[0];
     int port = Integer.parseInt(args[1]);
@@ -33,9 +35,9 @@ public class WorkloadGenerator {
       ByteString response =
           WorkloadClient.getWorkloadClient(channel)
               .createAccount(
-                  "1000",
+                  DEFAULT_ACCOUNT_BALANCE,
                   CreateAccountRequest.Type.UNSPECIFIED_ACCOUNT_TYPE,
-                  Status.UNSPECIFIED_ACCOUNT_STATUS);
+                  CreateAccountRequest.Status.UNSPECIFIED_ACCOUNT_STATUS);
       if (response != null) {
         ids.add(response);
       }
@@ -43,7 +45,7 @@ public class WorkloadGenerator {
     Random random = new Random();
     int numIds = ids.size();
     if (numIds == 0) {
-      throw new RuntimeException("No accounts were created successfully.");
+      throw new IllegalStateException("No accounts were created successfully.");
     }
     while (true) {
       ByteString fromId = ids.get(random.nextInt(numIds));
