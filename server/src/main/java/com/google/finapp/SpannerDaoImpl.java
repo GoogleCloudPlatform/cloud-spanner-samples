@@ -189,10 +189,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
         transactionHistoriesBuilder.add(
             TransactionEntry.newBuilder()
                 .setAccountId(ByteString.copyFrom(resultSet.getBytes("AccountId").toByteArray()))
-                .setEventTimestamp(
-                    com.google.finapp.Timestamp.newBuilder()
-                        .setNanos(resultSet.getTimestamp("EventTimestamp").getNanos())
-                        .setSeconds(resultSet.getTimestamp("EventTimestamp").getSeconds()))
+                .setEventTimestamp(resultSet.getTimestamp("EventTimestamp").toProto())
                 .setIsCredit(resultSet.getBoolean("IsCredit"))
                 .setAmount(resultSet.getBigDecimal("Amount").toString())
                 .build());

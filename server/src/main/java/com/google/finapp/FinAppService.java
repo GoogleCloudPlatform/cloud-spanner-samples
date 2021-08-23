@@ -148,8 +148,8 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       StreamObserver<GetRecentTransactionsForAccountResponse> responseObserver) {
     ImmutableList<TransactionEntry> transactionEntries;
     ByteArray accountId = ByteArray.copyFrom(request.getAccountId().toByteArray());
-    Timestamp beginTimestamp = Timestamp.parseTimestamp(request.getBeginTimestamp());
-    Timestamp endTimestamp = Timestamp.parseTimestamp(request.getEndTimestamp());
+    Timestamp beginTimestamp = Timestamp.fromProto(request.getBeginTimestamp());
+    Timestamp endTimestamp = Timestamp.fromProto(request.getEndTimestamp());
     try {
       transactionEntries =
           spannerDao.getRecentTransactionsForAccount(accountId, beginTimestamp, endTimestamp);

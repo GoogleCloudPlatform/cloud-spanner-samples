@@ -16,6 +16,8 @@ syntax = "proto2";
 
 package com.google.finapp;
 
+import "google/protobuf/timestamp.proto";
+
 option java_multiple_files = true;
 option java_package = "com.google.finapp";
 option java_outer_classname = "ServiceProto";
@@ -85,24 +87,19 @@ message MoveAccountBalanceResponse {
   optional string to_account_id_balance = 2; // Digits[.[Digits]] or [Digits].Digits
 }
 
-message Timestamp {
-  required int64 seconds = 1;
-  required int32 nanos = 2;
-}
-
 message TransactionEntry {
   optional bytes account_id = 1;
-  optional Timestamp event_timestamp = 2;
+  optional .google.protobuf.Timestamp event_timestamp = 2;
   optional bool is_credit = 3;
   optional string amount = 4;
 }
 
 message GetRecentTransactionsForAccountRequest {
   optional bytes account_id = 1;
-  optional string begin_timestamp = 2; // RFC 3339 string format
-  optional string end_timestamp = 3; // RFC 3339 string format
+  optional .google.protobuf.Timestamp begin_timestamp = 2;
+  optional .google.protobuf.Timestamp end_timestamp = 3;
 }
 
 message GetRecentTransactionsForAccountResponse {
-  repeated TransactionEntry transaction_entry = 2;
+  repeated TransactionEntry transaction_entry = 1;
 }
