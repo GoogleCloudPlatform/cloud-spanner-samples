@@ -45,9 +45,9 @@ public class WorkloadMain {
       this.channel = channel;
     }
 
-    void seedData() {
+    void seedData(int numAccounts) {
       int numFailedCreateAccounts = 0;
-      for (int i = 0; i < 200; i++) {
+      for (int i = 0; i < numAccounts; i++) {
         try {
           ByteString response =
               WorkloadClient.getWorkloadClient(channel)
@@ -87,15 +87,17 @@ public class WorkloadMain {
     CommandLine cmd = parseArgs(args);
     String addressName = cmd.getOptionValue("a");
     int port;
+    int numAccounts;
     try {
       port = ((Long) cmd.getParsedOptionValue("p")).intValue();
+      numAccounts = ((Long) cmd.getParsedOptionValue("n")).intValue();
     } catch (ParseException e) {
       throw new IllegalArgumentException("Input value for port cannot be parsed.", e);
     }
     ManagedChannel channel =
         ManagedChannelBuilder.forAddress(addressName, port).usePlaintext().build();
     WorkloadGenerator workloadGenerator = new WorkloadGenerator(channel);
-    workloadGenerator.seedData();
+    workloadGenerator.seedData(numAccounts);
     workloadGenerator.startSteadyLoad();
   }
 
@@ -120,6 +122,15 @@ public class WorkloadMain {
             .hasArg()
             .build());
 
+    options.addOption(
+        Option.builder("n")
+            .longOpt("num-accounts")
+            .desc("number of accounts to create")
+            .required(true)
+            .type(Number.class)
+            .hasArg()
+            .build());
+
     CommandLineParser parser = new DefaultParser();
     HelpFormatter formatter = new HelpFormatter();
 
@@ -131,7 +142,7 @@ public class WorkloadMain {
           String.format(
               "java -jar %s",
               Paths.get("WorkloadMain.java").toAbsolutePath().normalize().toString()),
-          options); // TODO: update syntax
+          options);
       System.exit(1);
       return null;
     }
