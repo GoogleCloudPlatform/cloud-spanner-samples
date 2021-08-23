@@ -143,6 +143,41 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
   }
 
   @Override
+  public void createTransactionForAccount(
+      CreateTransactionForAccountRequest request,
+      StreamObserver<CreateTransactionForAccountResponse> responseObserver) {
+    BigDecimal newBalance;
+    try {
+      newBalance =
+          spannerDao.createTransactionForAccount(
+              ByteArray.copyFrom(request.getAccountId().toByteArray()),
+              new BigDecimal(request.getAmount()),
+              request.getIsCredit());
+    } catch (SpannerDaoException e) {
+      responseObserver.onError(Status.fromThrowable(e).asException());
+      return;
+    } catch (NumberFormatException e) {
+      responseObserver.onError(
+          Status.INVALID_ARGUMENT
+              .withCause(e)
+              .withDescription(
+                  String.format(
+                      "Invalid amount - %s. Expected a NUMERIC value", request.getAmount()))
+              .asException());
+      return;
+    } catch (IllegalArgumentException e) {
+      responseObserver.onError(
+          Status.INVALID_ARGUMENT.withCause(e).withDescription(e.getMessage()).asException());
+      return;
+    }
+    responseObserver.onNext(
+        CreateTransactionForAccountResponse.newBuilder()
+            .setNewBalance(newBalance.toString())
+            .build());
+    responseObserver.onCompleted();
+  }
+
+  @Override
   public void getRecentTransactionsForAccount(
       GetRecentTransactionsForAccountRequest request,
       StreamObserver<GetRecentTransactionsForAccountResponse> responseObserver) {
@@ -162,7 +197,6 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
             .addAllTransactionEntry(transactionEntries)
             .build();
     responseObserver.onNext(response);
-    responseObserver.onCompleted();
   }
 
   private static AccountType toStorageAccountType(CreateAccountRequest.Type apiAccountType) {

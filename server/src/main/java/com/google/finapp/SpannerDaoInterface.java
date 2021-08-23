@@ -50,10 +50,23 @@ public interface SpannerDaoInterface {
    * @param fromAccountId unique account id where amount will be transferred from
    * @param toAccountId unique account id where amount will be transferred to
    * @param amount amount transferred from fromAccountId to toAccountId, must be less than or equal
+   *     to fromAccountId's account balance, must be non-negative
    * @return mapping of both accounts' balances after the transfer was made, keyed by id
    */
   ImmutableMap<ByteArray, BigDecimal> moveAccountBalance(
       ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws SpannerDaoException;
+
+  /**
+   * Modifies the account's balance in the Account table, subtracting the amount if isCredit and
+   * adding the amount if not isCredit. Adds the transaction to the TransactionHistory table.
+   *
+   * @param amount amount added to or removed from the account, must be less than or equal to the
+   *     account's balance if isCredit, must be non-negative
+   * @param isCredit boolean for if the amount should be removed from the account
+   * @return new balance of the account after the transaction
+   */
+  BigDecimal createTransactionForAccount(ByteArray accountId, BigDecimal amount, boolean isCredit)
+      throws SpannerDaoException;
 
   /**
    * Uses accountId to fetch TransactionHistory based on range of timestamps.

@@ -136,7 +136,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                 if (newSourceAmount.signum() == -1) {
                   throw new IllegalArgumentException(
                       String.format(
-                          "Cannot transfer amount greater than original balance. fromAccount balance: %s, amount: %s",
+                          "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
                           accountBalances.get(fromAccountId).toString(), amount.toString()));
                 }
 
@@ -154,6 +154,63 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                 return null;
               });
       return accountBalancesBuilder.build();
+    } catch (SpannerException e) {
+      // filter for IllegalArgumentExceptions thrown in lambda function above
+      Throwable cause = e.getCause();
+      if (cause instanceof IllegalArgumentException) {
+        throw new IllegalArgumentException(cause.getMessage());
+      }
+      throw new SpannerDaoException(e);
+    }
+  }
+
+  @Override
+  public BigDecimal createTransactionForAccount(
+      ByteArray accountId, BigDecimal amount, boolean isCredit) throws SpannerDaoException {
+    if (amount.signum() == -1) {
+      throw new IllegalArgumentException(
+          String.format("Amount transferred cannot be negative. amount: %s", amount.toString()));
+    }
+    try {
+      BigDecimal finalBalance =
+          databaseClient
+              .readWriteTransaction()
+              .run(
+                  transaction -> {
+                    // Get account balances.
+                    ResultSet resultSet =
+                        transaction.read(
+                            "Account",
+                            KeySet.singleKey(Key.of(accountId)),
+                            ImmutableList.of("Balance"));
+                    BigDecimal oldBalance = null;
+                    while (resultSet.next()) {
+                      oldBalance = resultSet.getBigDecimal("Balance");
+                    }
+                    if (oldBalance == null) {
+                      throw new IllegalArgumentException(
+                          String.format("Account not found: %s", accountId.toString()));
+                    }
+                    BigDecimal newBalance;
+                    if (isCredit) {
+                      newBalance = oldBalance.subtract(amount);
+                    } else {
+                      newBalance = oldBalance.add(amount);
+                    }
+
+                    if (newBalance.signum() == -1) {
+                      throw new IllegalArgumentException(
+                          String.format(
+                              "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
+                              oldBalance.toString(), amount.toString()));
+                    }
+                    transaction.buffer(
+                        ImmutableList.of(
+                            buildUpdateAccountMutation(accountId, newBalance),
+                            buildInsertTransactionHistoryMutation(accountId, amount, isCredit)));
+                    return newBalance;
+                  });
+      return finalBalance;
     } catch (SpannerException e) {
       // filter for IllegalArgumentExceptions thrown in lambda function above
       Throwable cause = e.getCause();

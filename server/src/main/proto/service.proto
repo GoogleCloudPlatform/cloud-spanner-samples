@@ -32,6 +32,8 @@ service FinApp {
 
   rpc MoveAccountBalance(MoveAccountBalanceRequest) returns (MoveAccountBalanceResponse) {}
 
+  rpc CreateTransactionForAccount(CreateTransactionForAccountRequest) returns (CreateTransactionForAccountResponse) {}
+
   rpc GetRecentTransactionsForAccount(GetRecentTransactionsForAccountRequest) returns (GetRecentTransactionsForAccountResponse) {}
 }
 
@@ -85,6 +87,16 @@ message MoveAccountBalanceRequest {
 message MoveAccountBalanceResponse {
   optional string from_account_id_balance = 1; // Digits[.[Digits]] or [Digits].Digits
   optional string to_account_id_balance = 2; // Digits[.[Digits]] or [Digits].Digits
+}
+
+message CreateTransactionForAccountRequest {
+  optional bytes account_id = 1;
+  optional string amount = 2; // Digits[.[Digits]] or [Digits].Digits
+  optional bool is_credit = 3;
+}
+
+message CreateTransactionForAccountResponse {
+  optional string new_balance = 1; // Digits[.[Digits]] or [Digits].Digits
 }
 
 message TransactionEntry {
