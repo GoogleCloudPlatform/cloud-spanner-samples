@@ -216,15 +216,11 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       throws SpannerDaoException {
     if (beginTimestamp.compareTo(endTimestamp) > 0) {
       throw new IllegalArgumentException(
-          String.format(
-              "Invalid timestamp range. %s is after %s.",
-              beginTimestamp, endTimestamp));
+          String.format("Invalid timestamp range. %s is after %s.", beginTimestamp, endTimestamp));
     }
     if (endTimestamp.compareTo(beginTimestamp) < 0) {
       throw new IllegalArgumentException(
-          String.format(
-              "Invalid timestamp range. %s is before %s.",
-              endTimestamp, beginTimestamp));
+          String.format("Invalid timestamp range. %s is before %s.", endTimestamp, beginTimestamp));
     }
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement readStatement =
