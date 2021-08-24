@@ -225,6 +225,18 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   public ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
       ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp)
       throws SpannerDaoException {
+    if (beginTimestamp.compareTo(endTimestamp) > 0) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Invalid timestamp range. %s is after %s.",
+              beginTimestamp.toString(), endTimestamp.toString()));
+    }
+    if (endTimestamp.compareTo(beginTimestamp) < 0) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Invalid timestamp range. %s is before %s.",
+              endTimestamp.toString(), beginTimestamp.toString()));
+    }
     Statement statement =
         Statement.newBuilder(
                 "SELECT * "
@@ -239,8 +251,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
             .bind("endTimestamp")
             .to(endTimestamp.toString())
             .build();
-    try {
-      ResultSet resultSet = databaseClient.singleUse().executeQuery(statement);
+    try (ResultSet resultSet = databaseClient.singleUse().executeQuery(statement)) {
       ImmutableList.Builder<TransactionEntry> transactionHistoriesBuilder = ImmutableList.builder();
       while (resultSet.next()) {
         transactionHistoriesBuilder.add(

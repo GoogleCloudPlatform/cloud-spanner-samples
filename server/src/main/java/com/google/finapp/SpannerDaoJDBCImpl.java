@@ -214,6 +214,18 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
   public ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
       ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp)
       throws SpannerDaoException {
+    if (beginTimestamp.compareTo(endTimestamp) > 0) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Invalid timestamp range. %s is after %s.",
+              beginTimestamp.toString(), endTimestamp.toString()));
+    }
+    if (endTimestamp.compareTo(beginTimestamp) < 0) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Invalid timestamp range. %s is before %s.",
+              endTimestamp.toString(), beginTimestamp.toString()));
+    }
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement readStatement =
             connection.prepareStatement(
