@@ -93,8 +93,8 @@ public final class WorkloadMain {
     int port;
     int numAccounts;
     try {
-      port = ((Long) cmd.getParsedOptionValue("p")).intValue();
-      numAccounts = ((Long) cmd.getParsedOptionValue("n")).intValue();
+      port = ((Number) cmd.getParsedOptionValue("p")).intValue();
+      numAccounts = ((Number) cmd.getParsedOptionValue("n")).intValue();
     } catch (ParseException e) {
       throw new IllegalArgumentException("Input value cannot be parsed.", e);
     }
