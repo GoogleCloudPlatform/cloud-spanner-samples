@@ -21,6 +21,7 @@ import io.grpc.StatusRuntimeException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/** A gRPC client for the finance sample app. */
 public class WorkloadClient {
 
   private final FinAppBlockingStub blockingStub;

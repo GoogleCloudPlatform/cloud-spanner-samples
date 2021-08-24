@@ -32,6 +32,10 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+/**
+ * A workload generator for the finance sample app that creates traffic by sending gRPC requests to
+ * the server.
+ */
 public final class WorkloadMain {
   private static final String DEFAULT_ACCOUNT_BALANCE = "10000";
   private static final String DEFAULT_TRANSFER_AMOUNT = "20";
