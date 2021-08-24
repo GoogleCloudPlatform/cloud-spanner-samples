@@ -53,13 +53,12 @@ public final class WorkloadMain {
       int numFailedCreateAccounts = 0;
       for (int i = 0; i < numAccounts; i++) {
         try {
-          ByteString response =
+          ids.add(
               WorkloadClient.getWorkloadClient(channel)
                   .createAccount(
                       DEFAULT_ACCOUNT_BALANCE,
                       CreateAccountRequest.Type.CHECKING,
-                      CreateAccountRequest.Status.ACTIVE);
-          ids.add(response);
+                      CreateAccountRequest.Status.ACTIVE));
         } catch (StatusRuntimeException e) {
           numFailedCreateAccounts++;
           logger.log(
