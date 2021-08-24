@@ -96,7 +96,7 @@ public final class WorkloadMain {
       port = ((Long) cmd.getParsedOptionValue("p")).intValue();
       numAccounts = ((Long) cmd.getParsedOptionValue("n")).intValue();
     } catch (ParseException e) {
-      throw new IllegalArgumentException("Input value for port cannot be parsed.", e);
+      throw new IllegalArgumentException("Input value cannot be parsed.", e);
     }
     ManagedChannel channel =
         ManagedChannelBuilder.forAddress(addressName, port).usePlaintext().build();
