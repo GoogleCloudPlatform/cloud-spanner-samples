@@ -15,10 +15,14 @@
 package com.google.finapp;
 
 import com.google.common.collect.ImmutableList;
+import com.google.finapp.CreateAccountRequest.Status;
 import com.google.finapp.FinAppGrpc.FinAppBlockingStub;
 import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,6 +33,7 @@ public class WorkloadClient implements Runnable {
   private static final Logger logger = Logger.getLogger(WorkloadClient.class.getName());
   private final ImmutableList<Task> tasks;
   private final ImmutableList<ByteString> ids;
+  private final Random random = new Random();
 
   private WorkloadClient(
       ManagedChannel channel, ImmutableList<Task> tasks, ImmutableList<ByteString> ids) {
@@ -47,7 +52,40 @@ public class WorkloadClient implements Runnable {
   }
 
   @Override
-  public void run() {}
+  public void run() {
+    for (Task task : tasks) {
+      switch (task) {
+        case CreateAccount:
+          createAccount(
+              getRandomAmountFromRange(0, 20000),
+              CreateAccountRequest.Type.CHECKING,
+              Status.ACTIVE);
+          break;
+        case MoveAccountBalance:
+          List<ByteString> randomIds = getRandomUniqueIds(2);
+          moveAccountBalance(randomIds.get(0), randomIds.get(1), getRandomAmountFromRange(1, 200));
+          break;
+      }
+    }
+  }
+
+  private String getRandomAmountFromRange(int min, int max) {
+    return String.valueOf(random.nextInt(max - min) + min);
+  }
+
+  private List<ByteString> getRandomUniqueIds(int numIds) {
+    if (numIds < ids.size()) {
+      throw new IllegalArgumentException("Cannot get more ids than exist");
+    }
+    List<ByteString> idsCopy = new ArrayList<>(ids);
+    List<ByteString> randomIds = new ArrayList<>();
+    for (int i = 0; i < numIds; i++) {
+      int index = random.nextInt(idsCopy.size());
+      randomIds.add(idsCopy.get(index));
+      idsCopy.remove(index);
+    }
+    return randomIds;
+  }
 
   public ByteString createAccount(
       String balance, CreateAccountRequest.Type type, CreateAccountRequest.Status status)
