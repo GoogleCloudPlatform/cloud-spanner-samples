@@ -14,6 +14,7 @@
 
 package com.google.finapp;
 
+import com.google.common.collect.ImmutableList;
 import com.google.finapp.FinAppGrpc.FinAppBlockingStub;
 import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
@@ -22,18 +23,31 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /** A gRPC client for the finance sample app. */
-public class WorkloadClient {
+public class WorkloadClient implements Runnable {
 
   private final FinAppBlockingStub blockingStub;
   private static final Logger logger = Logger.getLogger(WorkloadClient.class.getName());
+  private final ImmutableList<Task> tasks;
+  private final ImmutableList<ByteString> ids;
 
-  private WorkloadClient(ManagedChannel channel) {
+  private WorkloadClient(
+      ManagedChannel channel, ImmutableList<Task> tasks, ImmutableList<ByteString> ids) {
     this.blockingStub = FinAppGrpc.newBlockingStub(channel);
+    this.tasks = tasks;
+    this.ids = ids;
   }
 
-  public static WorkloadClient getWorkloadClient(ManagedChannel channel) {
-    return new WorkloadClient(channel);
+  public static WorkloadClient getWorkloadClient(
+      ManagedChannel channel, ImmutableList<Task> tasks, ImmutableList<ByteString> ids) {
+    return new WorkloadClient(channel, tasks, ids);
   }
+
+  public static WorkloadClient getEmptyWorkloadClient(ManagedChannel channel) {
+    return new WorkloadClient(channel, ImmutableList.of(), ImmutableList.of());
+  }
+
+  @Override
+  public void run() {}
 
   public ByteString createAccount(
       String balance, CreateAccountRequest.Type type, CreateAccountRequest.Status status)

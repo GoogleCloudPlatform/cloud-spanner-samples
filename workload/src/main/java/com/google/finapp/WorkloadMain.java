@@ -54,7 +54,7 @@ public final class WorkloadMain {
       for (int i = 0; i < numAccounts; i++) {
         try {
           ids.add(
-              WorkloadClient.getWorkloadClient(channel)
+              WorkloadClient.getEmptyWorkloadClient(channel)
                   .createAccount(
                       DEFAULT_ACCOUNT_BALANCE,
                       CreateAccountRequest.Type.CHECKING,
@@ -80,7 +80,7 @@ public final class WorkloadMain {
         if (fromId.equals(toId)) {
           continue;
         }
-        WorkloadClient.getWorkloadClient(channel)
+        WorkloadClient.getEmptyWorkloadClient(channel)
             .moveAccountBalance(fromId, toId, DEFAULT_TRANSFER_AMOUNT);
       }
     }
