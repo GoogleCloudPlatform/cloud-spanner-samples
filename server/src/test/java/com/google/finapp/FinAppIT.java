@@ -431,7 +431,7 @@ public class FinAppIT {
   }
 
   @Test
-  public void getRecentTransactionsForAccount_valid() throws Exception {
+  public void getRecentTransactionsForAccount_validSingleTransaction() throws Exception {
     ByteArray fromAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     ByteArray toAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     BigDecimal fromAccountBalance = new BigDecimal(20);
@@ -467,11 +467,18 @@ public class FinAppIT {
     ImmutableList<TransactionEntry> history =
         spannerDao.getRecentTransactionsForAccount(
             fromAccountId, Timestamp.MIN_VALUE, Timestamp.MAX_VALUE);
+    TransactionEntry expected_transaction =
+        TransactionEntry.newBuilder()
+            .setAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
+            .setEventTimestamp(history.get(0).getEventTimestamp())
+            .setIsCredit(true)
+            .setAmount(amount.toString())
+            .build();
     assertThat(history).hasSize(1);
     assertThat(history.get(0)).isInstanceOf(TransactionEntry.class);
-    assertThat(history.get(0).getAccountId())
-        .isEqualTo(ByteString.copyFrom(fromAccountId.toByteArray()));
-    assertThat(history.get(0).getIsCredit()).isEqualTo(true);
-    assertThat(history.get(0).getAmount()).isEqualTo(amount.toString());
+    assertThat(history.get(0)).isEqualTo(expected_transaction);
   }
+
+  @Test
+  public void getRecentTransactionsForAccount_validMultipleTransactions() throws Exception {}
 }
