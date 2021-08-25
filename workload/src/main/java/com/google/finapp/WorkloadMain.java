@@ -14,6 +14,7 @@
 
 package com.google.finapp;
 
+import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -38,12 +39,12 @@ import org.apache.commons.cli.ParseException;
  */
 public final class WorkloadMain {
   private static final String DEFAULT_ACCOUNT_BALANCE = "10000";
-  private static final String DEFAULT_TRANSFER_AMOUNT = "20";
   private static final Logger logger = Logger.getLogger(WorkloadMain.class.getName());
 
   private static class WorkloadGenerator {
     private final ManagedChannel channel;
     private final List<ByteString> ids = new ArrayList<>();
+    private final Random random = new Random();
 
     WorkloadGenerator(ManagedChannel channel) {
       this.channel = channel;
@@ -69,20 +70,32 @@ public final class WorkloadMain {
     }
 
     void startSteadyLoad() {
-      Random random = new Random();
       int numIds = ids.size();
       if (numIds == 0) {
         throw new IllegalStateException("No accounts were created successfully.");
       }
-      while (true) {
-        ByteString fromId = ids.get(random.nextInt(numIds));
-        ByteString toId = ids.get(random.nextInt(numIds));
-        if (fromId.equals(toId)) {
-          continue;
-        }
-        WorkloadClient.getEmptyWorkloadClient(channel)
-            .moveAccountBalance(fromId, toId, DEFAULT_TRANSFER_AMOUNT);
+      for (int i = 0; i < 40; i++) {
+        WorkloadClient.getWorkloadClient(
+                channel,
+                ImmutableList.of(Task.CreateAccount, Task.CreateAccount, Task.CreateAccount),
+                ImmutableList.copyOf(getRandomUniqueIds(4)))
+            .start(String.valueOf(i));
       }
+    }
+
+    // only use if numIds << ids.size()
+    List<ByteString> getRandomUniqueIds(int numIds) {
+      List<ByteString> randomIds = new ArrayList<>();
+      for (int i = 0; i < numIds; i++) {
+        while (true) {
+          ByteString nextItem = ids.get(random.nextInt(ids.size()));
+          if (!randomIds.contains(nextItem)) {
+            randomIds.add(nextItem);
+            break;
+          }
+        }
+      }
+      return randomIds;
     }
   }
 

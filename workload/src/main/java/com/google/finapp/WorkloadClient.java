@@ -69,12 +69,16 @@ public class WorkloadClient implements Runnable {
     }
   }
 
+  public void start(String threadName) {
+    new Thread(this, threadName).start();
+  }
+
   private String getRandomAmountFromRange(int min, int max) {
     return String.valueOf(random.nextInt(max - min) + min);
   }
 
   private List<ByteString> getRandomUniqueIds(int numIds) {
-    if (numIds < ids.size()) {
+    if (numIds > ids.size()) {
       throw new IllegalArgumentException("Cannot get more ids than exist");
     }
     List<ByteString> idsCopy = new ArrayList<>(ids);
