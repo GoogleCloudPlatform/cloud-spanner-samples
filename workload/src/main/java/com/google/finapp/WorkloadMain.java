@@ -15,13 +15,14 @@
 package com.google.finapp;
 
 import com.google.common.collect.ImmutableList;
-import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -36,13 +37,15 @@ import org.apache.commons.cli.ParseException;
  * the server.
  */
 public final class WorkloadMain {
-  private static final String DEFAULT_ACCOUNT_BALANCE = "10000";
   private static final Logger logger = Logger.getLogger(WorkloadMain.class.getName());
 
   private static class WorkloadGenerator {
     private final ManagedChannel channel;
-    private final List<ByteString> ids = new ArrayList<>();
+    private final int DEFAULT_MAX_TASKS = 100;
     private final Random random = new Random();
+    private final List<Task> taskValues =
+        Collections.unmodifiableList(Arrays.asList(Task.values()));
+    private final int numTasks = taskValues.size();
 
     WorkloadGenerator(ManagedChannel channel) {
       this.channel = channel;
@@ -50,11 +53,20 @@ public final class WorkloadMain {
 
     void startSteadyLoad() {
       for (int i = 0; i < 32; i++) {
-        WorkloadClient.getWorkloadClient(
-                channel,
-                ImmutableList.of(Task.MoveAccountBalance, Task.CreateAccount, Task.CreateAccount))
-            .start(String.valueOf(i));
+        ImmutableList<Task> tasks = generateRandomTasks();
+        String threadName = String.valueOf(i);
+        logger.log(
+            Level.INFO, String.format("Sent tasks %s to thread %s", tasks.toString(), threadName));
+        WorkloadClient.getWorkloadClient(channel, tasks).start(threadName);
       }
+    }
+
+    ImmutableList<Task> generateRandomTasks() {
+      ImmutableList.Builder<Task> taskListBuilder = ImmutableList.builder();
+      for (int i = 0; i < DEFAULT_MAX_TASKS; i++) {
+        taskListBuilder.add(taskValues.get(random.nextInt(numTasks)));
+      }
+      return taskListBuilder.build();
     }
   }
 
