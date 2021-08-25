@@ -69,12 +69,10 @@ public interface SpannerDaoInterface {
       throws SpannerDaoException;
 
   /**
-   * Uses accountId to query TransactionHistory based on range of timestamps.
+   * Returns list of TransactionEntry objects for the given AccountId in the given closed interval of timestamps
    *
-   * @param beginTimestamp timestamp for where query begins, must be equal to or before
-   *     endTimestamp)
-   * @param endTimestamp timestamp for where query ends, must be equal to or after beginTimestamp)
-   * @returns ImmutableList of TransactionEntry objects from the range of timestamps given
+   * @param beginTimestamp timestamp for where query begins
+   * @param endTimestamp timestamp for where query ends
    */
   ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
       ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp)
