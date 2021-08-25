@@ -239,7 +239,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                     + "FROM TransactionHistory "
                     + "WHERE AccountId = @accountId AND "
                     + "EventTimestamp BETWEEN @beginTimestamp AND @endTimestamp "
-                    + "ORDER BY EventTimestamp")
+                    + "ORDER BY EventTimestamp DESC")
             .bind("accountId")
             .to(accountId)
             .bind("beginTimestamp")
