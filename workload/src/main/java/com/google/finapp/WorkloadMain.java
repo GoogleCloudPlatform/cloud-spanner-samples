@@ -43,7 +43,8 @@ public final class WorkloadMain {
 
   private static class WorkloadGenerator {
     private final ManagedChannel channel;
-    private final int DEFAULT_MAX_TASKS = 100;
+    private static final int DEFAULT_MAX_TASKS = 100;
+    private static final int DEFAULT_MAX_QUEUE_SIZE = 5;
     private final Random random = new Random();
     private final List<Task> taskValues =
         Collections.unmodifiableList(Arrays.asList(Task.values()));
@@ -56,7 +57,7 @@ public final class WorkloadMain {
     void startSteadyLoad(int threadCount) {
       ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(threadCount);
       while (true) {
-        if (executor.getQueue().size() < 5) {
+        if (executor.getQueue().size() < DEFAULT_MAX_QUEUE_SIZE) {
           ImmutableList<Task> tasks = generateRandomTasks();
           logger.log(Level.INFO, String.format("Tasks submitted %s", tasks.toString()));
           executor.submit(WorkloadClient.getWorkloadClient(channel, tasks));
