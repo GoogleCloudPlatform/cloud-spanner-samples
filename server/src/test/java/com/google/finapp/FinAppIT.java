@@ -480,5 +480,123 @@ public class FinAppIT {
   }
 
   @Test
-  public void getRecentTransactionsForAccount_validMultipleTransactions() throws Exception {}
+  public void getRecentTransactionsForAccount_validMultipleTransactions() throws Exception {
+    ByteArray fromAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    ByteArray toAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal fromAccountBalance = new BigDecimal(20);
+    BigDecimal toAccountBalance = new BigDecimal(0);
+    BigDecimal amount = new BigDecimal(10);
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(fromAccountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(fromAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build(),
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(toAccountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(toAccountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build()));
+    ImmutableMap result = spannerDao.moveAccountBalance(fromAccountId, toAccountId, amount);
+    ImmutableMap result2 = spannerDao.moveAccountBalance(toAccountId, fromAccountId, amount);
+    ImmutableMap result3 = spannerDao.moveAccountBalance(fromAccountId, toAccountId, amount);
+    ImmutableList<TransactionEntry> history =
+        spannerDao.getRecentTransactionsForAccount(
+            fromAccountId, Timestamp.MIN_VALUE, Timestamp.MAX_VALUE);
+    TransactionEntry expected_transaction1 =
+        TransactionEntry.newBuilder()
+            .setAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
+            .setEventTimestamp(history.get(2).getEventTimestamp())
+            .setIsCredit(true)
+            .setAmount(amount.toString())
+            .build();
+    TransactionEntry expected_transaction2 =
+        TransactionEntry.newBuilder()
+            .setAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
+            .setEventTimestamp(history.get(1).getEventTimestamp())
+            .setIsCredit(false)
+            .setAmount(amount.toString())
+            .build();
+    TransactionEntry expected_transaction3 =
+        TransactionEntry.newBuilder()
+            .setAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
+            .setEventTimestamp(history.get(0).getEventTimestamp())
+            .setIsCredit(true)
+            .setAmount(amount.toString())
+            .build();
+    assertThat(history).hasSize(3);
+    assertThat(history.get(2)).isInstanceOf(TransactionEntry.class);
+    assertThat(history.get(2)).isEqualTo(expected_transaction1);
+    assertThat(history.get(1)).isInstanceOf(TransactionEntry.class);
+    assertThat(history.get(1)).isEqualTo(expected_transaction2);
+    assertThat(history.get(0)).isInstanceOf(TransactionEntry.class);
+    assertThat(history.get(0)).isEqualTo(expected_transaction3);
+  }
+
+  @Test
+  public void getRecentTransactionsForAccount_invalidBeforeTimestamp() throws Exception {
+    ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal accountBalance = new BigDecimal(20);
+    BigDecimal amount = new BigDecimal(10);
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(accountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(accountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build()));
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            spannerDao.getRecentTransactionsForAccount(
+                accountId, Timestamp.MAX_VALUE, Timestamp.now()));
+  }
+
+  @Test
+  public void getRecentTransactionsForAccount_invalidEndTimestamp() throws Exception {
+    ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal accountBalance = new BigDecimal(20);
+    BigDecimal amount = new BigDecimal(10);
+    databaseClient.write(
+        ImmutableList.of(
+            Mutation.newInsertBuilder("Account")
+                .set("AccountId")
+                .to(accountId)
+                .set("AccountType")
+                .to(AccountType.UNSPECIFIED_ACCOUNT_TYPE.getNumber())
+                .set("AccountStatus")
+                .to(AccountStatus.UNSPECIFIED_ACCOUNT_STATUS.getNumber())
+                .set("Balance")
+                .to(accountBalance)
+                .set("CreationTimestamp")
+                .to(Value.COMMIT_TIMESTAMP)
+                .build()));
+    assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            spannerDao.getRecentTransactionsForAccount(
+                accountId, Timestamp.now(), Timestamp.MIN_VALUE));
+  }
 }
