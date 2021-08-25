@@ -32,23 +32,18 @@ public class WorkloadClient implements Runnable {
   private final FinAppBlockingStub blockingStub;
   private static final Logger logger = Logger.getLogger(WorkloadClient.class.getName());
   private final ImmutableList<Task> tasks;
-  private final ImmutableList<ByteString> ids;
+  private final List<ByteString> ids;
   private final Random random = new Random();
 
-  private WorkloadClient(
-      ManagedChannel channel, ImmutableList<Task> tasks, ImmutableList<ByteString> ids) {
+  private WorkloadClient(ManagedChannel channel, ImmutableList<Task> tasks) {
     this.blockingStub = FinAppGrpc.newBlockingStub(channel);
     this.tasks = tasks;
-    this.ids = ids;
+    this.ids = new ArrayList<>();
   }
 
   public static WorkloadClient getWorkloadClient(
-      ManagedChannel channel, ImmutableList<Task> tasks, ImmutableList<ByteString> ids) {
-    return new WorkloadClient(channel, tasks, ids);
-  }
-
-  public static WorkloadClient getEmptyWorkloadClient(ManagedChannel channel) {
-    return new WorkloadClient(channel, ImmutableList.of(), ImmutableList.of());
+      ManagedChannel channel, ImmutableList<Task> tasks) {
+    return new WorkloadClient(channel, tasks);
   }
 
   @Override
@@ -56,12 +51,14 @@ public class WorkloadClient implements Runnable {
     for (Task task : tasks) {
       switch (task) {
         case CreateAccount:
-          createAccount(
-              getRandomAmountFromRange(0, 20000),
-              CreateAccountRequest.Type.CHECKING,
-              Status.ACTIVE);
+          ids.add(
+              createAccount(
+                  getRandomAmountFromRange(0, 20000),
+                  CreateAccountRequest.Type.CHECKING,
+                  Status.ACTIVE));
           break;
         case MoveAccountBalance:
+          ensureIdsPresent(2);
           List<ByteString> randomIds = getRandomUniqueIds(2);
           moveAccountBalance(randomIds.get(0), randomIds.get(1), getRandomAmountFromRange(1, 200));
           break;
@@ -89,6 +86,19 @@ public class WorkloadClient implements Runnable {
       idsCopy.remove(index);
     }
     return randomIds;
+  }
+
+  private void ensureIdsPresent(int numIds) {
+    if (numIds > ids.size()) {
+      int numIdsToCreate = numIds - ids.size();
+      for (int i = 0; i < numIdsToCreate; i++) {
+        ids.add(
+            createAccount(
+                getRandomAmountFromRange(0, 20000),
+                CreateAccountRequest.Type.CHECKING,
+                Status.ACTIVE));
+      }
+    }
   }
 
   public ByteString createAccount(

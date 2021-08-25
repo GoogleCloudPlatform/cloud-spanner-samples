@@ -18,12 +18,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.grpc.StatusRuntimeException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -50,52 +48,13 @@ public final class WorkloadMain {
       this.channel = channel;
     }
 
-    void seedData(int numAccounts) {
-      int numFailedCreateAccounts = 0;
-      for (int i = 0; i < numAccounts; i++) {
-        try {
-          ids.add(
-              WorkloadClient.getEmptyWorkloadClient(channel)
-                  .createAccount(
-                      DEFAULT_ACCOUNT_BALANCE,
-                      CreateAccountRequest.Type.CHECKING,
-                      CreateAccountRequest.Status.ACTIVE));
-        } catch (StatusRuntimeException e) {
-          numFailedCreateAccounts++;
-          logger.log(
-              Level.WARNING,
-              String.format("CreateAccount failed. Total count: %d", numFailedCreateAccounts));
-        }
-      }
-    }
-
     void startSteadyLoad() {
-      int numIds = ids.size();
-      if (numIds == 0) {
-        throw new IllegalStateException("No accounts were created successfully.");
-      }
-      for (int i = 0; i < 40; i++) {
+      for (int i = 0; i < 32; i++) {
         WorkloadClient.getWorkloadClient(
                 channel,
-                ImmutableList.of(Task.CreateAccount, Task.CreateAccount, Task.CreateAccount),
-                ImmutableList.copyOf(getRandomUniqueIds(4)))
+                ImmutableList.of(Task.MoveAccountBalance, Task.CreateAccount, Task.CreateAccount))
             .start(String.valueOf(i));
       }
-    }
-
-    // only use if numIds << ids.size()
-    List<ByteString> getRandomUniqueIds(int numIds) {
-      List<ByteString> randomIds = new ArrayList<>();
-      for (int i = 0; i < numIds; i++) {
-        while (true) {
-          ByteString nextItem = ids.get(random.nextInt(ids.size()));
-          if (!randomIds.contains(nextItem)) {
-            randomIds.add(nextItem);
-            break;
-          }
-        }
-      }
-      return randomIds;
     }
   }
 
@@ -103,17 +62,14 @@ public final class WorkloadMain {
     CommandLine cmd = parseArgs(args);
     String addressName = cmd.getOptionValue("a");
     int port;
-    int numAccounts;
     try {
       port = ((Number) cmd.getParsedOptionValue("p")).intValue();
-      numAccounts = ((Number) cmd.getParsedOptionValue("n")).intValue();
     } catch (ParseException e) {
       throw new IllegalArgumentException("Input value cannot be parsed.", e);
     }
     ManagedChannel channel =
         ManagedChannelBuilder.forAddress(addressName, port).usePlaintext().build();
     WorkloadGenerator workloadGenerator = new WorkloadGenerator(channel);
-    workloadGenerator.seedData(numAccounts);
     workloadGenerator.startSteadyLoad();
   }
 
@@ -133,15 +89,6 @@ public final class WorkloadMain {
         Option.builder("p")
             .longOpt("port")
             .desc("server port")
-            .required(true)
-            .type(Number.class)
-            .hasArg()
-            .build());
-
-    options.addOption(
-        Option.builder("n")
-            .longOpt("num-accounts")
-            .desc("number of accounts to create")
             .required(true)
             .type(Number.class)
             .hasArg()
