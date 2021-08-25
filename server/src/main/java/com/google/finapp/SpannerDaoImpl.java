@@ -15,17 +15,20 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
+import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
 import com.google.cloud.spanner.Key;
 import com.google.cloud.spanner.KeySet;
 import com.google.cloud.spanner.Mutation;
 import com.google.cloud.spanner.ResultSet;
 import com.google.cloud.spanner.SpannerException;
+import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.Value;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
+import com.google.protobuf.ByteString;
 import java.math.BigDecimal;
 
 final class SpannerDaoImpl implements SpannerDaoInterface {
@@ -214,6 +217,49 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
       if (cause instanceof IllegalArgumentException) {
         throw new IllegalArgumentException(cause.getMessage());
       }
+      throw new SpannerDaoException(e);
+    }
+  }
+
+  @Override
+  public ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
+      ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp)
+      throws SpannerDaoException {
+    if (beginTimestamp.compareTo(endTimestamp) > 0) {
+      throw new IllegalArgumentException(
+          String.format("Invalid timestamp range. %s is after %s.", beginTimestamp, endTimestamp));
+    }
+    if (endTimestamp.compareTo(beginTimestamp) < 0) {
+      throw new IllegalArgumentException(
+          String.format("Invalid timestamp range. %s is before %s.", endTimestamp, beginTimestamp));
+    }
+    Statement statement =
+        Statement.newBuilder(
+                "SELECT * "
+                    + "FROM TransactionHistory "
+                    + "WHERE AccountId = @accountId AND "
+                    + "EventTimestamp BETWEEN @beginTimestamp AND @endTimestamp "
+                    + "ORDER BY EventTimestamp DESC")
+            .bind("accountId")
+            .to(accountId)
+            .bind("beginTimestamp")
+            .to(beginTimestamp.toString())
+            .bind("endTimestamp")
+            .to(endTimestamp.toString())
+            .build();
+    try (ResultSet resultSet = databaseClient.singleUse().executeQuery(statement)) {
+      ImmutableList.Builder<TransactionEntry> transactionHistoriesBuilder = ImmutableList.builder();
+      while (resultSet.next()) {
+        transactionHistoriesBuilder.add(
+            TransactionEntry.newBuilder()
+                .setAccountId(ByteString.copyFrom(resultSet.getBytes("AccountId").toByteArray()))
+                .setEventTimestamp(resultSet.getTimestamp("EventTimestamp").toProto())
+                .setIsCredit(resultSet.getBoolean("IsCredit"))
+                .setAmount(resultSet.getBigDecimal("Amount").toString())
+                .build());
+      }
+      return transactionHistoriesBuilder.build();
+    } catch (SpannerException e) {
       throw new SpannerDaoException(e);
     }
   }
