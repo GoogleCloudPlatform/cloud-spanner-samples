@@ -53,8 +53,8 @@ public final class WorkloadMain {
       this.channel = channel;
     }
 
-    void startSteadyLoad() {
-      ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(16);
+    void startSteadyLoad(int threadCount) {
+      ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(threadCount);
       while (true) {
         if (executor.getQueue().size() < 5) {
           ImmutableList<Task> tasks = generateRandomTasks();
@@ -77,15 +77,17 @@ public final class WorkloadMain {
     CommandLine cmd = parseArgs(args);
     String addressName = cmd.getOptionValue("a");
     int port;
+    int threadCount;
     try {
       port = ((Number) cmd.getParsedOptionValue("p")).intValue();
+      threadCount = ((Number) cmd.getParsedOptionValue("t")).intValue();
     } catch (ParseException e) {
       throw new IllegalArgumentException("Input value cannot be parsed.", e);
     }
     ManagedChannel channel =
         ManagedChannelBuilder.forAddress(addressName, port).usePlaintext().build();
     WorkloadGenerator workloadGenerator = new WorkloadGenerator(channel);
-    workloadGenerator.startSteadyLoad();
+    workloadGenerator.startSteadyLoad(threadCount);
   }
 
   private static CommandLine parseArgs(String[] args) {
@@ -104,6 +106,15 @@ public final class WorkloadMain {
         Option.builder("p")
             .longOpt("port")
             .desc("server port")
+            .required(true)
+            .type(Number.class)
+            .hasArg()
+            .build());
+
+    options.addOption(
+        Option.builder("t")
+            .longOpt("thread-count")
+            .desc("number of threads to use in thread pool")
             .required(true)
             .type(Number.class)
             .hasArg()
