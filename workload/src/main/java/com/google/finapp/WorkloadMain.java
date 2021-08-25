@@ -22,6 +22,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.cli.CommandLine;
@@ -52,12 +54,13 @@ public final class WorkloadMain {
     }
 
     void startSteadyLoad() {
-      for (int i = 0; i < 32; i++) {
-        ImmutableList<Task> tasks = generateRandomTasks();
-        String threadName = String.valueOf(i);
-        logger.log(
-            Level.INFO, String.format("Sent tasks %s to thread %s", tasks.toString(), threadName));
-        WorkloadClient.getWorkloadClient(channel, tasks).start(threadName);
+      ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(16);
+      while (true) {
+        if (executor.getQueue().size() < 5) {
+          ImmutableList<Task> tasks = generateRandomTasks();
+          logger.log(Level.INFO, String.format("Tasks submitted %s", tasks.toString()));
+          executor.submit(WorkloadClient.getWorkloadClient(channel, tasks));
+        }
       }
     }
 
