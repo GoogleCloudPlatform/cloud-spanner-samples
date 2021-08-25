@@ -69,7 +69,8 @@ public interface SpannerDaoInterface {
       throws SpannerDaoException;
 
   /**
-   * Returns list of TransactionEntry objects for the given AccountId in the given closed interval of timestamps
+   * Returns list of TransactionEntry objects for the given AccountId in the given closed interval
+   * of timestamps
    *
    * @param beginTimestamp timestamp for where query begins
    * @param endTimestamp timestamp for where query ends

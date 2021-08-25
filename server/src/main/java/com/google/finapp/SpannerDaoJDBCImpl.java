@@ -239,7 +239,8 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
             TransactionEntry.newBuilder()
                 .setAccountId(ByteString.copyFrom(resultSet.getBytes("AccountId")))
                 .setEventTimestamp(
-                    // use a builder to set com.google.protobuf.Timestamp from java.sql.Timestamp object
+                    // use a builder to set com.google.protobuf.Timestamp from java.sql.Timestamp
+                    // object
                     com.google.protobuf.Timestamp.newBuilder()
                         .setNanos(resultSet.getTimestamp("EventTimestamp").getNanos())
                         .setSeconds(resultSet.getTimestamp("EventTimestamp").getSeconds()))
