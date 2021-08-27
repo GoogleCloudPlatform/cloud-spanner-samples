@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Level;
@@ -55,8 +56,9 @@ public final class WorkloadMain {
 
     void startSteadyLoad(int threadCount, int taskCount) {
       ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(threadCount);
+      BlockingQueue<Runnable> queue = executor.getQueue();
       while (true) {
-        if (executor.getQueue().size() < DEFAULT_MAX_QUEUE_SIZE) {
+        if (queue.size() < DEFAULT_MAX_QUEUE_SIZE) {
           ImmutableList<Task> tasks = generateRandomTasks(taskCount);
           logger.log(Level.INFO, String.format("Tasks submitted %s", tasks.toString()));
           executor.submit(WorkloadClient.getWorkloadClient(channel, tasks));
