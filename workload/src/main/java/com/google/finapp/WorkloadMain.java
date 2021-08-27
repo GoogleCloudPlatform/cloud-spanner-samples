@@ -43,8 +43,7 @@ public final class WorkloadMain {
 
   private static class WorkloadGenerator {
     private final ManagedChannel channel;
-    private static final int DEFAULT_MAX_TASKS = 100;
-    private static final int DEFAULT_MAX_QUEUE_SIZE = 5;
+    private static final int DEFAULT_MAX_QUEUE_SIZE = 100;
     private final Random random = new Random();
     private final List<Task> taskValues =
         Collections.unmodifiableList(Arrays.asList(Task.values()));
@@ -54,20 +53,20 @@ public final class WorkloadMain {
       this.channel = channel;
     }
 
-    void startSteadyLoad(int threadCount) {
+    void startSteadyLoad(int threadCount, int taskCount) {
       ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(threadCount);
       while (true) {
         if (executor.getQueue().size() < DEFAULT_MAX_QUEUE_SIZE) {
-          ImmutableList<Task> tasks = generateRandomTasks();
+          ImmutableList<Task> tasks = generateRandomTasks(taskCount);
           logger.log(Level.INFO, String.format("Tasks submitted %s", tasks.toString()));
           executor.submit(WorkloadClient.getWorkloadClient(channel, tasks));
         }
       }
     }
 
-    ImmutableList<Task> generateRandomTasks() {
+    ImmutableList<Task> generateRandomTasks(int taskCount) {
       ImmutableList.Builder<Task> taskListBuilder = ImmutableList.builder();
-      for (int i = 0; i < DEFAULT_MAX_TASKS; i++) {
+      for (int i = 0; i < taskCount; i++) {
         taskListBuilder.add(taskValues.get(random.nextInt(numTasks)));
       }
       return taskListBuilder.build();
@@ -79,16 +78,18 @@ public final class WorkloadMain {
     String addressName = cmd.getOptionValue("a");
     int port;
     int threadCount;
+    int taskCount;
     try {
       port = ((Number) cmd.getParsedOptionValue("p")).intValue();
       threadCount = ((Number) cmd.getParsedOptionValue("t")).intValue();
+      taskCount = ((Number) cmd.getParsedOptionValue("c")).intValue();
     } catch (ParseException e) {
       throw new IllegalArgumentException("Input value cannot be parsed.", e);
     }
     ManagedChannel channel =
         ManagedChannelBuilder.forAddress(addressName, port).usePlaintext().build();
     WorkloadGenerator workloadGenerator = new WorkloadGenerator(channel);
-    workloadGenerator.startSteadyLoad(threadCount);
+    workloadGenerator.startSteadyLoad(threadCount, taskCount);
   }
 
   private static CommandLine parseArgs(String[] args) {
@@ -116,6 +117,15 @@ public final class WorkloadMain {
         Option.builder("t")
             .longOpt("thread-count")
             .desc("number of threads to use in thread pool")
+            .required(true)
+            .type(Number.class)
+            .hasArg()
+            .build());
+
+    options.addOption(
+        Option.builder("c")
+            .longOpt("task-count")
+            .desc("number of tasks (RPC methods) each thread performs")
             .required(true)
             .type(Number.class)
             .hasArg()
