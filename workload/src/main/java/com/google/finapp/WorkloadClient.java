@@ -66,10 +66,6 @@ public class WorkloadClient implements Runnable {
     }
   }
 
-  public void start(String threadName) {
-    new Thread(this, threadName).start();
-  }
-
   private String getRandomAmountFromRange(int min, int max) {
     return String.valueOf(random.nextInt(max - min) + min);
   }
