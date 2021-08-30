@@ -75,6 +75,10 @@ public final class WorkloadMain {
     }
   }
 
+  /**
+   * Continuously generates gRPC clients with given number of threads and tasks per thread, as defined by
+   * commandline arguments.
+   */
   public static void main(String[] args) {
     CommandLine cmd = parseArgs(args);
     String addressName = cmd.getOptionValue("a");

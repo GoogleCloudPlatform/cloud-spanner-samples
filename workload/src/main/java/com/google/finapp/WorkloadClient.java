@@ -41,6 +41,7 @@ public class WorkloadClient implements Runnable {
     this.ids = new ArrayList<>();
   }
 
+  /** @param tasks ImmutableList of tasks to complete in given order */
   public static WorkloadClient getWorkloadClient(
       ManagedChannel channel, ImmutableList<Task> tasks) {
     return new WorkloadClient(channel, tasks);
@@ -97,7 +98,7 @@ public class WorkloadClient implements Runnable {
     }
   }
 
-  public ByteString createAccount(
+  private ByteString createAccount(
       String balance, CreateAccountRequest.Type type, CreateAccountRequest.Status status)
       throws StatusRuntimeException {
     CreateAccountRequest request =
@@ -116,7 +117,7 @@ public class WorkloadClient implements Runnable {
     }
   }
 
-  public void moveAccountBalance(ByteString fromAccountId, ByteString toAccountId, String amount)
+  private void moveAccountBalance(ByteString fromAccountId, ByteString toAccountId, String amount)
       throws StatusRuntimeException {
     MoveAccountBalanceRequest request =
         MoveAccountBalanceRequest.newBuilder()
