@@ -15,6 +15,8 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
+import com.google.cloud.Timestamp;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
 
@@ -64,5 +66,16 @@ public interface SpannerDaoInterface {
    * @return new balance of the account after the transaction
    */
   BigDecimal createTransactionForAccount(ByteArray accountId, BigDecimal amount, boolean isCredit)
+      throws SpannerDaoException;
+
+  /**
+   * Returns list of TransactionEntry objects for the given AccountId in the given closed interval
+   * of timestamps
+   *
+   * @param beginTimestamp timestamp for where query begins
+   * @param endTimestamp timestamp for where query ends
+   */
+  ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
+      ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp)
       throws SpannerDaoException;
 }
