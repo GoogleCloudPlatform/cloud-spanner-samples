@@ -36,8 +36,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 /**
- * A workload generator for the finance sample app that creates traffic by sending gRPC requests to
- * the server.
+ * An executable method for a workload generator for the finance sample app that creates traffic by
+ * sending gRPC requests to the server.
  */
 public final class WorkloadMain {
   private static final Logger logger = Logger.getLogger(WorkloadMain.class.getName());
@@ -76,8 +76,8 @@ public final class WorkloadMain {
   }
 
   /**
-   * Continuously generates gRPC clients with given number of threads and tasks per thread, as defined by
-   * commandline arguments.
+   * Continuously generates gRPC clients with given number of threads and tasks per thread, as
+   * defined by commandline arguments.
    */
   public static void main(String[] args) {
     CommandLine cmd = parseArgs(args);
