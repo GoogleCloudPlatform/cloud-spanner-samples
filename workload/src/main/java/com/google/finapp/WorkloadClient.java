@@ -20,6 +20,7 @@ import com.google.finapp.FinAppGrpc.FinAppBlockingStub;
 import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -74,8 +75,8 @@ public class WorkloadClient implements Runnable {
             Status.ACTIVE));
   }
 
-  private String getRandomAmountFromRange(int min, int max) {
-    return String.valueOf(random.nextInt(max - min) + min);
+  private BigDecimal getRandomAmountFromRange(int min, int max) {
+    return BigDecimal.valueOf(random.nextInt(max - min) + min);
   }
 
   private List<ByteString> getRandomUniqueIds(int numIds) {
@@ -93,11 +94,11 @@ public class WorkloadClient implements Runnable {
   }
 
   private ByteString createAccount(
-      String balance, CreateAccountRequest.Type type, CreateAccountRequest.Status status)
+      BigDecimal balance, CreateAccountRequest.Type type, CreateAccountRequest.Status status)
       throws StatusRuntimeException {
     CreateAccountRequest request =
         CreateAccountRequest.newBuilder()
-            .setBalance(balance)
+            .setBalance(balance.toString())
             .setType(type)
             .setStatus(status)
             .build();
@@ -111,11 +112,12 @@ public class WorkloadClient implements Runnable {
     }
   }
 
-  private void moveAccountBalance(ByteString fromAccountId, ByteString toAccountId, String amount)
+  private void moveAccountBalance(
+      ByteString fromAccountId, ByteString toAccountId, BigDecimal amount)
       throws StatusRuntimeException {
     MoveAccountBalanceRequest request =
         MoveAccountBalanceRequest.newBuilder()
-            .setAmount(amount)
+            .setAmount(amount.toString())
             .setFromAccountId(fromAccountId)
             .setToAccountId(toAccountId)
             .build();
