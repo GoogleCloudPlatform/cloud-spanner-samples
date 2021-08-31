@@ -58,8 +58,10 @@ public class WorkloadClient implements Runnable {
           for (int i = 0; i < 2; i++) { // ensure that 2 accounts exist
             addAccountWithRandomBalance();
           }
-          List<ByteString> randomIds = getRandomUniqueIds(2);
-          moveAccountBalance(randomIds.get(0), randomIds.get(1), getRandomAmountFromRange(1, 200));
+          int[] accountIndexes = random.ints(2, 0, ids.size()).distinct().limit(2).toArray();
+          ByteString fromAcct = ids.get(accountIndexes[0]);
+          ByteString toAcct = ids.get(accountIndexes[1]);
+          moveAccountBalance(fromAcct, toAcct, getRandomAmountFromRange(1, 200));
           break;
       }
     }
@@ -77,20 +79,6 @@ public class WorkloadClient implements Runnable {
 
   private BigDecimal getRandomAmountFromRange(int min, int max) {
     return BigDecimal.valueOf(random.nextInt(max - min) + min);
-  }
-
-  private List<ByteString> getRandomUniqueIds(int numIds) {
-    if (numIds > ids.size()) {
-      throw new IllegalArgumentException("Cannot get more ids than exist");
-    }
-    List<ByteString> idsCopy = new ArrayList<>(ids);
-    List<ByteString> randomIds = new ArrayList<>();
-    for (int i = 0; i < numIds; i++) {
-      int index = random.nextInt(idsCopy.size());
-      randomIds.add(idsCopy.get(index));
-      idsCopy.remove(index);
-    }
-    return randomIds;
   }
 
   private ByteString createAccount(
