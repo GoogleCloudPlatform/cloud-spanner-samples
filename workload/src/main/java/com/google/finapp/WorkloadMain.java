@@ -60,8 +60,8 @@ public final class WorkloadMain {
       while (true) {
         if (queue.size() < DEFAULT_MAX_QUEUE_SIZE) {
           List<Task> tasks = generateRandomTasks(taskCount);
-          logger.log(Level.INFO, String.format("Tasks submitted %s", tasks));
           executor.submit(WorkloadClient.getWorkloadClient(channel, tasks));
+          logger.log(Level.INFO, String.format("Tasks submitted %s", tasks));
         }
       }
     }
