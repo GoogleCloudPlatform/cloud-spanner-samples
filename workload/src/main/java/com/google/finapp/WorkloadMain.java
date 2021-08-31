@@ -14,10 +14,10 @@
 
 package com.google.finapp;
 
-import com.google.common.collect.ImmutableList;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -59,19 +59,19 @@ public final class WorkloadMain {
       BlockingQueue<Runnable> queue = executor.getQueue();
       while (true) {
         if (queue.size() < DEFAULT_MAX_QUEUE_SIZE) {
-          ImmutableList<Task> tasks = generateRandomTasks(taskCount);
-          logger.log(Level.INFO, String.format("Tasks submitted %s", tasks.toString()));
+          List<Task> tasks = generateRandomTasks(taskCount);
+          logger.log(Level.INFO, String.format("Tasks submitted %s", tasks));
           executor.submit(WorkloadClient.getWorkloadClient(channel, tasks));
         }
       }
     }
 
-    ImmutableList<Task> generateRandomTasks(int taskCount) {
-      ImmutableList.Builder<Task> taskListBuilder = ImmutableList.builder();
+    List<Task> generateRandomTasks(int taskCount) {
+      List<Task> taskList = new ArrayList<>();
       for (int i = 0; i < taskCount; i++) {
-        taskListBuilder.add(taskValues.get(random.nextInt(numTasks)));
+        taskList.add(taskValues.get(random.nextInt(numTasks)));
       }
-      return taskListBuilder.build();
+      return taskList;
     }
   }
 

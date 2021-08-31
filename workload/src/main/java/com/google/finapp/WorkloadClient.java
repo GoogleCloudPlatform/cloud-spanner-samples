@@ -35,15 +35,14 @@ public class WorkloadClient implements Runnable {
   private final List<ByteString> ids;
   private final Random random = new Random();
 
-  private WorkloadClient(ManagedChannel channel, ImmutableList<Task> tasks) {
+  private WorkloadClient(ManagedChannel channel, List<Task> tasks) {
     this.blockingStub = FinAppGrpc.newBlockingStub(channel);
-    this.tasks = tasks;
+    this.tasks = ImmutableList.copyOf(tasks);
     this.ids = new ArrayList<>();
   }
 
   /** @param tasks ImmutableList of tasks to complete in given order */
-  public static WorkloadClient getWorkloadClient(
-      ManagedChannel channel, ImmutableList<Task> tasks) {
+  public static WorkloadClient getWorkloadClient(ManagedChannel channel, List<Task> tasks) {
     return new WorkloadClient(channel, tasks);
   }
 
