@@ -51,19 +51,27 @@ public class WorkloadClient implements Runnable {
     for (Task task : tasks) {
       switch (task) {
         case CreateAccount:
-          ids.add(
-              createAccount(
-                  getRandomAmountFromRange(0, 20000),
-                  CreateAccountRequest.Type.CHECKING,
-                  Status.ACTIVE));
+          addAccountWithRandomBalance();
           break;
         case MoveAccountBalance:
-          ensureIdsPresent(2);
+          for (int i = 0; i < 2; i++) { // ensure that 2 accounts exist
+            addAccountWithRandomBalance();
+          }
           List<ByteString> randomIds = getRandomUniqueIds(2);
           moveAccountBalance(randomIds.get(0), randomIds.get(1), getRandomAmountFromRange(1, 200));
           break;
       }
     }
+  }
+
+  private static final int MAX_INITIAL_ACCOUNT_BALANCE = 20000;
+
+  private void addAccountWithRandomBalance() {
+    ids.add(
+        createAccount(
+            getRandomAmountFromRange(0, MAX_INITIAL_ACCOUNT_BALANCE),
+            CreateAccountRequest.Type.CHECKING,
+            Status.ACTIVE));
   }
 
   private String getRandomAmountFromRange(int min, int max) {
@@ -82,19 +90,6 @@ public class WorkloadClient implements Runnable {
       idsCopy.remove(index);
     }
     return randomIds;
-  }
-
-  private void ensureIdsPresent(int numIds) {
-    if (numIds > ids.size()) {
-      int numIdsToCreate = numIds - ids.size();
-      for (int i = 0; i < numIdsToCreate; i++) {
-        ids.add(
-            createAccount(
-                getRandomAmountFromRange(0, 20000),
-                CreateAccountRequest.Type.CHECKING,
-                Status.ACTIVE));
-      }
-    }
   }
 
   private ByteString createAccount(
