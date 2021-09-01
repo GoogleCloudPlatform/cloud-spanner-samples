@@ -17,30 +17,80 @@ package com.google.finapp;
 import com.google.finapp.FinAppGrpc.FinAppBlockingStub;
 import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
+import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** A gRPC client for the finance sample app. */
-public class WorkloadClient {
+/**
+ * A gRPC client for the finance sample app. Runs until externally terminated and sends randomly
+ * chosen requests using available methods.
+ */
+public class WorkloadClient implements Runnable {
 
-  private final FinAppBlockingStub blockingStub;
   private static final Logger logger = Logger.getLogger(WorkloadClient.class.getName());
+  private static final int MAX_INITIAL_ACCOUNT_BALANCE = 20000;
+  private final List<ByteString> ids;
+  private final Random random = new Random();
+  private final FinAppBlockingStub blockingStub;
 
   private WorkloadClient(ManagedChannel channel) {
     this.blockingStub = FinAppGrpc.newBlockingStub(channel);
+    this.ids = new ArrayList<>();
   }
 
   public static WorkloadClient getWorkloadClient(ManagedChannel channel) {
     return new WorkloadClient(channel);
   }
 
-  public ByteString createAccount(
-      String balance, CreateAccountRequest.Type type, CreateAccountRequest.Status status)
+  @Override
+  public void run() {
+    for (int i = 0; i < 2; i++) { // ensure that > 2 accounts exists for future methods
+      addAccountWithRandomBalance();
+    }
+    int numMethods = 2; // must be updated when new methods are added
+    while (true) {
+      int method = random.nextInt(numMethods);
+      switch (method) {
+        case 0:
+          addAccountWithRandomBalance();
+          break;
+        case 1:
+          int idsSize = ids.size();
+          int fromAcctIndex = random.nextInt(idsSize);
+          int toAcctIndex;
+          do {
+            toAcctIndex = random.nextInt(idsSize);
+          } while (toAcctIndex == fromAcctIndex);
+          moveAccountBalance(
+              ids.get(fromAcctIndex), ids.get(toAcctIndex), getRandomAmountFromRange(1, 200));
+          break;
+      }
+    }
+  }
+
+  private void addAccountWithRandomBalance() {
+    ids.add(
+        createAccount(
+            getRandomAmountFromRange(0, MAX_INITIAL_ACCOUNT_BALANCE),
+            CreateAccountRequest.Type.CHECKING,
+            CreateAccountRequest.Status.ACTIVE));
+  }
+
+  private BigDecimal getRandomAmountFromRange(int min, int max) {
+    return BigDecimal.valueOf(random.nextInt(max - min) + min);
+  }
+
+  private ByteString createAccount(
+      BigDecimal balance, CreateAccountRequest.Type type, CreateAccountRequest.Status status)
       throws StatusRuntimeException {
     CreateAccountRequest request =
         CreateAccountRequest.newBuilder()
-            .setBalance(balance)
+            .setBalance(balance.toString())
             .setType(type)
             .setStatus(status)
             .build();
@@ -54,11 +104,11 @@ public class WorkloadClient {
     }
   }
 
-  public void moveAccountBalance(ByteString fromAccountId, ByteString toAccountId, String amount)
-      throws StatusRuntimeException {
+  private void moveAccountBalance(
+      ByteString fromAccountId, ByteString toAccountId, BigDecimal amount) {
     MoveAccountBalanceRequest request =
         MoveAccountBalanceRequest.newBuilder()
-            .setAmount(amount)
+            .setAmount(amount.toString())
             .setFromAccountId(fromAccountId)
             .setToAccountId(toAccountId)
             .build();
@@ -66,8 +116,14 @@ public class WorkloadClient {
       MoveAccountBalanceResponse response = blockingStub.moveAccountBalance(request);
       logger.log(Level.INFO, String.format("Move made %s", response));
     } catch (StatusRuntimeException e) {
-      logger.log(Level.SEVERE, String.format("Error making move %s", request));
-      throw e;
+      if (e.getStatus().getCode().equals(Status.INVALID_ARGUMENT.getCode())) {
+        logger.log(
+            Level.INFO,
+            String.format("Ignoring invalid argument error in moveAccountBalance: %s", e));
+      } else {
+        logger.log(Level.SEVERE, String.format("Unexpected error in moveAccountBalance: %s", e));
+        throw e;
+      }
     }
   }
 }

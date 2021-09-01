@@ -14,14 +14,11 @@
 
 package com.google.finapp;
 
-import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.grpc.StatusRuntimeException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.cli.CommandLine;
@@ -33,75 +30,47 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 /**
- * A workload generator for the finance sample app that creates traffic by sending gRPC requests to
- * the server.
+ * An executable method for a workload generator for the finance sample app that creates traffic by
+ * sending gRPC requests to the server.
  */
 public final class WorkloadMain {
-  private static final String DEFAULT_ACCOUNT_BALANCE = "10000";
-  private static final String DEFAULT_TRANSFER_AMOUNT = "20";
   private static final Logger logger = Logger.getLogger(WorkloadMain.class.getName());
 
   private static class WorkloadGenerator {
     private final ManagedChannel channel;
-    private final List<ByteString> ids = new ArrayList<>();
 
     WorkloadGenerator(ManagedChannel channel) {
       this.channel = channel;
     }
 
-    void seedData(int numAccounts) {
-      int numFailedCreateAccounts = 0;
-      for (int i = 0; i < numAccounts; i++) {
-        try {
-          ids.add(
-              WorkloadClient.getWorkloadClient(channel)
-                  .createAccount(
-                      DEFAULT_ACCOUNT_BALANCE,
-                      CreateAccountRequest.Type.CHECKING,
-                      CreateAccountRequest.Status.ACTIVE));
-        } catch (StatusRuntimeException e) {
-          numFailedCreateAccounts++;
-          logger.log(
-              Level.WARNING,
-              String.format("CreateAccount failed. Total count: %d", numFailedCreateAccounts));
-        }
-      }
-    }
-
-    void startSteadyLoad() {
-      Random random = new Random();
-      int numIds = ids.size();
-      if (numIds == 0) {
-        throw new IllegalStateException("No accounts were created successfully.");
-      }
-      while (true) {
-        ByteString fromId = ids.get(random.nextInt(numIds));
-        ByteString toId = ids.get(random.nextInt(numIds));
-        if (fromId.equals(toId)) {
-          continue;
-        }
-        WorkloadClient.getWorkloadClient(channel)
-            .moveAccountBalance(fromId, toId, DEFAULT_TRANSFER_AMOUNT);
+    void startSteadyLoad(int threadCount) {
+      ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(threadCount);
+      for (int i = 0; i < threadCount; i++) {
+        executor.submit(WorkloadClient.getWorkloadClient(channel));
+        logger.log(Level.INFO, "WorkloadClient created");
       }
     }
   }
 
+  /**
+   * Generates gRPC clients to run indefinitely in separate threads and generate traffic for the
+   * finance app server.
+   */
   public static void main(String[] args) {
     CommandLine cmd = parseArgs(args);
     String addressName = cmd.getOptionValue("a");
     int port;
-    int numAccounts;
+    int threadCount;
     try {
       port = ((Number) cmd.getParsedOptionValue("p")).intValue();
-      numAccounts = ((Number) cmd.getParsedOptionValue("n")).intValue();
+      threadCount = ((Number) cmd.getParsedOptionValue("t")).intValue();
     } catch (ParseException e) {
       throw new IllegalArgumentException("Input value cannot be parsed.", e);
     }
     ManagedChannel channel =
         ManagedChannelBuilder.forAddress(addressName, port).usePlaintext().build();
     WorkloadGenerator workloadGenerator = new WorkloadGenerator(channel);
-    workloadGenerator.seedData(numAccounts);
-    workloadGenerator.startSteadyLoad();
+    workloadGenerator.startSteadyLoad(threadCount);
   }
 
   private static CommandLine parseArgs(String[] args) {
@@ -126,9 +95,9 @@ public final class WorkloadMain {
             .build());
 
     options.addOption(
-        Option.builder("n")
-            .longOpt("num-accounts")
-            .desc("number of accounts to create")
+        Option.builder("t")
+            .longOpt("thread-count")
+            .desc("number of threads to use in thread pool")
             .required(true)
             .type(Number.class)
             .hasArg()
