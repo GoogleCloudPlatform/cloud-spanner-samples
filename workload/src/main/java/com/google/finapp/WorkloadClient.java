@@ -14,7 +14,6 @@
 
 package com.google.finapp;
 
-import com.google.common.collect.ImmutableList;
 import com.google.finapp.CreateAccountRequest.Status;
 import com.google.finapp.FinAppGrpc.FinAppBlockingStub;
 import com.google.protobuf.ByteString;
@@ -32,36 +31,39 @@ public class WorkloadClient implements Runnable {
 
   private final FinAppBlockingStub blockingStub;
   private static final Logger logger = Logger.getLogger(WorkloadClient.class.getName());
-  private final ImmutableList<Task> tasks;
   private final List<ByteString> ids;
   private final Random random = new Random();
 
-  private WorkloadClient(ManagedChannel channel, List<Task> tasks) {
+  private WorkloadClient(ManagedChannel channel) {
     this.blockingStub = FinAppGrpc.newBlockingStub(channel);
-    this.tasks = ImmutableList.copyOf(tasks);
     this.ids = new ArrayList<>();
   }
 
-  /** @param tasks ImmutableList of tasks to complete in given order */
-  public static WorkloadClient getWorkloadClient(ManagedChannel channel, List<Task> tasks) {
-    return new WorkloadClient(channel, tasks);
+  public static WorkloadClient getWorkloadClient(ManagedChannel channel) {
+    return new WorkloadClient(channel);
   }
 
   @Override
   public void run() {
-    for (Task task : tasks) {
-      switch (task) {
-        case CreateAccount:
+    for (int i = 0; i < 2; i++) { // ensure that > 2 accounts exists for future methods
+      addAccountWithRandomBalance();
+    }
+    int numMethods = 2; // must be updated when new methods are added
+    while (true) {
+      int method = random.nextInt(numMethods);
+      switch (method) {
+        case 0:
           addAccountWithRandomBalance();
           break;
-        case MoveAccountBalance:
-          for (int i = 0; i < 2; i++) { // ensure that 2 accounts exist
-            addAccountWithRandomBalance();
+        case 1:
+          int idsSize = ids.size();
+          int fromAcctIndex = random.nextInt(idsSize);
+          int toAcctIndex = random.nextInt(idsSize);
+          while (toAcctIndex == fromAcctIndex) {
+            toAcctIndex = random.nextInt(idsSize);
           }
-          int[] accountIndexes = random.ints(2, 0, ids.size()).distinct().limit(2).toArray();
-          ByteString fromAcct = ids.get(accountIndexes[0]);
-          ByteString toAcct = ids.get(accountIndexes[1]);
-          moveAccountBalance(fromAcct, toAcct, getRandomAmountFromRange(1, 200));
+          moveAccountBalance(
+              ids.get(fromAcctIndex), ids.get(toAcctIndex), getRandomAmountFromRange(1, 200));
           break;
       }
     }
@@ -101,8 +103,7 @@ public class WorkloadClient implements Runnable {
   }
 
   private void moveAccountBalance(
-      ByteString fromAccountId, ByteString toAccountId, BigDecimal amount)
-      throws StatusRuntimeException {
+      ByteString fromAccountId, ByteString toAccountId, BigDecimal amount) {
     MoveAccountBalanceRequest request =
         MoveAccountBalanceRequest.newBuilder()
             .setAmount(amount.toString())
@@ -113,8 +114,7 @@ public class WorkloadClient implements Runnable {
       MoveAccountBalanceResponse response = blockingStub.moveAccountBalance(request);
       logger.log(Level.INFO, String.format("Move made %s", response));
     } catch (StatusRuntimeException e) {
-      logger.log(Level.SEVERE, String.format("Error making move %s", request));
-      throw e;
+      logger.log(Level.INFO, String.format("Ignoring exception in moveAccountBalance: %s", e));
     }
   }
 }

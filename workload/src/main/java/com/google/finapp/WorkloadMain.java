@@ -17,12 +17,6 @@ package com.google.finapp;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Level;
@@ -44,34 +38,17 @@ public final class WorkloadMain {
 
   private static class WorkloadGenerator {
     private final ManagedChannel channel;
-    private static final int DEFAULT_MAX_QUEUE_SIZE = 100;
-    private final Random random = new Random();
-    private final List<Task> taskValues =
-        Collections.unmodifiableList(Arrays.asList(Task.values()));
-    private final int numTasks = taskValues.size();
 
     WorkloadGenerator(ManagedChannel channel) {
       this.channel = channel;
     }
 
-    void startSteadyLoad(int threadCount, int taskCount) {
+    void startSteadyLoad(int threadCount) {
       ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(threadCount);
-      BlockingQueue<Runnable> queue = executor.getQueue();
-      while (true) {
-        if (queue.size() < DEFAULT_MAX_QUEUE_SIZE) {
-          List<Task> tasks = generateRandomTasks(taskCount);
-          executor.submit(WorkloadClient.getWorkloadClient(channel, tasks));
-          logger.log(Level.INFO, String.format("Tasks submitted %s", tasks));
-        }
+      for (int i = 0; i < threadCount; i++) {
+        executor.submit(WorkloadClient.getWorkloadClient(channel));
+        logger.log(Level.INFO, "WorkloadClient created");
       }
-    }
-
-    List<Task> generateRandomTasks(int taskCount) {
-      List<Task> taskList = new ArrayList<>();
-      for (int i = 0; i < taskCount; i++) {
-        taskList.add(taskValues.get(random.nextInt(numTasks)));
-      }
-      return taskList;
     }
   }
 
@@ -84,18 +61,16 @@ public final class WorkloadMain {
     String addressName = cmd.getOptionValue("a");
     int port;
     int threadCount;
-    int taskCount;
     try {
       port = ((Number) cmd.getParsedOptionValue("p")).intValue();
       threadCount = ((Number) cmd.getParsedOptionValue("t")).intValue();
-      taskCount = ((Number) cmd.getParsedOptionValue("c")).intValue();
     } catch (ParseException e) {
       throw new IllegalArgumentException("Input value cannot be parsed.", e);
     }
     ManagedChannel channel =
         ManagedChannelBuilder.forAddress(addressName, port).usePlaintext().build();
     WorkloadGenerator workloadGenerator = new WorkloadGenerator(channel);
-    workloadGenerator.startSteadyLoad(threadCount, taskCount);
+    workloadGenerator.startSteadyLoad(threadCount);
   }
 
   private static CommandLine parseArgs(String[] args) {
@@ -123,15 +98,6 @@ public final class WorkloadMain {
         Option.builder("t")
             .longOpt("thread-count")
             .desc("number of threads to use in thread pool")
-            .required(true)
-            .type(Number.class)
-            .hasArg()
-            .build());
-
-    options.addOption(
-        Option.builder("c")
-            .longOpt("task-count")
-            .desc("number of tasks (RPC methods) each thread performs")
             .required(true)
             .type(Number.class)
             .hasArg()
