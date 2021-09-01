@@ -32,10 +32,11 @@ import java.util.logging.Logger;
  */
 public class WorkloadClient implements Runnable {
 
-  private final FinAppBlockingStub blockingStub;
   private static final Logger logger = Logger.getLogger(WorkloadClient.class.getName());
+  private static final int MAX_INITIAL_ACCOUNT_BALANCE = 20000;
   private final List<ByteString> ids;
   private final Random random = new Random();
+  private final FinAppBlockingStub blockingStub;
 
   private WorkloadClient(ManagedChannel channel) {
     this.blockingStub = FinAppGrpc.newBlockingStub(channel);
@@ -61,18 +62,16 @@ public class WorkloadClient implements Runnable {
         case 1:
           int idsSize = ids.size();
           int fromAcctIndex = random.nextInt(idsSize);
-          int toAcctIndex = random.nextInt(idsSize);
-          while (toAcctIndex == fromAcctIndex) {
+          int toAcctIndex;
+          do {
             toAcctIndex = random.nextInt(idsSize);
-          }
+          } while (toAcctIndex == fromAcctIndex);
           moveAccountBalance(
               ids.get(fromAcctIndex), ids.get(toAcctIndex), getRandomAmountFromRange(1, 200));
           break;
       }
     }
   }
-
-  private static final int MAX_INITIAL_ACCOUNT_BALANCE = 20000;
 
   private void addAccountWithRandomBalance() {
     ids.add(
