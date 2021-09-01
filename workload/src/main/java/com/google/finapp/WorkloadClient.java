@@ -14,10 +14,10 @@
 
 package com.google.finapp;
 
-import com.google.finapp.CreateAccountRequest.Status;
 import com.google.finapp.FinAppGrpc.FinAppBlockingStub;
 import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
+import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -76,7 +76,7 @@ public class WorkloadClient implements Runnable {
         createAccount(
             getRandomAmountFromRange(0, MAX_INITIAL_ACCOUNT_BALANCE),
             CreateAccountRequest.Type.CHECKING,
-            Status.ACTIVE));
+            CreateAccountRequest.Status.ACTIVE));
   }
 
   private BigDecimal getRandomAmountFromRange(int min, int max) {
@@ -114,7 +114,14 @@ public class WorkloadClient implements Runnable {
       MoveAccountBalanceResponse response = blockingStub.moveAccountBalance(request);
       logger.log(Level.INFO, String.format("Move made %s", response));
     } catch (StatusRuntimeException e) {
-      logger.log(Level.INFO, String.format("Ignoring exception in moveAccountBalance: %s", e));
+      if (e.getStatus().equals(Status.INVALID_ARGUMENT)) {
+        logger.log(
+            Level.INFO,
+            String.format("Ignoring invalid argument error in moveAccountBalance: %s", e));
+      } else {
+        logger.log(Level.SEVERE, String.format("Unexpected error in moveAccountBalance: %s", e));
+        throw e;
+      }
     }
   }
 }
