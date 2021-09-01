@@ -27,8 +27,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A gRPC client for the finance sample app. Runs until externally terminated and performs randomly
- * chosen queries using available methods.
+ * A gRPC client for the finance sample app. Runs until externally terminated and sends randomly
+ * chosen requests using available methods.
  */
 public class WorkloadClient implements Runnable {
 
