@@ -53,8 +53,8 @@ public final class WorkloadMain {
   }
 
   /**
-   * Continuously generates gRPC clients with given number of threads and tasks per thread, as
-   * defined by commandline arguments.
+   * Generates gRPC clients to run indefinitely in separate threads and generate traffic for the
+   * finance app server.
    */
   public static void main(String[] args) {
     CommandLine cmd = parseArgs(args);

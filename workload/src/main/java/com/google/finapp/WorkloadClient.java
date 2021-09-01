@@ -26,7 +26,10 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** A gRPC client for the finance sample app. Performs a series of tasks (gRPC methods) in order. */
+/**
+ * A gRPC client for the finance sample app. Runs until externally terminated and performs randomly
+ * chosen queries using available methods.
+ */
 public class WorkloadClient implements Runnable {
 
   private final FinAppBlockingStub blockingStub;
