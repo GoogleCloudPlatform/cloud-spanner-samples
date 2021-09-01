@@ -117,7 +117,7 @@ public class WorkloadClient implements Runnable {
       MoveAccountBalanceResponse response = blockingStub.moveAccountBalance(request);
       logger.log(Level.INFO, String.format("Move made %s", response));
     } catch (StatusRuntimeException e) {
-      if (e.getStatus().equals(Status.INVALID_ARGUMENT)) {
+      if (e.getStatus().getCode().equals(Status.INVALID_ARGUMENT.getCode())) {
         logger.log(
             Level.INFO,
             String.format("Ignoring invalid argument error in moveAccountBalance: %s", e));
