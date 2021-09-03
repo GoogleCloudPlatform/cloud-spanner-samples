@@ -51,7 +51,7 @@ message CreateCustomerRequest {
 }
 
 message CreateCustomerResponse {
-  optional bytes customer_id = 1;
+  optional string customer_id = 1; // UTF-8
 }
 
 message CreateAccountRequest {
@@ -73,22 +73,22 @@ message CreateAccountRequest {
 }
 
 message CreateAccountResponse {
-  optional bytes account_id = 1;
+  optional string account_id = 1; // UTF-8
 }
 
 message CreateCustomerRoleRequest {
-  optional bytes customer_id = 1;
-  optional bytes account_id = 2;
+  optional string customer_id = 1; // UTF-8
+  optional string account_id = 2; // UTF-8
   optional string name = 3;
 }
 
 message CreateCustomerRoleResponse {
-  optional bytes role_id = 1;
+  optional string role_id = 1; // UTF-8
 }
 
 message MoveAccountBalanceRequest {
-  optional bytes from_account_id = 1;
-  optional bytes to_account_id = 2;
+  optional string from_account_id = 1; // UTF-8
+  optional string to_account_id = 2; // UTF-8
   optional string amount = 3; // Digits[.[Digits]] or [Digits].Digits
 }
 
@@ -98,7 +98,7 @@ message MoveAccountBalanceResponse {
 }
 
 message CreateTransactionForAccountRequest {
-  optional bytes account_id = 1;
+  optional string account_id = 1; // UTF-8
   optional string amount = 2; // Digits[.[Digits]] or [Digits].Digits
   optional bool is_credit = 3;
 }
@@ -108,14 +108,14 @@ message CreateTransactionForAccountResponse {
 }
 
 message TransactionEntry {
-  optional bytes account_id = 1;
+  optional string account_id = 1; // UTF-8
   optional .google.protobuf.Timestamp event_timestamp = 2;
   optional bool is_credit = 3;
   optional string amount = 4;
 }
 
 message GetRecentTransactionsForAccountRequest {
-  optional bytes account_id = 1;
+  optional string account_id = 1; // UTF-8
   optional .google.protobuf.Timestamp begin_timestamp = 2;
   optional .google.protobuf.Timestamp end_timestamp = 3;
 }
