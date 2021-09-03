@@ -19,7 +19,6 @@ import com.google.cloud.Timestamp;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
-import com.google.protobuf.ByteString;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -237,7 +236,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       while (resultSet.next()) {
         transactionHistoriesBuilder.add(
             TransactionEntry.newBuilder()
-                .setAccountId(ByteString.copyFrom(resultSet.getBytes("AccountId")))
+                .setAccountId(resultSet.getBytes("AccountId").toString())
                 .setEventTimestamp(
                     // use a builder to set com.google.protobuf.Timestamp from java.sql.Timestamp
                     // object

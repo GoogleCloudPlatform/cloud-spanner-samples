@@ -19,7 +19,6 @@ import com.google.cloud.Timestamp;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
-import com.google.protobuf.ByteString;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import java.math.BigDecimal;
@@ -51,9 +50,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       return;
     }
     CreateCustomerResponse response =
-        CreateCustomerResponse.newBuilder()
-            .setCustomerId(ByteString.copyFrom(customerId.toByteArray()))
-            .build();
+        CreateCustomerResponse.newBuilder().setCustomerId(customerId.toStringUtf8()).build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
@@ -83,7 +80,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     }
     CreateAccountResponse response =
         CreateAccountResponse.newBuilder()
-            .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
+            .setAccountId(accountId.toStringUtf8())
             .build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
@@ -95,8 +92,8 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     ByteArray roleId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     try {
       spannerDao.createCustomerRole(
-          ByteArray.copyFrom(role.getCustomerId().toByteArray()),
-          ByteArray.copyFrom(role.getAccountId().toByteArray()),
+          ByteArray.copyFrom(role.getCustomerId()),
+          ByteArray.copyFrom(role.getAccountId()),
           roleId,
           role.getName());
     } catch (SpannerDaoException e) {
@@ -104,9 +101,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       return;
     }
     CreateCustomerRoleResponse response =
-        CreateCustomerRoleResponse.newBuilder()
-            .setRoleId(ByteString.copyFrom(roleId.toByteArray()))
-            .build();
+        CreateCustomerRoleResponse.newBuilder().setRoleId(roleId.toStringUtf8()).build();
     responseObserver.onNext(response);
     responseObserver.onCompleted();
   }
@@ -116,8 +111,8 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       MoveAccountBalanceRequest request,
       StreamObserver<MoveAccountBalanceResponse> responseObserver) {
     ImmutableMap<ByteArray, BigDecimal> accountBalances;
-    ByteArray fromAccountId = ByteArray.copyFrom(request.getFromAccountId().toByteArray());
-    ByteArray toAccountId = ByteArray.copyFrom(request.getToAccountId().toByteArray());
+    ByteArray fromAccountId = ByteArray.copyFrom(request.getFromAccountId());
+    ByteArray toAccountId = ByteArray.copyFrom(request.getToAccountId());
     try {
       accountBalances =
           spannerDao.moveAccountBalance(
@@ -156,7 +151,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     try {
       newBalance =
           spannerDao.createTransactionForAccount(
-              ByteArray.copyFrom(request.getAccountId().toByteArray()),
+              ByteArray.copyFrom(request.getAccountId()),
               new BigDecimal(request.getAmount()),
               request.getIsCredit());
     } catch (SpannerDaoException e) {
@@ -188,7 +183,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       GetRecentTransactionsForAccountRequest request,
       StreamObserver<GetRecentTransactionsForAccountResponse> responseObserver) {
     ImmutableList<TransactionEntry> transactionEntries;
-    ByteArray accountId = ByteArray.copyFrom(request.getAccountId().toByteArray());
+    ByteArray accountId = ByteArray.copyFrom(request.getAccountId());
     Timestamp beginTimestamp = Timestamp.fromProto(request.getBeginTimestamp());
     Timestamp endTimestamp = Timestamp.fromProto(request.getEndTimestamp());
     try {
