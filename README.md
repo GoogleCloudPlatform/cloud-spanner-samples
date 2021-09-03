@@ -23,18 +23,26 @@ for client libraries to work.
     $ export SPANNER_EMULATOR_HOST="localhost:9010"
     ```
 
-2. Bring up the FinAppServer hosting a grpc service.
+2. Bring up the FinAppServer hosting a grpc service from the `cloud-spanner-samples/server` directory in a separate terminal.
 
     ```
-    $ mvn verify
-    $ mvn exec:java -Dexec.mainClass=com.google.finapp.ServerMain
+    $ mvn clean compile assembly:single
+    $ java -jar target/server-1.0-SNAPSHOT-jar-with-dependencies.jar \
+        --spanner_project_id=test-project --spanner_instance_id=test-instance \
+        --spanner_database_id=test-database
     ```
+> To run the application using the JDBC implementation instead of the default Java client implementation, add the flag.
+> ```
+> $ java -jar target/server-1.0-SNAPSHOT-jar-with-dependencies.jar \
+> --spanner_project_id=test-project --spanner_instance_id=test-instance \
+> --spanner_database_id=test-database --spanner_use_jdbc
+> ```
 
 3. Call RPCs using grpc_cli.
 
     ```
     $ grpc_cli call localhost:8080 CreateCustomer \
-        "name: 'google' address: 'amphitheatre pkwy'"
+        "name: 'google' address: 'amphitheatre pkwy'" --channel_creds_type=insecure
     ```
 
 ## How to run the workload generator
