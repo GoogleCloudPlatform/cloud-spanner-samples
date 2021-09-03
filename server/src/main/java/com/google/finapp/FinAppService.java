@@ -19,7 +19,6 @@ import com.google.cloud.Timestamp;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
-import com.google.protobuf.ByteString;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import java.math.BigDecimal;
@@ -112,17 +111,12 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       MoveAccountBalanceRequest request,
       StreamObserver<MoveAccountBalanceResponse> responseObserver) {
     ImmutableMap<ByteArray, BigDecimal> accountBalances;
-    System.out.println(request.getToAccountId().getBytes());
-    System.out.println(request.getFromAccountId());
     ByteArray fromAccountId = ByteArray.copyFrom(request.getFromAccountId());
     ByteArray toAccountId = ByteArray.copyFrom(request.getToAccountId());
-    System.out.println(toAccountId);
-    System.out.println(fromAccountId);
     try {
       accountBalances =
           spannerDao.moveAccountBalance(
               fromAccountId, toAccountId, new BigDecimal(request.getAmount()));
-      System.out.println("i made it here");
     } catch (SpannerDaoException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
