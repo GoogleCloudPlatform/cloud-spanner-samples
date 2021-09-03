@@ -28,7 +28,6 @@ import com.google.cloud.spanner.Value;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
-import com.google.protobuf.ByteString;
 import java.math.BigDecimal;
 
 final class SpannerDaoImpl implements SpannerDaoInterface {
@@ -252,7 +251,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
       while (resultSet.next()) {
         transactionHistoriesBuilder.add(
             TransactionEntry.newBuilder()
-                .setAccountId(ByteString.copyFrom(resultSet.getBytes("AccountId").toByteArray()))
+                .setAccountId(resultSet.getBytes("AccountId").toStringUtf8())
                 .setEventTimestamp(resultSet.getTimestamp("EventTimestamp").toProto())
                 .setIsCredit(resultSet.getBoolean("IsCredit"))
                 .setAmount(resultSet.getBigDecimal("Amount").toString())
