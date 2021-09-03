@@ -34,7 +34,6 @@ import com.google.cloud.spanner.Value;
 import com.google.cloud.spanner.testing.RemoteSpannerHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.protobuf.ByteString;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -538,7 +537,7 @@ public class FinAppIT {
             fromAccountId, Timestamp.MIN_VALUE, Timestamp.MAX_VALUE);
     TransactionEntry expected_transaction =
         TransactionEntry.newBuilder()
-            .setAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
+            .setAccountId(fromAccountId.toString())
             .setEventTimestamp(history.get(0).getEventTimestamp())
             .setIsCredit(true)
             .setAmount(amount.toString())
@@ -589,21 +588,21 @@ public class FinAppIT {
             fromAccountId, Timestamp.MIN_VALUE, Timestamp.MAX_VALUE);
     TransactionEntry expected_transaction1 =
         TransactionEntry.newBuilder()
-            .setAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
+            .setAccountId(fromAccountId.toString())
             .setEventTimestamp(history.get(2).getEventTimestamp())
             .setIsCredit(true)
             .setAmount(amount.toString())
             .build();
     TransactionEntry expected_transaction2 =
         TransactionEntry.newBuilder()
-            .setAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
+            .setAccountId(fromAccountId.toString())
             .setEventTimestamp(history.get(1).getEventTimestamp())
             .setIsCredit(false)
             .setAmount(amount.toString())
             .build();
     TransactionEntry expected_transaction3 =
         TransactionEntry.newBuilder()
-            .setAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
+            .setAccountId(fromAccountId.toString())
             .setEventTimestamp(history.get(0).getEventTimestamp())
             .setIsCredit(true)
             .setAmount(amount.toString())
