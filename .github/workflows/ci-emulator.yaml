@@ -16,11 +16,6 @@ jobs:
           - 9020:9020
 
     steps:
-    - name: Integration tests against emulator
-      env:
-        JOB_TYPE: test
-        SPANNER_EMULATOR_HOST: localhost:9010
-        GOOGLE_CLOUD_PROJECT: test-project
     - uses: actions/checkout@v2
     - uses: stCarolas/setup-maven@v4
       with:
@@ -33,8 +28,15 @@ jobs:
     - run: gcloud config set project test-project
     - run: gcloud config set api_endpoint_overrides/spanner http://localhost:9020/
     - run: gcloud spanner instances create test-instance --config=emulator-config --nodes=1 --description="TestInstance"
-    - run: gcloud config set spanner/instance test-instance
     - run: mvn clean compile
     - run: mvn verify
+      env:
+        JOB_TYPE: test
+        SPANNER_EMULATOR_HOST: localhost:9010
+        GOOGLE_CLOUD_PROJECT: test-project
     - run: mvn verify -DSPANNER_USE_JDBC=true
+      env:
+        JOB_TYPE: test
+        SPANNER_EMULATOR_HOST: localhost:9010
+        GOOGLE_CLOUD_PROJECT: test-project
   
