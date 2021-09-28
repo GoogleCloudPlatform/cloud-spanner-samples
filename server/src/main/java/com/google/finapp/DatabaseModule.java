@@ -43,7 +43,16 @@ final class DatabaseModule extends AbstractModule {
       return new SpannerDaoJDBCImpl(spannerProjectId, spannerInstanceId, spannerDatabaseId);
     } else {
       SpannerOptions spannerOptions = SpannerOptions.getDefaultInstance();
-      Spanner spanner = spannerOptions.toBuilder().build().getService();
+      Spanner spanner =
+          spannerOptions.toBuilder()
+              .setChannelProvider(
+                  // Configure GRPC channel explicitly, to simplify deployment on GKE. The default
+                  // configuration requires a grpclb to be available.
+                  FixedTransportChannelProvider.create(
+                      GrpcTransportChannel.create(
+                          ManagedChannelBuilder.forAddress(spannerHost, spannerPort).build())))
+              .build()
+              .getService();
       DatabaseClient client =
           spanner.getDatabaseClient(
               DatabaseId.of(spannerProjectId, spannerInstanceId, spannerDatabaseId));
