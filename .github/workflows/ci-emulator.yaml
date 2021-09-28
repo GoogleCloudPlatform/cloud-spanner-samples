@@ -16,6 +16,10 @@ jobs:
           - 9020:9020
 
     steps:
+    - env:
+        JOB_TYPE: test
+        SPANNER_EMULATOR_HOST: localhost:9010
+        GOOGLE_CLOUD_PROJECT: test-project
     - uses: actions/checkout@v2
     - uses: stCarolas/setup-maven@v4
       with:
@@ -33,7 +37,3 @@ jobs:
     - run: mvn verify
     - run: mvn verify -DSPANNER_USE_JDBC=true
   
-      env:
-        JOB_TYPE: test
-        SPANNER_EMULATOR_HOST: localhost:9010
-        GOOGLE_CLOUD_PROJECT: test-project
