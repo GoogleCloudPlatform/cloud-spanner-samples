@@ -197,12 +197,16 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     } catch (SpannerDaoException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
+    } catch (IllegalArgumentException e) {
+      responseObserver.onError(Status.fromThrowable(e).asException());
+      return;
     }
     GetRecentTransactionsForAccountResponse response =
         GetRecentTransactionsForAccountResponse.newBuilder()
             .addAllTransactionEntry(transactionEntries)
             .build();
     responseObserver.onNext(response);
+    responseObserver.onCompleted();
   }
 
   private static AccountType toStorageAccountType(CreateAccountRequest.Type apiAccountType) {
