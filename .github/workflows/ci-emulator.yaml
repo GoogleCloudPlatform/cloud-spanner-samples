@@ -37,5 +37,6 @@ jobs:
     - run: mvn integration-test failsafe:verify -DSPANNER_USE_JDBC=true
       env:
         JOB_TYPE: test
+        SPANNER_EMULATOR_HOST: localhost:9010
         GOOGLE_CLOUD_PROJECT: test-project
   
