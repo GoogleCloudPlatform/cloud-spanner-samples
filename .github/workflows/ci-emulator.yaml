@@ -16,7 +16,8 @@ jobs:
           - 9020:9020
 
     steps:
-    - env:
+    - name: Integration tests against emulator
+      env:
         JOB_TYPE: test
         SPANNER_EMULATOR_HOST: localhost:9010
         GOOGLE_CLOUD_PROJECT: test-project
