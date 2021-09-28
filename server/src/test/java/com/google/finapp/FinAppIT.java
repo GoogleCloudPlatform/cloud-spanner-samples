@@ -54,17 +54,13 @@ import org.junit.experimental.categories.Category;
 
 @Category(IntegrationTest.class)
 public class FinAppIT {
-  private FinAppService finAppService;
-  private DatabaseClient databaseClient;
-  private FinAppGrpc.FinAppBlockingStub blockingStub;
   private static Database db;
+  private DatabaseClient databaseClient;
+  private FinAppService finAppService;
+  private FinAppGrpc.FinAppBlockingStub blockingStub;
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
 
-  /**
-   * This rule manages automatic graceful shutdown for the registered servers and channels at the
-   * end of test.
-   */
   @ClassRule public static GrpcCleanupRule grpcCleanup = new GrpcCleanupRule();
 
   @BeforeClass
