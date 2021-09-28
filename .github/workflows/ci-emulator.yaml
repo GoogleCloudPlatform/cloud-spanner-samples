@@ -32,7 +32,6 @@ jobs:
     - run: mvn verify
       env:
         JOB_TYPE: test
-        SPANNER_EMULATOR_HOST: localhost:9010
         GOOGLE_CLOUD_PROJECT: test-project
     - run: mvn verify -DSPANNER_USE_JDBC=true
       env:
