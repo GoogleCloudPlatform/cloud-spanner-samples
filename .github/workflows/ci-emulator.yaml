@@ -29,6 +29,7 @@ jobs:
     - run: gcloud config set api_endpoint_overrides/spanner http://localhost:9020/
     - run: gcloud spanner instances create test-instance --config=emulator-config --nodes=1 --description="TestInstance"
     - run: export SPANNER_EMULATOR_HOST="localhost:9010"
+    - run: mvn clean
     - run: mvn integration-test
     - run: mvn integration-test -DSPANNER_USE_JDBC=true
   
