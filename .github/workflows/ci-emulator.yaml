@@ -25,13 +25,13 @@ jobs:
     - run: gcloud config set project test-project
     - run: gcloud config set api_endpoint_overrides/spanner http://localhost:9020/
     - run: gcloud spanner instances create test-instance --config=emulator-config --nodes=1 --description="TestInstance"
-    - run: mvn clean compile
-    - run: mvn integration-test failsafe:verify
+    - run: mvn --batch-mode clean compile
+    - run: mvn --batch-mode integration-test failsafe:verify
       env:
         JOB_TYPE: test
         SPANNER_EMULATOR_HOST: localhost:9010
         GOOGLE_CLOUD_PROJECT: test-project
-    - run: mvn integration-test failsafe:verify -DSPANNER_USE_JDBC=true
+    - run: mvn --batch-mode integration-test failsafe:verify -DSPANNER_USE_JDBC=true
       env:
         JOB_TYPE: test
         SPANNER_EMULATOR_HOST: localhost:9010
