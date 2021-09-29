@@ -17,15 +17,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-java@v1
+    - uses: actions/setup-java@v2
       with:
         java-version: 11
+        distribution: 'adopt'
+        cache: 'maven'
     - run: java -version
     - run: gcloud config set auth/disable_credentials true
     - run: gcloud config set project test-project
     - run: gcloud config set api_endpoint_overrides/spanner http://localhost:9020/
     - run: gcloud spanner instances create test-instance --config=emulator-config --nodes=1 --description="TestInstance"
-    - run: mvn --batch-mode clean compile
     - run: mvn --batch-mode integration-test failsafe:verify
       env:
         JOB_TYPE: test
