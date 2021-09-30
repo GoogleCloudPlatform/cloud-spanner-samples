@@ -56,8 +56,7 @@ import org.junit.experimental.categories.Category;
 public class FinAppIT {
   private static Database db;
   private DatabaseClient databaseClient;
-  private FinAppService finAppService;
-  private FinAppGrpc.FinAppBlockingStub blockingStub;
+  private FinAppGrpc.FinAppBlockingStub finAppService;
 
   @ClassRule public static IntegrationTestEnv env = new IntegrationTestEnv();
 
@@ -94,7 +93,7 @@ public class FinAppIT {
             .build()
             .start());
 
-    blockingStub =
+    finAppService =
         FinAppGrpc.newBlockingStub(
             // Create a client channel and register for automatic graceful shutdown.
             grpcCleanup.register(
@@ -127,7 +126,7 @@ public class FinAppIT {
     String name = "customer name";
     String address = "customer address";
     CreateCustomerResponse response =
-        blockingStub.createCustomer(
+        finAppService.createCustomer(
             CreateCustomerRequest.newBuilder().setName(name).setAddress(address).build());
     assertThat(response.getCustomerId().size()).isEqualTo(16);
     try (ResultSet resultSet =
@@ -152,7 +151,7 @@ public class FinAppIT {
   public void createAccount_createsValidAccount() throws Exception {
     BigDecimal amount = new BigDecimal(2);
     CreateAccountResponse response =
-        blockingStub.createAccount(
+        finAppService.createAccount(
             CreateAccountRequest.newBuilder()
                 .setType(CreateAccountRequest.Type.UNSPECIFIED_ACCOUNT_TYPE /* = 0*/)
                 .setStatus(CreateAccountRequest.Status.UNSPECIFIED_ACCOUNT_STATUS /* = 0*/)
@@ -177,7 +176,7 @@ public class FinAppIT {
     }
   }
 
-  protected void addTestAccountRow(
+  private void addTestAccountRow(
       ByteArray accountId, BigDecimal balance, Timestamp creationTimestamp) {
     databaseClient.write(
         ImmutableList.of(
@@ -195,7 +194,7 @@ public class FinAppIT {
                 .build()));
   }
 
-  protected void addTestCustomer(ByteArray customerId, String name, String address) {
+  private void addTestCustomer(ByteArray customerId, String name, String address) {
     databaseClient.write(
         ImmutableList.of(
             Mutation.newInsertBuilder("Customer")
@@ -218,7 +217,7 @@ public class FinAppIT {
     addTestCustomer(customerId, "customer name", "customer address");
 
     CreateCustomerRoleResponse response =
-        blockingStub.createCustomerRole(
+        finAppService.createCustomerRole(
             CreateCustomerRoleRequest.newBuilder()
                 .setCustomerId(ByteString.copyFrom(customerId.toByteArray()))
                 .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
@@ -253,7 +252,7 @@ public class FinAppIT {
     addTestAccountRow(fromAccountId, fromAccountBalance, Timestamp.now());
     addTestAccountRow(toAccountId, toAccountBalance, Timestamp.now());
     MoveAccountBalanceResponse response =
-        blockingStub.moveAccountBalance(
+        finAppService.moveAccountBalance(
             MoveAccountBalanceRequest.newBuilder()
                 .setFromAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
                 .setToAccountId(ByteString.copyFrom(toAccountId.toByteArray()))
@@ -265,7 +264,7 @@ public class FinAppIT {
 
     // Perform one more transfer to ensure the changes were persistent.
     response =
-        blockingStub.moveAccountBalance(
+        finAppService.moveAccountBalance(
             MoveAccountBalanceRequest.newBuilder()
                 .setFromAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
                 .setToAccountId(ByteString.copyFrom(toAccountId.toByteArray()))
@@ -289,7 +288,7 @@ public class FinAppIT {
     assertThrows(
         io.grpc.StatusRuntimeException.class,
         () ->
-            blockingStub.moveAccountBalance(
+            finAppService.moveAccountBalance(
                 MoveAccountBalanceRequest.newBuilder()
                     .setFromAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
                     .setToAccountId(ByteString.copyFrom(toAccountId.toByteArray()))
@@ -310,7 +309,7 @@ public class FinAppIT {
     assertThrows(
         io.grpc.StatusRuntimeException.class,
         () ->
-            blockingStub.moveAccountBalance(
+            finAppService.moveAccountBalance(
                 MoveAccountBalanceRequest.newBuilder()
                     .setFromAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
                     .setToAccountId(ByteString.copyFrom(toAccountId.toByteArray()))
@@ -327,7 +326,7 @@ public class FinAppIT {
     addTestAccountRow(accountId, oldAccountBalance, Timestamp.now());
 
     CreateTransactionForAccountResponse response =
-        blockingStub.createTransactionForAccount(
+        finAppService.createTransactionForAccount(
             CreateTransactionForAccountRequest.newBuilder()
                 .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
                 .setAmount(amount.toString())
@@ -375,7 +374,7 @@ public class FinAppIT {
     addTestAccountRow(accountId, oldAccountBalance, Timestamp.now());
 
     CreateTransactionForAccountResponse response =
-        blockingStub.createTransactionForAccount(
+        finAppService.createTransactionForAccount(
             CreateTransactionForAccountRequest.newBuilder()
                 .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
                 .setAmount(amount.toString())
@@ -425,7 +424,7 @@ public class FinAppIT {
     assertThrows(
         io.grpc.StatusRuntimeException.class,
         () ->
-            blockingStub.createTransactionForAccount(
+            finAppService.createTransactionForAccount(
                 CreateTransactionForAccountRequest.newBuilder()
                     .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
                     .setAmount(amount.toString())
@@ -443,7 +442,7 @@ public class FinAppIT {
     assertThrows(
         io.grpc.StatusRuntimeException.class,
         () ->
-            blockingStub.createTransactionForAccount(
+            finAppService.createTransactionForAccount(
                 CreateTransactionForAccountRequest.newBuilder()
                     .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
                     .setAmount(amount.toString())
@@ -460,7 +459,7 @@ public class FinAppIT {
     BigDecimal amount = new BigDecimal(10);
     addTestAccountRow(fromAccountId, fromAccountBalance, Timestamp.now());
     addTestAccountRow(toAccountId, toAccountBalance, Timestamp.now());
-    blockingStub.moveAccountBalance(
+    finAppService.moveAccountBalance(
         MoveAccountBalanceRequest.newBuilder()
             .setFromAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
             .setToAccountId(ByteString.copyFrom(toAccountId.toByteArray()))
@@ -468,7 +467,7 @@ public class FinAppIT {
             .build());
 
     GetRecentTransactionsForAccountResponse response =
-        blockingStub.getRecentTransactionsForAccount(
+        finAppService.getRecentTransactionsForAccount(
             GetRecentTransactionsForAccountRequest.newBuilder()
                 .setAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
                 .setBeginTimestamp(Timestamp.MIN_VALUE.toProto())
@@ -496,26 +495,26 @@ public class FinAppIT {
     BigDecimal amount = new BigDecimal(10);
     addTestAccountRow(fromAccountId, fromAccountBalance, Timestamp.now());
     addTestAccountRow(toAccountId, toAccountBalance, Timestamp.now());
-    blockingStub.moveAccountBalance(
+    finAppService.moveAccountBalance(
         MoveAccountBalanceRequest.newBuilder()
             .setFromAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
             .setToAccountId(ByteString.copyFrom(toAccountId.toByteArray()))
             .setAmount(amount.toString())
             .build());
-    blockingStub.moveAccountBalance(
+    finAppService.moveAccountBalance(
         MoveAccountBalanceRequest.newBuilder()
             .setFromAccountId(ByteString.copyFrom(toAccountId.toByteArray()))
             .setToAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
             .setAmount(amount.toString())
             .build());
-    blockingStub.moveAccountBalance(
+    finAppService.moveAccountBalance(
         MoveAccountBalanceRequest.newBuilder()
             .setFromAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
             .setToAccountId(ByteString.copyFrom(toAccountId.toByteArray()))
             .setAmount(amount.toString())
             .build());
     GetRecentTransactionsForAccountResponse response =
-        blockingStub.getRecentTransactionsForAccount(
+        finAppService.getRecentTransactionsForAccount(
             GetRecentTransactionsForAccountRequest.newBuilder()
                 .setAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
                 .setBeginTimestamp(Timestamp.MIN_VALUE.toProto())
@@ -558,7 +557,7 @@ public class FinAppIT {
     assertThrows(
         io.grpc.StatusRuntimeException.class,
         () ->
-            blockingStub.getRecentTransactionsForAccount(
+            finAppService.getRecentTransactionsForAccount(
                 GetRecentTransactionsForAccountRequest.newBuilder()
                     .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
                     .setBeginTimestamp(Timestamp.MAX_VALUE.toProto())
@@ -575,7 +574,7 @@ public class FinAppIT {
     assertThrows(
         io.grpc.StatusRuntimeException.class,
         () ->
-            blockingStub.getRecentTransactionsForAccount(
+            finAppService.getRecentTransactionsForAccount(
                 GetRecentTransactionsForAccountRequest.newBuilder()
                     .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
                     .setBeginTimestamp(Timestamp.now().toProto())

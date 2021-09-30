@@ -194,10 +194,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     try {
       transactionEntries =
           spannerDao.getRecentTransactionsForAccount(accountId, beginTimestamp, endTimestamp);
-    } catch (SpannerDaoException e) {
-      responseObserver.onError(Status.fromThrowable(e).asException());
-      return;
-    } catch (IllegalArgumentException e) {
+    } catch (SpannerDaoException|IllegalArgumentException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
