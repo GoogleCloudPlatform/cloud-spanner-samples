@@ -79,6 +79,12 @@
             <version>1.38.0</version>
         </dependency>
         <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-testing</artifactId>
+            <scope>test</scope>
+            <version>1.38.0</version>
+        </dependency>
+        <dependency>
             <artifactId>grpc-grpclb</artifactId>
             <groupId>io.grpc</groupId>
             <scope>runtime</scope>
