@@ -247,7 +247,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                 .build());
       }
       return transactionHistoriesBuilder.build();
-    } catch (Exception e) {
+    } catch (SpannerException e) {
       throw new SpannerDaoException(e);
     }
   }
