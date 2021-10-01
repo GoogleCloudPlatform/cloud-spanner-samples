@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-syntax = "proto2";
+syntax = "proto3";
 
 package com.google.finapp;
 
@@ -42,85 +42,85 @@ service FinApp {
 message Empty {}
 
 message PingResponse {
-  optional string pong = 1;
+  string pong = 1;
 }
 
 message CreateCustomerRequest {
-  optional string name = 1;
-  optional string address = 2;
+  string name = 1;
+  string address = 2;
 }
 
 message CreateCustomerResponse {
-  optional bytes customer_id = 1;
+  bytes customer_id = 1;
 }
 
 message CreateAccountRequest {
-  optional string balance = 1; // Digits[.[Digits]] or [Digits].Digits
+  string balance = 1; // Digits[.[Digits]] or [Digits].Digits
 
   enum Type {
     UNSPECIFIED_ACCOUNT_TYPE = 0;
     CHECKING = 1;
     SAVING = 2;
   }
-  optional Type type = 2;
+  Type type = 2;
 
   enum Status {
     UNSPECIFIED_ACCOUNT_STATUS = 0;
     ACTIVE = 1;
     FROZEN = 2;
   }
-  optional Status status = 3;
+  Status status = 3;
 }
 
 message CreateAccountResponse {
-  optional bytes account_id = 1;
+  bytes account_id = 1;
 }
 
 message CreateCustomerRoleRequest {
-  optional bytes customer_id = 1;
-  optional bytes account_id = 2;
-  optional string name = 3;
+  bytes customer_id = 1;
+  bytes account_id = 2;
+  string name = 3;
 }
 
 message CreateCustomerRoleResponse {
-  optional bytes role_id = 1;
+  bytes role_id = 1;
 }
 
 message MoveAccountBalanceRequest {
-  optional bytes from_account_id = 1;
-  optional bytes to_account_id = 2;
-  optional string amount = 3; // Digits[.[Digits]] or [Digits].Digits
+  bytes from_account_id = 1;
+  bytes to_account_id = 2;
+  string amount = 3; // Digits[.[Digits]] or [Digits].Digits
 }
 
 message MoveAccountBalanceResponse {
-  optional string from_account_id_balance = 1; // Digits[.[Digits]] or [Digits].Digits
-  optional string to_account_id_balance = 2; // Digits[.[Digits]] or [Digits].Digits
+  string from_account_id_balance = 1; // Digits[.[Digits]] or [Digits].Digits
+  string to_account_id_balance = 2; // Digits[.[Digits]] or [Digits].Digits
 }
 
 message CreateTransactionForAccountRequest {
-  optional bytes account_id = 1;
-  optional string amount = 2; // Digits[.[Digits]] or [Digits].Digits
-  optional bool is_credit = 3;
+  bytes account_id = 1;
+  string amount = 2; // Digits[.[Digits]] or [Digits].Digits
+  bool is_credit = 3;
 }
 
 message CreateTransactionForAccountResponse {
-  optional string new_balance = 1; // Digits[.[Digits]] or [Digits].Digits
+  string new_balance = 1; // Digits[.[Digits]] or [Digits].Digits
 }
 
 message TransactionEntry {
-  optional bytes account_id = 1;
-  optional .google.protobuf.Timestamp event_timestamp = 2;
-  optional bool is_credit = 3;
-  optional string amount = 4;
+  bytes account_id = 1;
+  .google.protobuf.Timestamp event_timestamp = 2;
+  bool is_credit = 3;
+  string amount = 4;
 }
 
 message GetRecentTransactionsForAccountRequest {
-  optional bytes account_id = 1;
+  bytes account_id = 1;
   // Only return transactions within [begin_timestamp, end_timestamp).
   // If begin_timestamp is not set, do not set a lower bound restriction.
-  optional .google.protobuf.Timestamp begin_timestamp = 2;
+  .google.protobuf.Timestamp begin_timestamp = 2;
   // If end_timestamp is not set, do not set a upper bound restriction.
-  optional .google.protobuf.Timestamp end_timestamp = 3;
+  .google.protobuf.Timestamp end_timestamp = 3;
 }
 
 message GetRecentTransactionsForAccountResponse {
