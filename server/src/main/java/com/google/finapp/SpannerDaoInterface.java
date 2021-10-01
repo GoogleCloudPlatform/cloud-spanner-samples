@@ -70,12 +70,14 @@ public interface SpannerDaoInterface {
       throws StatusException;
 
   /**
-   * Returns list of TransactionEntry objects for the given AccountId in the given closed interval
-   * of timestamps
+   * Returns list of TransactionEntry objects for the given AccountId in the timestamp interval:
+   * [beginTimestamp, endTimestamp) ordered by descending timestamp.
    *
    * @param beginTimestamp timestamp for where query begins
    * @param endTimestamp timestamp for where query ends
+   * @param maxEntryCount maximum number of entries to return, if <= 0 return all entries
    */
   ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
-      ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp) throws StatusException;
+      ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp, int maxEntryCount)
+      throws StatusException;
 }

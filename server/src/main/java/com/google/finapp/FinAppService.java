@@ -158,7 +158,8 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     ByteArray accountId = ByteArray.copyFrom(request.getAccountId().toByteArray());
     Timestamp beginTimestamp = Timestamp.fromProto(request.getBeginTimestamp());
     Timestamp endTimestamp = Timestamp.fromProto(request.getEndTimestamp());
-    if (endTimestamp.equals(Timestamp.MIN_VALUE)) {
+    if (endTimestamp.equals(
+        Timestamp.fromProto(com.google.protobuf.Timestamp.getDefaultInstance()))) {
       // If endTimestamp is not set, default to no upper bound.
       endTimestamp = Timestamp.MAX_VALUE;
     }
@@ -171,7 +172,8 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
             .asException();
       }
       transactionEntries =
-          spannerDao.getRecentTransactionsForAccount(accountId, beginTimestamp, endTimestamp);
+          spannerDao.getRecentTransactionsForAccount(
+              accountId, beginTimestamp, endTimestamp, request.getMaxEntryCount());
     } catch (StatusException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;

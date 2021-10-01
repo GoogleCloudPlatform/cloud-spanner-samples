@@ -127,7 +127,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                   throw Status.INVALID_ARGUMENT
                       .withDescription(
                           String.format(
-                              "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
+                              "Account balance cannot be negative. Original account balance: %s, amount to be removed: %s",
                               accountBalances.get(fromAccountId).toString(), amount.toString()))
                       .asException();
                 }
@@ -216,7 +216,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
 
   @Override
   public ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
-      ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp)
+      ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp, int maxEntryCount)
       throws StatusException {
     Statement statement =
         Statement.newBuilder(
@@ -225,7 +225,8 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                     + "WHERE AccountId = @accountId AND "
                     + "EventTimestamp >= @beginTimestamp AND "
                     + "EventTimestamp < @endTimestamp "
-                    + "ORDER BY EventTimestamp DESC")
+                    + "ORDER BY EventTimestamp DESC"
+                    + (maxEntryCount > 0 ? " LIMIT " + maxEntryCount : ""))
             .bind("accountId")
             .to(accountId)
             .bind("beginTimestamp")
