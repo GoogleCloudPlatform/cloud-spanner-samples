@@ -121,6 +121,8 @@ message GetRecentTransactionsForAccountRequest {
   optional .google.protobuf.Timestamp begin_timestamp = 2;
   // If end_timestamp is not set, do not set a upper bound restriction.
   optional .google.protobuf.Timestamp end_timestamp = 3;
+  // If > 0, the maximum number of entries to return, else return all entries.
+  optional int32 max_entry_count = 4;
 }
 
 message GetRecentTransactionsForAccountResponse {

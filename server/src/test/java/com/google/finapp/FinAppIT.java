@@ -554,6 +554,43 @@ public class FinAppIT {
     assertThat(response.getTransactionEntry(2)).isEqualTo(expected_transaction1);
     assertThat(response.getTransactionEntry(1)).isEqualTo(expected_transaction2);
     assertThat(response.getTransactionEntry(0)).isEqualTo(expected_transaction3);
+
+    // Test that if timestamps are not set, we return all transactions
+    response =
+        finAppService.getRecentTransactionsForAccount(
+            GetRecentTransactionsForAccountRequest.newBuilder()
+                .setAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
+                .build());
+    assertThat(response.getTransactionEntryList()).hasSize(3);
+
+    // Test that beginTimestamp is inclusive.
+    response =
+        finAppService.getRecentTransactionsForAccount(
+            GetRecentTransactionsForAccountRequest.newBuilder()
+                .setAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
+                .setBeginTimestamp(expected_transaction1.getEventTimestamp())
+                .build());
+    assertThat(response.getTransactionEntryList()).hasSize(3);
+
+    // Test that endTimestamp is exclusive.
+    response =
+        finAppService.getRecentTransactionsForAccount(
+            GetRecentTransactionsForAccountRequest.newBuilder()
+                .setAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
+                .setEndTimestamp(expected_transaction3.getEventTimestamp())
+                .build());
+    assertThat(response.getTransactionEntryList()).hasSize(2);
+
+    // Test that limit works and returns most recent transaction.
+    response =
+        finAppService.getRecentTransactionsForAccount(
+            GetRecentTransactionsForAccountRequest.newBuilder()
+                .setAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
+                .setMaxEntryCount(2)
+                .build());
+    assertThat(response.getTransactionEntryList()).hasSize(2);
+    assertThat(response.getTransactionEntry(0)).isEqualTo(expected_transaction3);
+    assertThat(response.getTransactionEntry(1)).isEqualTo(expected_transaction2);
   }
 
   @Test
