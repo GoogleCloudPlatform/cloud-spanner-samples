@@ -47,7 +47,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     ByteArray customerId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     try {
       spannerDao.createCustomer(customerId, customer.getName(), customer.getAddress());
-    } catch (SpannerDaoException e) {
+    } catch (StatusException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
@@ -70,7 +70,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
           toStorageAccountType(account.getType()),
           toStorageAccountStatus(account.getStatus()),
           balance);
-    } catch (SpannerDaoException | StatusException e) {
+    } catch (StatusException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
@@ -92,7 +92,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
           ByteArray.copyFrom(role.getAccountId().toByteArray()),
           roleId,
           role.getName());
-    } catch (SpannerDaoException e) {
+    } catch (StatusException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
@@ -114,7 +114,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     try {
       BigDecimal amount = getNonNegativeBigDecimal(request.getAmount());
       accountBalances = spannerDao.moveAccountBalance(fromAccountId, toAccountId, amount);
-    } catch (SpannerDaoException | StatusException e) {
+    } catch (StatusException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
@@ -139,7 +139,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
               ByteArray.copyFrom(request.getAccountId().toByteArray()),
               amount,
               request.getIsCredit());
-    } catch (SpannerDaoException | StatusException e) {
+    } catch (StatusException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
@@ -172,7 +172,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       }
       transactionEntries =
           spannerDao.getRecentTransactionsForAccount(accountId, beginTimestamp, endTimestamp);
-    } catch (SpannerDaoException | StatusException e) {
+    } catch (StatusException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }

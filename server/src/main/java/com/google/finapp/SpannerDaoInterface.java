@@ -25,7 +25,7 @@ import java.math.BigDecimal;
 public interface SpannerDaoInterface {
 
   /** Inserts a new row to the Customer table in the database. */
-  void createCustomer(ByteArray customerId, String name, String address) throws SpannerDaoException;
+  void createCustomer(ByteArray customerId, String name, String address) throws StatusException;
 
   /**
    * Inserts a new row to the Account table in the database.
@@ -36,12 +36,12 @@ public interface SpannerDaoInterface {
    */
   void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
-      throws SpannerDaoException;
+      throws StatusException;
 
   /** Inserts a new row to the CustomerRole table for a Customer in the database. */
   void createCustomerRole(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
-      throws SpannerDaoException;
+      throws StatusException;
 
   /**
    * Moves an amount from one unique account to another unique account for a Customer in the
@@ -55,8 +55,7 @@ public interface SpannerDaoInterface {
    * @return mapping of both accounts' balances after the transfer was made, keyed by id
    */
   ImmutableMap<ByteArray, BigDecimal> moveAccountBalance(
-      ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
-      throws SpannerDaoException, StatusException;
+      ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws StatusException;
 
   /**
    * Modifies the account's balance in the Account table, subtracting the amount if isCredit and
@@ -68,7 +67,7 @@ public interface SpannerDaoInterface {
    * @return new balance of the account after the transaction
    */
   BigDecimal createTransactionForAccount(ByteArray accountId, BigDecimal amount, boolean isCredit)
-      throws SpannerDaoException, StatusException;
+      throws StatusException;
 
   /**
    * Returns list of TransactionEntry objects for the given AccountId in the given closed interval
@@ -78,6 +77,5 @@ public interface SpannerDaoInterface {
    * @param endTimestamp timestamp for where query ends
    */
   ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
-      ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp)
-      throws SpannerDaoException;
+      ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp) throws StatusException;
 }

@@ -56,7 +56,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
   }
 
   public void createCustomer(ByteArray customerId, String name, String address)
-      throws SpannerDaoException {
+      throws StatusException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement ps =
             connection.prepareStatement(
@@ -69,13 +69,13 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       ps.setString(3, address);
       ps.executeUpdate();
     } catch (SQLException e) {
-      throw new SpannerDaoException(e);
+      throw Status.fromThrowable(e).asException();
     }
   }
 
   public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
-      throws SpannerDaoException {
+      throws StatusException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement ps =
             connection.prepareStatement(
@@ -89,13 +89,13 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       ps.setBigDecimal(4, balance);
       ps.executeUpdate();
     } catch (SQLException e) {
-      throw new SpannerDaoException(e);
+      throw Status.fromThrowable(e).asException();
     }
   }
 
   public void createCustomerRole(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
-      throws SpannerDaoException {
+      throws StatusException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement ps =
             connection.prepareStatement(
@@ -109,13 +109,12 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       ps.setString(4, roleName);
       ps.executeUpdate();
     } catch (SQLException e) {
-      throw new SpannerDaoException(e);
+      throw Status.fromThrowable(e).asException();
     }
   }
 
   public ImmutableMap<ByteArray, BigDecimal> moveAccountBalance(
-      ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
-      throws SpannerDaoException, StatusException {
+      ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws StatusException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement readStatement =
             connection.prepareStatement(
@@ -161,13 +160,12 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       connection.commit();
       return ImmutableMap.of(fromAccountId, newSourceAmount, toAccountId, newDestAmount);
     } catch (SQLException e) {
-      throw new SpannerDaoException(e);
+      throw Status.fromThrowable(e).asException();
     }
   }
 
   public BigDecimal createTransactionForAccount(
-      ByteArray accountId, BigDecimal amount, boolean isCredit)
-      throws SpannerDaoException, StatusException {
+      ByteArray accountId, BigDecimal amount, boolean isCredit) throws StatusException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement readStatement =
             connection.prepareStatement("SELECT Balance FROM Account WHERE AccountId = ?")) {
@@ -203,13 +201,13 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       connection.commit();
       return newBalance;
     } catch (SQLException e) {
-      throw new SpannerDaoException(e);
+      throw Status.fromThrowable(e).asException();
     }
   }
 
   public ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
       ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp)
-      throws SpannerDaoException {
+      throws StatusException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement readStatement =
             connection.prepareStatement(
@@ -240,7 +238,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       }
       return transactionHistoriesBuilder.build();
     } catch (SQLException e) {
-      throw new SpannerDaoException(e);
+      throw Status.fromThrowable(e).asException();
     }
   }
 

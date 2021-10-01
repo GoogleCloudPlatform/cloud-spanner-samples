@@ -44,7 +44,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
 
   @Override
   public void createCustomer(ByteArray customerId, String name, String address)
-      throws SpannerDaoException {
+      throws StatusException {
     try {
       databaseClient.write(
           ImmutableList.of(
@@ -57,14 +57,14 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                   .to(address)
                   .build()));
     } catch (SpannerException e) {
-      throw new SpannerDaoException(e);
+      throw Status.fromThrowable(e).asException();
     }
   }
 
   @Override
   public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
-      throws SpannerDaoException {
+      throws StatusException {
     try {
       databaseClient.write(
           ImmutableList.of(
@@ -81,14 +81,14 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                   .to(Value.COMMIT_TIMESTAMP)
                   .build()));
     } catch (SpannerException e) {
-      throw new SpannerDaoException(e);
+      throw Status.fromThrowable(e).asException();
     }
   }
 
   @Override
   public void createCustomerRole(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
-      throws SpannerDaoException {
+      throws StatusException {
     try {
       databaseClient.write(
           ImmutableList.of(
@@ -103,14 +103,13 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                   .to(roleName)
                   .build()));
     } catch (SpannerException e) {
-      throw new SpannerDaoException(e);
+      throw Status.fromThrowable(e).asException();
     }
   }
 
   @Override
   public ImmutableMap<ByteArray, BigDecimal> moveAccountBalance(
-      ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
-      throws SpannerDaoException, StatusException {
+      ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws StatusException {
     ImmutableMap.Builder<ByteArray, BigDecimal> accountBalancesBuilder = ImmutableMap.builder();
     try {
       databaseClient
@@ -153,14 +152,13 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
       if (cause instanceof StatusException) {
         throw (StatusException) cause;
       }
-      throw new SpannerDaoException(e);
+      throw Status.fromThrowable(e).asException();
     }
   }
 
   @Override
   public BigDecimal createTransactionForAccount(
-      ByteArray accountId, BigDecimal amount, boolean isCredit)
-      throws SpannerDaoException, StatusException {
+      ByteArray accountId, BigDecimal amount, boolean isCredit) throws StatusException {
     try {
       BigDecimal finalBalance =
           databaseClient
@@ -212,14 +210,14 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
       if (cause instanceof StatusException) {
         throw (StatusException) cause;
       }
-      throw new SpannerDaoException(e);
+      throw Status.fromThrowable(e).asException();
     }
   }
 
   @Override
   public ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
       ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp)
-      throws SpannerDaoException {
+      throws StatusException {
     Statement statement =
         Statement.newBuilder(
                 "SELECT * "
@@ -248,7 +246,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
       }
       return transactionHistoriesBuilder.build();
     } catch (SpannerException e) {
-      throw new SpannerDaoException(e);
+      throw Status.fromThrowable(e).asException();
     }
   }
 
