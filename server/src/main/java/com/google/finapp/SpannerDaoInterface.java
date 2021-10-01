@@ -18,6 +18,7 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.grpc.StatusException;
 import java.math.BigDecimal;
 
 /** The SpannerDaoInterface defines the methods to be used by its separate implementations. */
@@ -54,7 +55,8 @@ public interface SpannerDaoInterface {
    * @return mapping of both accounts' balances after the transfer was made, keyed by id
    */
   ImmutableMap<ByteArray, BigDecimal> moveAccountBalance(
-      ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws SpannerDaoException;
+      ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
+      throws SpannerDaoException, StatusException;
 
   /**
    * Modifies the account's balance in the Account table, subtracting the amount if isCredit and
@@ -66,7 +68,7 @@ public interface SpannerDaoInterface {
    * @return new balance of the account after the transaction
    */
   BigDecimal createTransactionForAccount(ByteArray accountId, BigDecimal amount, boolean isCredit)
-      throws SpannerDaoException;
+      throws SpannerDaoException, StatusException;
 
   /**
    * Returns list of TransactionEntry objects for the given AccountId in the given closed interval

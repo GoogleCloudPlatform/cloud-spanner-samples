@@ -285,15 +285,17 @@ public class FinAppIT {
     addTestAccountRow(fromAccountId, fromAccountBalance, Timestamp.now());
     addTestAccountRow(toAccountId, toAccountBalance, Timestamp.now());
 
-    assertThrows(
-        io.grpc.StatusRuntimeException.class,
-        () ->
-            finAppService.moveAccountBalance(
-                MoveAccountBalanceRequest.newBuilder()
-                    .setFromAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
-                    .setToAccountId(ByteString.copyFrom(toAccountId.toByteArray()))
-                    .setAmount(amount.toString())
-                    .build()));
+    Exception e =
+        assertThrows(
+            io.grpc.StatusRuntimeException.class,
+            () ->
+                finAppService.moveAccountBalance(
+                    MoveAccountBalanceRequest.newBuilder()
+                        .setFromAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
+                        .setToAccountId(ByteString.copyFrom(toAccountId.toByteArray()))
+                        .setAmount(amount.toString())
+                        .build()));
+    assertThat(e.getMessage()).contains("Expected positive numeric value, found: -10");
   }
 
   @Test
@@ -306,15 +308,17 @@ public class FinAppIT {
     addTestAccountRow(fromAccountId, fromAccountBalance, Timestamp.now());
     addTestAccountRow(toAccountId, toAccountBalance, Timestamp.now());
 
-    assertThrows(
-        io.grpc.StatusRuntimeException.class,
-        () ->
-            finAppService.moveAccountBalance(
-                MoveAccountBalanceRequest.newBuilder()
-                    .setFromAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
-                    .setToAccountId(ByteString.copyFrom(toAccountId.toByteArray()))
-                    .setAmount(amount.toString())
-                    .build()));
+    Exception e =
+        assertThrows(
+            io.grpc.StatusRuntimeException.class,
+            () ->
+                finAppService.moveAccountBalance(
+                    MoveAccountBalanceRequest.newBuilder()
+                        .setFromAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
+                        .setToAccountId(ByteString.copyFrom(toAccountId.toByteArray()))
+                        .setAmount(amount.toString())
+                        .build()));
+    assertThat(e.getMessage()).contains("Account balance cannot be negative");
   }
 
   @Test
@@ -421,15 +425,17 @@ public class FinAppIT {
     boolean isCredit = false;
     addTestAccountRow(accountId, oldAccountBalance, Timestamp.now());
 
-    assertThrows(
-        io.grpc.StatusRuntimeException.class,
-        () ->
-            finAppService.createTransactionForAccount(
-                CreateTransactionForAccountRequest.newBuilder()
-                    .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
-                    .setAmount(amount.toString())
-                    .setIsCredit(isCredit)
-                    .build()));
+    Exception e =
+        assertThrows(
+            io.grpc.StatusRuntimeException.class,
+            () ->
+                finAppService.createTransactionForAccount(
+                    CreateTransactionForAccountRequest.newBuilder()
+                        .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
+                        .setAmount(amount.toString())
+                        .setIsCredit(isCredit)
+                        .build()));
+    assertThat(e.getMessage()).contains("Expected positive numeric value, found: -10");
   }
 
   @Test
@@ -439,15 +445,17 @@ public class FinAppIT {
     BigDecimal amount = new BigDecimal(30);
     boolean isCredit = true;
     addTestAccountRow(accountId, oldAccountBalance, Timestamp.now());
-    assertThrows(
-        io.grpc.StatusRuntimeException.class,
-        () ->
-            finAppService.createTransactionForAccount(
-                CreateTransactionForAccountRequest.newBuilder()
-                    .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
-                    .setAmount(amount.toString())
-                    .setIsCredit(isCredit)
-                    .build()));
+    Exception e =
+        assertThrows(
+            io.grpc.StatusRuntimeException.class,
+            () ->
+                finAppService.createTransactionForAccount(
+                    CreateTransactionForAccountRequest.newBuilder()
+                        .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
+                        .setAmount(amount.toString())
+                        .setIsCredit(isCredit)
+                        .build()));
+    assertThat(e.getMessage()).contains("Account balance cannot be negative");
   }
 
   @Test
@@ -549,36 +557,21 @@ public class FinAppIT {
   }
 
   @Test
-  public void getRecentTransactionsForAccount_invalidBeforeTimestamp() throws Exception {
+  public void getRecentTransactionsForAccount_BeginAfterEndTimestamp() throws Exception {
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     BigDecimal accountBalance = new BigDecimal(20);
     BigDecimal amount = new BigDecimal(10);
     addTestAccountRow(accountId, accountBalance, Timestamp.now());
-    assertThrows(
-        io.grpc.StatusRuntimeException.class,
-        () ->
-            finAppService.getRecentTransactionsForAccount(
-                GetRecentTransactionsForAccountRequest.newBuilder()
-                    .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
-                    .setBeginTimestamp(Timestamp.MAX_VALUE.toProto())
-                    .setEndTimestamp(Timestamp.now().toProto())
-                    .build()));
-  }
-
-  @Test
-  public void getRecentTransactionsForAccount_invalidEndTimestamp() throws Exception {
-    ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
-    BigDecimal accountBalance = new BigDecimal(20);
-    BigDecimal amount = new BigDecimal(10);
-    addTestAccountRow(accountId, accountBalance, Timestamp.now());
-    assertThrows(
-        io.grpc.StatusRuntimeException.class,
-        () ->
-            finAppService.getRecentTransactionsForAccount(
-                GetRecentTransactionsForAccountRequest.newBuilder()
-                    .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
-                    .setBeginTimestamp(Timestamp.now().toProto())
-                    .setEndTimestamp(Timestamp.MIN_VALUE.toProto())
-                    .build()));
+    Exception e =
+        assertThrows(
+            io.grpc.StatusRuntimeException.class,
+            () ->
+                finAppService.getRecentTransactionsForAccount(
+                    GetRecentTransactionsForAccountRequest.newBuilder()
+                        .setAccountId(ByteString.copyFrom(accountId.toByteArray()))
+                        .setBeginTimestamp(Timestamp.MAX_VALUE.toProto())
+                        .setEndTimestamp(Timestamp.now().toProto())
+                        .build()));
+    assertThat(e.getMessage()).contains("Invalid timestamp range");
   }
 }

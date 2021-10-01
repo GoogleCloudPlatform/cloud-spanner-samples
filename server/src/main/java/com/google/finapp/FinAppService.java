@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
 import io.grpc.Status;
+import io.grpc.StatusException;
 import io.grpc.stub.StreamObserver;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -58,27 +59,37 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     responseObserver.onCompleted();
   }
 
+  private BigDecimal getNonNegativeBigDecimal(String value) throws StatusException {
+    BigDecimal value_decimal = null;
+    try {
+      value_decimal = new BigDecimal(value);
+    } catch (NumberFormatException e) {
+      throw Status.INVALID_ARGUMENT
+          .withDescription(String.format("Invalid numeric value: %s", value))
+          .asException();
+    }
+    if (value_decimal.signum() == -1) {
+      throw Status.INVALID_ARGUMENT
+          .withDescription(
+              String.format("Expected positive numeric value, found: %s instead", value))
+          .asException();
+    }
+    return value_decimal;
+  }
+
   @Override
   public void createAccount(
       CreateAccountRequest account, StreamObserver<CreateAccountResponse> responseObserver) {
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     try {
+      BigDecimal balance = getNonNegativeBigDecimal(account.getBalance());
       spannerDao.createAccount(
           accountId,
           toStorageAccountType(account.getType()),
           toStorageAccountStatus(account.getStatus()),
-          new BigDecimal(account.getBalance()));
-    } catch (SpannerDaoException e) {
+          balance);
+    } catch (SpannerDaoException | StatusException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
-      return;
-    } catch (NumberFormatException e) {
-      responseObserver.onError(
-          Status.INVALID_ARGUMENT
-              .withCause(e)
-              .withDescription(
-                  String.format(
-                      "Invalid balance - %s. Expected a NUMERIC value", account.getBalance()))
-              .asException());
       return;
     }
     CreateAccountResponse response =
@@ -119,24 +130,10 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     ByteArray fromAccountId = ByteArray.copyFrom(request.getFromAccountId().toByteArray());
     ByteArray toAccountId = ByteArray.copyFrom(request.getToAccountId().toByteArray());
     try {
-      accountBalances =
-          spannerDao.moveAccountBalance(
-              fromAccountId, toAccountId, new BigDecimal(request.getAmount()));
-    } catch (SpannerDaoException e) {
+      BigDecimal amount = getNonNegativeBigDecimal(request.getAmount());
+      accountBalances = spannerDao.moveAccountBalance(fromAccountId, toAccountId, amount);
+    } catch (SpannerDaoException | StatusException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
-      return;
-    } catch (NumberFormatException e) {
-      responseObserver.onError(
-          Status.INVALID_ARGUMENT
-              .withCause(e)
-              .withDescription(
-                  String.format(
-                      "Invalid amount - %s. Expected a NUMERIC value", request.getAmount()))
-              .asException());
-      return;
-    } catch (IllegalArgumentException e) {
-      responseObserver.onError(
-          Status.INVALID_ARGUMENT.withCause(e).withDescription(e.getMessage()).asException());
       return;
     }
     MoveAccountBalanceResponse response =
@@ -154,26 +151,14 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       StreamObserver<CreateTransactionForAccountResponse> responseObserver) {
     BigDecimal newBalance;
     try {
+      BigDecimal amount = getNonNegativeBigDecimal(request.getAmount());
       newBalance =
           spannerDao.createTransactionForAccount(
               ByteArray.copyFrom(request.getAccountId().toByteArray()),
-              new BigDecimal(request.getAmount()),
+              amount,
               request.getIsCredit());
-    } catch (SpannerDaoException e) {
+    } catch (SpannerDaoException | StatusException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
-      return;
-    } catch (NumberFormatException e) {
-      responseObserver.onError(
-          Status.INVALID_ARGUMENT
-              .withCause(e)
-              .withDescription(
-                  String.format(
-                      "Invalid amount - %s. Expected a NUMERIC value", request.getAmount()))
-              .asException());
-      return;
-    } catch (IllegalArgumentException e) {
-      responseObserver.onError(
-          Status.INVALID_ARGUMENT.withCause(e).withDescription(e.getMessage()).asException());
       return;
     }
     responseObserver.onNext(
@@ -191,10 +176,21 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     ByteArray accountId = ByteArray.copyFrom(request.getAccountId().toByteArray());
     Timestamp beginTimestamp = Timestamp.fromProto(request.getBeginTimestamp());
     Timestamp endTimestamp = Timestamp.fromProto(request.getEndTimestamp());
+    if (endTimestamp.equals(Timestamp.MIN_VALUE)) {
+      // If endTimestamp is not set, default to no upper bound.
+      endTimestamp = Timestamp.MAX_VALUE;
+    }
     try {
+      if (beginTimestamp.compareTo(endTimestamp) > 0) {
+        throw Status.INVALID_ARGUMENT
+            .withDescription(
+                String.format(
+                    "Invalid timestamp range. %s is after %s.", beginTimestamp, endTimestamp))
+            .asException();
+      }
       transactionEntries =
           spannerDao.getRecentTransactionsForAccount(accountId, beginTimestamp, endTimestamp);
-    } catch (SpannerDaoException|IllegalArgumentException e) {
+    } catch (SpannerDaoException | StatusException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }

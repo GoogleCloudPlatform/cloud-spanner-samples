@@ -20,6 +20,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
+import io.grpc.Status;
+import io.grpc.StatusException;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -74,12 +76,6 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
   public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerDaoException {
-    if (balance.signum() == -1) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Account balance cannot be negative. accountId: %s, balance: %s",
-              accountId.toString(), balance.toString()));
-    }
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement ps =
             connection.prepareStatement(
@@ -119,11 +115,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
 
   public ImmutableMap<ByteArray, BigDecimal> moveAccountBalance(
       ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
-      throws SpannerDaoException {
-    if (amount.signum() == -1) {
-      throw new IllegalArgumentException(
-          String.format("Amount transferred cannot be negative. amount: %s", amount.toString()));
-    }
+      throws SpannerDaoException, StatusException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement readStatement =
             connection.prepareStatement(
@@ -145,19 +137,23 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
         }
       }
       if (sourceAmount == null) {
-        throw new IllegalArgumentException(
-            String.format("Account not found: %s", fromAccountId.toString()));
+        throw Status.INVALID_ARGUMENT
+            .withDescription(String.format("Account not found: %s", fromAccountId.toString()))
+            .asException();
       } else if (destAmount == null) {
-        throw new IllegalArgumentException(
-            String.format("Account not found: %s", toAccountId.toString()));
+        throw Status.INVALID_ARGUMENT
+            .withDescription(String.format("Account not found: %s", toAccountId.toString()))
+            .asException();
       }
       BigDecimal newSourceAmount = sourceAmount.subtract(amount);
       BigDecimal newDestAmount = destAmount.add(amount);
       if (newSourceAmount.signum() == -1) {
-        throw new IllegalArgumentException(
-            String.format(
-                "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
-                sourceAmount.toString(), amount.toString()));
+        throw Status.INVALID_ARGUMENT
+            .withDescription(
+                String.format(
+                    "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
+                    sourceAmount.toString(), amount.toString()))
+            .asException();
       }
       updateAccount(fromAccountIdArray, newSourceAmount, connection);
       updateAccount(toAccountIdArray, newDestAmount, connection);
@@ -170,11 +166,8 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
   }
 
   public BigDecimal createTransactionForAccount(
-      ByteArray accountId, BigDecimal amount, boolean isCredit) throws SpannerDaoException {
-    if (amount.signum() == -1) {
-      throw new IllegalArgumentException(
-          String.format("Amount transferred cannot be negative. amount: %s", amount.toString()));
-    }
+      ByteArray accountId, BigDecimal amount, boolean isCredit)
+      throws SpannerDaoException, StatusException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement readStatement =
             connection.prepareStatement("SELECT Balance FROM Account WHERE AccountId = ?")) {
@@ -187,8 +180,9 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
         oldBalance = resultSet.getBigDecimal("Balance");
       }
       if (oldBalance == null) {
-        throw new IllegalArgumentException(
-            String.format("Account not found: %s", accountId.toString()));
+        throw Status.INVALID_ARGUMENT
+            .withDescription(String.format("Account not found: %s", accountId.toString()))
+            .asException();
       }
       BigDecimal newBalance;
       if (isCredit) {
@@ -197,10 +191,12 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
         newBalance = oldBalance.add(amount);
       }
       if (newBalance.signum() == -1) {
-        throw new IllegalArgumentException(
-            String.format(
-                "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
-                oldBalance.toString(), amount.toString()));
+        throw Status.INVALID_ARGUMENT
+            .withDescription(
+                String.format(
+                    "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
+                    oldBalance.toString(), amount.toString()))
+            .asException();
       }
       updateAccount(accountIdArray, newBalance, connection);
       insertTransaction(accountIdArray, amount, isCredit, connection);
@@ -214,20 +210,14 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
   public ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
       ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp)
       throws SpannerDaoException {
-    if (beginTimestamp.compareTo(endTimestamp) > 0) {
-      throw new IllegalArgumentException(
-          String.format("Invalid timestamp range. %s is after %s.", beginTimestamp, endTimestamp));
-    }
-    if (endTimestamp.compareTo(beginTimestamp) < 0) {
-      throw new IllegalArgumentException(
-          String.format("Invalid timestamp range. %s is before %s.", endTimestamp, beginTimestamp));
-    }
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement readStatement =
             connection.prepareStatement(
                 "SELECT * "
                     + "FROM TransactionHistory "
-                    + "WHERE AccountId = ? AND EventTimestamp BETWEEN ? AND ? "
+                    + "WHERE AccountId = ? AND "
+                    + "EventTimestamp >= ? AND "
+                    + "EventTimestamp < ? "
                     + "ORDER BY EventTimestamp DESC")) {
       readStatement.setBytes(1, accountId.toByteArray());
       readStatement.setTimestamp(2, beginTimestamp.toSqlTimestamp());

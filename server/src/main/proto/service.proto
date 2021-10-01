@@ -116,7 +116,10 @@ message TransactionEntry {
 
 message GetRecentTransactionsForAccountRequest {
   optional bytes account_id = 1;
+  // Only return transactions within [begin_timestamp, end_timestamp).
+  // If begin_timestamp is not set, do not set a lower bound restriction.
   optional .google.protobuf.Timestamp begin_timestamp = 2;
+  // If end_timestamp is not set, do not set a upper bound restriction.
   optional .google.protobuf.Timestamp end_timestamp = 3;
 }
 
