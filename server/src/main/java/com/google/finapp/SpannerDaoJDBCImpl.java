@@ -208,7 +208,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
   }
 
   public ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
-      ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp)
+      ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp, int maxEntryCount)
       throws SpannerDaoException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement readStatement =
@@ -218,7 +218,8 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
                     + "WHERE AccountId = ? AND "
                     + "EventTimestamp >= ? AND "
                     + "EventTimestamp < ? "
-                    + "ORDER BY EventTimestamp DESC")) {
+                    + "ORDER BY EventTimestamp DESC"
+                    + (maxEntryCount > 0 ? " LIMIT " + maxEntryCount : ""))) {
       readStatement.setBytes(1, accountId.toByteArray());
       readStatement.setTimestamp(2, beginTimestamp.toSqlTimestamp());
       readStatement.setTimestamp(3, endTimestamp.toSqlTimestamp());
@@ -228,12 +229,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
         transactionHistoriesBuilder.add(
             TransactionEntry.newBuilder()
                 .setAccountId(ByteString.copyFrom(resultSet.getBytes("AccountId")))
-                .setEventTimestamp(
-                    // use a builder to set com.google.protobuf.Timestamp from java.sql.Timestamp
-                    // object
-                    com.google.protobuf.Timestamp.newBuilder()
-                        .setNanos(resultSet.getTimestamp("EventTimestamp").getNanos())
-                        .setSeconds(resultSet.getTimestamp("EventTimestamp").getSeconds()))
+                .setEventTimestamp(Timestamp.of(resultSet.getTimestamp("EventTimestamp")).toProto())
                 .setIsCredit(resultSet.getBoolean("IsCredit"))
                 .setAmount(resultSet.getString("Amount"))
                 .build());
