@@ -59,24 +59,6 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     responseObserver.onCompleted();
   }
 
-  private BigDecimal getNonNegativeBigDecimal(String value) throws StatusException {
-    BigDecimal value_decimal = null;
-    try {
-      value_decimal = new BigDecimal(value);
-    } catch (NumberFormatException e) {
-      throw Status.INVALID_ARGUMENT
-          .withDescription(String.format("Invalid numeric value: %s", value))
-          .asException();
-    }
-    if (value_decimal.signum() == -1) {
-      throw Status.INVALID_ARGUMENT
-          .withDescription(
-              String.format("Expected positive numeric value, found: %s instead", value))
-          .asException();
-    }
-    return value_decimal;
-  }
-
   @Override
   public void createAccount(
       CreateAccountRequest account, StreamObserver<CreateAccountResponse> responseObserver) {
@@ -223,5 +205,23 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
       default:
         return AccountStatus.UNSPECIFIED_ACCOUNT_STATUS;
     }
+  }
+
+  private BigDecimal getNonNegativeBigDecimal(String value) throws StatusException {
+    BigDecimal valueDecimal = null;
+    try {
+      valueDecimal = new BigDecimal(value);
+    } catch (NumberFormatException e) {
+      throw Status.INVALID_ARGUMENT
+          .withDescription(String.format("Invalid numeric value: %s", value))
+          .asException();
+    }
+    if (valueDecimal.signum() == -1) {
+      throw Status.INVALID_ARGUMENT
+          .withDescription(
+              String.format("Expected positive numeric value, found: %s instead", value))
+          .asException();
+    }
+    return valueDecimal;
   }
 }
