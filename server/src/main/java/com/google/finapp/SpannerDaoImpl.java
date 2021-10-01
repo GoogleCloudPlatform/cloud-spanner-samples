@@ -29,6 +29,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
+import io.grpc.Status;
+import io.grpc.StatusException;
 import java.math.BigDecimal;
 
 final class SpannerDaoImpl implements SpannerDaoInterface {
@@ -63,12 +65,6 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerDaoException {
-    if (balance.signum() == -1) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Account balance cannot be negative. accountId: %s, balance: %s",
-              accountId.toString(), balance.toString()));
-    }
     try {
       databaseClient.write(
           ImmutableList.of(
@@ -114,13 +110,8 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   @Override
   public ImmutableMap<ByteArray, BigDecimal> moveAccountBalance(
       ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
-      throws SpannerDaoException {
-    if (amount.signum() == -1) {
-      throw new IllegalArgumentException(
-          String.format("Amount transferred cannot be negative. amount: %s", amount.toString()));
-    }
+      throws SpannerDaoException, StatusException {
     ImmutableMap.Builder<ByteArray, BigDecimal> accountBalancesBuilder = ImmutableMap.builder();
-
     try {
       databaseClient
           .readWriteTransaction()
@@ -134,10 +125,12 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                 BigDecimal newDestAmount = accountBalances.get(toAccountId).add(amount);
 
                 if (newSourceAmount.signum() == -1) {
-                  throw new IllegalArgumentException(
-                      String.format(
-                          "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
-                          accountBalances.get(fromAccountId).toString(), amount.toString()));
+                  throw Status.INVALID_ARGUMENT
+                      .withDescription(
+                          String.format(
+                              "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
+                              accountBalances.get(fromAccountId).toString(), amount.toString()))
+                      .asException();
                 }
 
                 transaction.buffer(
@@ -155,10 +148,10 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
               });
       return accountBalancesBuilder.build();
     } catch (SpannerException e) {
-      // filter for IllegalArgumentExceptions thrown in lambda function above
+      // filter for StatusException thrown in lambda function above
       Throwable cause = e.getCause();
-      if (cause instanceof IllegalArgumentException) {
-        throw new IllegalArgumentException(cause.getMessage());
+      if (cause instanceof StatusException) {
+        throw (StatusException) cause;
       }
       throw new SpannerDaoException(e);
     }
@@ -166,11 +159,8 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
 
   @Override
   public BigDecimal createTransactionForAccount(
-      ByteArray accountId, BigDecimal amount, boolean isCredit) throws SpannerDaoException {
-    if (amount.signum() == -1) {
-      throw new IllegalArgumentException(
-          String.format("Amount transferred cannot be negative. amount: %s", amount.toString()));
-    }
+      ByteArray accountId, BigDecimal amount, boolean isCredit)
+      throws SpannerDaoException, StatusException {
     try {
       BigDecimal finalBalance =
           databaseClient
@@ -188,8 +178,11 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                       oldBalance = resultSet.getBigDecimal("Balance");
                     }
                     if (oldBalance == null) {
-                      throw new IllegalArgumentException(
-                          String.format("Account not found: %s", accountId.toString()));
+                      throw Status.INVALID_ARGUMENT
+                          .withDescription(
+                              String.format(
+                                  String.format("Account not found: %s", accountId.toString())))
+                          .asException();
                     }
                     BigDecimal newBalance;
                     if (isCredit) {
@@ -199,10 +192,12 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                     }
 
                     if (newBalance.signum() == -1) {
-                      throw new IllegalArgumentException(
-                          String.format(
-                              "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
-                              oldBalance.toString(), amount.toString()));
+                      throw Status.INVALID_ARGUMENT
+                          .withDescription(
+                              String.format(
+                                  "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
+                                  oldBalance.toString(), amount.toString()))
+                          .asException();
                     }
                     transaction.buffer(
                         ImmutableList.of(
@@ -212,10 +207,10 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                   });
       return finalBalance;
     } catch (SpannerException e) {
-      // filter for IllegalArgumentExceptions thrown in lambda function above
+      // filter for StatusException thrown in lambda function above
       Throwable cause = e.getCause();
-      if (cause instanceof IllegalArgumentException) {
-        throw new IllegalArgumentException(cause.getMessage());
+      if (cause instanceof StatusException) {
+        throw (StatusException) cause;
       }
       throw new SpannerDaoException(e);
     }
@@ -225,20 +220,13 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   public ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
       ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp)
       throws SpannerDaoException {
-    if (beginTimestamp.compareTo(endTimestamp) > 0) {
-      throw new IllegalArgumentException(
-          String.format("Invalid timestamp range. %s is after %s.", beginTimestamp, endTimestamp));
-    }
-    if (endTimestamp.compareTo(beginTimestamp) < 0) {
-      throw new IllegalArgumentException(
-          String.format("Invalid timestamp range. %s is before %s.", endTimestamp, beginTimestamp));
-    }
     Statement statement =
         Statement.newBuilder(
                 "SELECT * "
                     + "FROM TransactionHistory "
                     + "WHERE AccountId = @accountId AND "
-                    + "EventTimestamp BETWEEN @beginTimestamp AND @endTimestamp "
+                    + "EventTimestamp >= @beginTimestamp AND "
+                    + "EventTimestamp < @endTimestamp "
                     + "ORDER BY EventTimestamp DESC")
             .bind("accountId")
             .to(accountId)
