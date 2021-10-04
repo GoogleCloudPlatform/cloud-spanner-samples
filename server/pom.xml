@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns="http://maven.apache.org/POM/4.0.0"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -61,36 +59,31 @@
         <dependency>
             <artifactId>grpc-netty-shaded</artifactId>
             <groupId>io.grpc</groupId>
-            <version>1.38.0</version>
         </dependency>
         <dependency>
             <artifactId>grpc-protobuf</artifactId>
             <groupId>io.grpc</groupId>
-            <version>1.38.0</version>
         </dependency>
         <dependency>
             <artifactId>grpc-stub</artifactId>
             <groupId>io.grpc</groupId>
-            <version>1.38.0</version>
         </dependency>
         <dependency>
             <artifactId>grpc-services</artifactId>
             <groupId>io.grpc</groupId>
-            <version>1.38.0</version>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-testing</artifactId>
             <scope>test</scope>
-            <version>1.38.0</version>
         </dependency>
         <dependency>
             <artifactId>grpc-grpclb</artifactId>
             <groupId>io.grpc</groupId>
             <scope>runtime</scope>
-            <version>1.38.0</version>
         </dependency>
-        <dependency> <!-- necessary for Java 9+ -->
+        <dependency>
+            <!-- necessary for Java 9+ -->
             <artifactId>annotations-api</artifactId>
             <groupId>org.apache.tomcat</groupId>
             <scope>provided</scope>
@@ -176,26 +169,8 @@
                 </configuration>
             </plugin>
             <plugin>
-                <artifactId>protobuf-maven-plugin</artifactId>
-                <configuration>
-                    <pluginArtifact>
-                        io.grpc:protoc-gen-grpc-java:1.38.0:exe:${os.detected.classifier}
-                    </pluginArtifact>
-                    <pluginId>grpc-java</pluginId>
-                    <protocArtifact>
-                        com.google.protobuf:protoc:3.12.0:exe:${os.detected.classifier}
-                    </protocArtifact>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>compile-custom</goal>
-                        </goals>
-                    </execution>
-                </executions>
                 <groupId>org.xolstice.maven.plugins</groupId>
-                <version>0.6.1</version>
+                <artifactId>protobuf-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <artifactId>fmt-maven-plugin</artifactId>
