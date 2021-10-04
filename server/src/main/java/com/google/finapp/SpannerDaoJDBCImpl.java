@@ -18,7 +18,6 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
 import io.grpc.Status;
 import io.grpc.StatusException;
@@ -34,11 +33,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
 
   private final String connectionUrl;
 
-  @Inject
-  SpannerDaoJDBCImpl(
-      @ArgsModule.SpannerProjectId String spannerProjectId,
-      @ArgsModule.SpannerInstanceId String spannerInstanceId,
-      @ArgsModule.SpannerDatabaseId String spannerDatabaseId) {
+  SpannerDaoJDBCImpl(String spannerProjectId, String spannerInstanceId, String spannerDatabaseId) {
     String emulatorHost = System.getenv("SPANNER_EMULATOR_HOST");
     if (emulatorHost != null) {
       // connect to emulator
@@ -150,7 +145,8 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
         throw Status.INVALID_ARGUMENT
             .withDescription(
                 String.format(
-                    "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
+                    "Account balance cannot be negative. original account balance: %s, amount to be"
+                        + " removed: %s",
                     sourceAmount.toString(), amount.toString()))
             .asException();
       }
@@ -192,7 +188,8 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
         throw Status.INVALID_ARGUMENT
             .withDescription(
                 String.format(
-                    "Account balance cannot be negative. original account balance: %s, amount to be removed: %s",
+                    "Account balance cannot be negative. original account balance: %s, amount to be"
+                        + " removed: %s",
                     oldBalance.toString(), amount.toString()))
             .asException();
       }
