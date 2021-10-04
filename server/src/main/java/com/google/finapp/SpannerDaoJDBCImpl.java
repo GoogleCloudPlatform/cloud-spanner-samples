@@ -15,6 +15,12 @@
 package com.google.finapp;
 
 import com.google.cloud.ByteArray;
+import com.google.cloud.Timestamp;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.protobuf.ByteString;
+import io.grpc.Status;
+import io.grpc.StatusException;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -65,12 +71,6 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
   public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerDaoException {
-    if (balance.signum() == -1) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Account balance cannot be negative. accountId: %s, balance: %s",
-              accountId.toString(), balance.toString()));
-    }
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement ps =
             connection.prepareStatement(
@@ -108,12 +108,9 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     }
   }
 
-  public void moveAccountBalance(ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
-      throws SpannerDaoException {
-    if (amount.signum() == -1) {
-      throw new IllegalArgumentException(
-          String.format("Amount transferred cannot be negative. amount: %s", amount.toString()));
-    }
+  public ImmutableMap<ByteArray, BigDecimal> moveAccountBalance(
+      ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount)
+      throws SpannerDaoException, StatusException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement readStatement =
             connection.prepareStatement(
@@ -146,11 +143,13 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
       BigDecimal newSourceAmount = sourceAmount.subtract(amount);
       BigDecimal newDestAmount = destAmount.add(amount);
       if (newSourceAmount.signum() == -1) {
-        throw new IllegalArgumentException(
-            String.format(
-                "Account balance cannot be negative. original account balance: %s, amount"
-                    + " transferred: %s",
-                sourceAmount.toString(), amount.toString()));
+        throw Status.INVALID_ARGUMENT
+            .withDescription(
+                String.format(
+                    "Account balance cannot be negative. original account balance: %s, amount to be"
+                        + " removed: %s",
+                    sourceAmount.toString(), amount.toString()))
+            .asException();
       }
       updateAccount(fromAccountIdArray, newSourceAmount, connection);
       updateAccount(toAccountIdArray, newDestAmount, connection);

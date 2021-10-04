@@ -63,12 +63,6 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   public void createAccount(
       ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
       throws SpannerDaoException {
-    if (balance.signum() == -1) {
-      throw new IllegalArgumentException(
-          String.format(
-              "Account balance cannot be negative. accountId: %s, balance: %s",
-              accountId.toString(), balance.toString()));
-    }
     try {
       databaseClient.write(
           ImmutableList.of(
