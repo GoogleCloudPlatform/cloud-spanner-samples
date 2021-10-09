@@ -14,20 +14,15 @@
 
 package com.google.finapp;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import java.nio.file.Paths;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 
 /**
  * An executable method for a workload generator for the finance sample app that creates traffic by
@@ -56,67 +51,30 @@ public final class WorkloadMain {
    * Generates gRPC clients to run indefinitely in separate threads and generate traffic for the
    * finance app server.
    */
-  public static void main(String[] args) {
-    CommandLine cmd = parseArgs(args);
-    String addressName = cmd.getOptionValue("a");
-    int port;
-    int threadCount;
-    try {
-      port = ((Number) cmd.getParsedOptionValue("p")).intValue();
-      threadCount = ((Number) cmd.getParsedOptionValue("t")).intValue();
-    } catch (ParseException e) {
-      throw new IllegalArgumentException("Input value cannot be parsed.", e);
-    }
+  public static void main(String[] argv) throws Exception {
+    Args args = new Args();
+    JCommander.newBuilder().addObject(args).build().parse(argv);
     ManagedChannel channel =
-        ManagedChannelBuilder.forAddress(addressName, port).usePlaintext().build();
+        ManagedChannelBuilder.forAddress(args.address, args.port).usePlaintext().build();
     WorkloadGenerator workloadGenerator = new WorkloadGenerator(channel);
-    workloadGenerator.startSteadyLoad(threadCount);
+    workloadGenerator.startSteadyLoad(args.threadCount);
   }
 
-  private static CommandLine parseArgs(String[] args) {
-    Options options = new Options();
+  @Parameters(separators = "=")
+  private static class Args {
+    @Parameter(
+        names = {"--address-name", "-a"},
+        description = "Address of the finapp server.")
+    String address = "localhost";
 
-    options.addOption(
-        Option.builder("a")
-            .longOpt("address-name")
-            .desc("server address name")
-            .required(true)
-            .type(String.class)
-            .hasArg()
-            .build());
+    @Parameter(
+        names = {"--port", "-p"},
+        description = "GRPC port of finapp server.")
+    int port = 8080;
 
-    options.addOption(
-        Option.builder("p")
-            .longOpt("port")
-            .desc("server port")
-            .required(true)
-            .type(Number.class)
-            .hasArg()
-            .build());
-
-    options.addOption(
-        Option.builder("t")
-            .longOpt("thread-count")
-            .desc("number of threads to use in thread pool")
-            .required(true)
-            .type(Number.class)
-            .hasArg()
-            .build());
-
-    CommandLineParser parser = new DefaultParser();
-    HelpFormatter formatter = new HelpFormatter();
-
-    try {
-      return parser.parse(options, args);
-    } catch (ParseException e) {
-      System.out.println(e.getMessage());
-      formatter.printHelp(
-          String.format(
-              "java -jar %s",
-              Paths.get("WorkloadMain.java").toAbsolutePath().normalize().toString()),
-          options);
-      System.exit(1);
-      return null;
-    }
+    @Parameter(
+        names = {"--thread-count", "-t"},
+        description = "Number of threads to use, to control parallelism.")
+    int threadCount = 10;
   }
 }

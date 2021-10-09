@@ -53,7 +53,7 @@ for client libraries to work.
  
     ```
     $ mvn clean compile assembly:single
-    $ java -jar target/workload-1.0-SNAPSHOT-jar-with-dependencies.jar --address-name localhost --port 8080 --num-accounts 200 
+    $ java -jar target/workload-1.0-SNAPSHOT-jar-with-dependencies.jar --address-name localhost --port 8080 --thread-count 200 
     ```
 
 ## How to run the application tests
