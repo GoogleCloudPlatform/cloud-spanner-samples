@@ -21,6 +21,12 @@
         <grpc.version>1.38.0</grpc.version>
     </properties>
 
+    <!--
+        Shared dependencies inheritable by child modules. These are not
+        inherited by default. Child modules need to explicitly specify a
+        dependency in their dependencies section using only groupId and
+        artifactId.
+    -->
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -29,6 +35,54 @@
                 <version>${grpc.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <artifactId>libraries-bom</artifactId>
+                <groupId>com.google.cloud</groupId>
+                <scope>import</scope>
+                <type>pom</type>
+                <version>20.3.0</version>
+            </dependency>
+            <dependency>
+                <artifactId>junit</artifactId>
+                <groupId>junit</groupId>
+                <scope>test</scope>
+                <version>4.13.1</version>
+            </dependency>
+            <dependency>
+                <artifactId>jcommander</artifactId>
+                <groupId>com.beust</groupId>
+                <version>1.81</version>
+            </dependency>
+            <dependency>
+                <artifactId>truth</artifactId>
+                <groupId>com.google.truth</groupId>
+                <scope>test</scope>
+                <version>1.1.3</version>
+            </dependency>
+            <dependency>
+                <!-- for java 9+ -->
+                <artifactId>annotations-api</artifactId>
+                <groupId>org.apache.tomcat</groupId>
+                <scope>provided</scope>
+                <version>6.0.53</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>google-cloud-core-bom</artifactId>
+                <version>1.95.2</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.checkerframework</groupId>
+                <artifactId>checker-qual</artifactId>
+                <version>3.8.0</version>
+                <scope>compile</scope>
+            </dependency>
+            <dependency>
+                <groupId>commons-cli</groupId>
+                <artifactId>commons-cli</artifactId>
+                <version>1.4</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -40,6 +94,22 @@
                 <version>1.6.2</version>
             </extension>
         </extensions>
+        <!--
+            Shared plugins inheritable by child modules. These are not
+            inherited by default. Child modules need to explicitly specify
+            these plugins in build/plugins to inherit them using only groupId
+            and artifactId, with additional configurations as necessary.
+        -->
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <version>3.0.0-M5</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <!-- Common plugins inherited by all child modules -->
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -48,6 +118,7 @@
                     <target>8</target>
                 </configuration>
                 <groupId>org.apache.maven.plugins</groupId>
+                <version>3.8.1</version>
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
