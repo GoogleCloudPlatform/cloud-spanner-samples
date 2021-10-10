@@ -15,6 +15,7 @@ for client libraries to work.
 
 2. Bring up the FinAppServer hosting a grpc service.
 
+a. Java
     ```
     $ bash run.sh server java \
         --spanner_project_id=test-project --spanner_instance_id=test-instance \
@@ -22,6 +23,32 @@ for client libraries to work.
     ```
 > To run the application using the JDBC implementation, in the command above,
 substitute `java` with `jdbc`.
+
+b. Python
+
+    ```
+    $ python -m venv env
+    $ source env/bin/activate
+    $ pip install -r server/src/main/python/requirements.txt
+    $ export SPANNER_EMULATOR_HOST="localhost:9010"
+    $ export GOOGLE_CLOUD_PROJECT="test-project"
+    $ python server/src/main/python/server_main.py
+    ```
+
+    Once you are done using the server, you can exit the virtual env using deactivate
+
+    NOTE: The generated python classes for protos are already checked in server/src/main/python.
+    If you would like to re-generate them use the following commands:
+
+    ```
+    $ PYTHON_SOURCE=server/src/main/python
+    $ PROTO_SOURCE=server/src/main/proto
+    $ python -m grpc_tools.protoc -I $PROTO_SOURCE \
+        --python_out=$PYTHON_SOURCE --grpc_python_out=$PYTHON_SOURCE \
+        service.proto
+    $ protoc --proto_path=$PROTO_SOURCE --python_out=$PYTHON_SOURCE \
+        database.proto
+    ```
 
 3. Call RPCs using grpc_cli.
 
