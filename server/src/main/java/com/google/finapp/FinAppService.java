@@ -18,7 +18,6 @@ import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
 import io.grpc.Status;
 import io.grpc.StatusException;
@@ -30,7 +29,6 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
 
   private final SpannerDaoInterface spannerDao;
 
-  @Inject
   FinAppService(SpannerDaoInterface spannerDao) {
     this.spannerDao = spannerDao;
   }
