@@ -26,6 +26,8 @@ exit_with_help_msg() {
       --spanner_instance_id=test-instance --spanner_database_id=test-database
   $ bash run.sh workload \
        --address-name localhost --port 8080 --thread-count 200
+  $ bash run.sh server python
+  $ bash run.sh gen_py_proto_srcs
   " >&2
   exit 1
 }
@@ -57,6 +59,16 @@ run_and_configure_emulator() {
   export SPANNER_EMULATOR_HOST="localhost:9010"
 }
 
+generate_py_proto_srcs() {
+  local python_source=server/src/main/python
+  local proto_source=server/src/main/proto
+  python -m grpc_tools.protoc -I $proto_source \
+    --python_out=$python_source --grpc_python_out=$python_source \
+    service.proto
+  protoc --proto_path=$proto_source --python_out=$python_source \
+    database.proto
+}
+
 run_server_java() {
   mvn clean compile assembly:single -pl org.example:server
   java -jar server/target/server-1.0-SNAPSHOT-jar-with-dependencies.jar $@
@@ -68,10 +80,20 @@ run_server_jdbc() {
     --spanner_use_jdbc $@
 }
 
+run_server_python() {
+  python -m venv env
+  source env/bin/activate
+  pip install -r server/src/main/python/requirements.txt
+  export SPANNER_EMULATOR_HOST="localhost:9010"
+  export GOOGLE_CLOUD_PROJECT="test-project"
+  python server/src/main/python/server_main.py
+}
+
 run_server() {
   declare -A -x servers_table=(
     ['java']="run_server_java"
     ['jdbc']="run_server_jdbc"
+    ['python']="run_server_python"
   )
   local servers="${!servers_table[@]}"
 
@@ -94,6 +116,7 @@ main() {
     ['emulator']="run_and_configure_emulator"
     ['server']="run_server"
     ['workload']="run_workload"
+    ['gen_py_proto_srcs']="generate_py_proto_srcs"
   )
   local commands="${!command_table[@]}"
 
