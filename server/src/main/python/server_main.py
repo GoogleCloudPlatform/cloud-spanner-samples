@@ -8,6 +8,7 @@ import grpc
 from google.cloud import spanner
 from grpc_reflection.v1alpha import reflection
 
+import logging
 import service_pb2
 import service_pb2_grpc
 from spanner_dao import SpannerDao
@@ -22,9 +23,9 @@ class FinAppService(service_pb2_grpc.FinAppServicer):
 
     def CreateCustomer(
         self,
-        request: service_pb2.CreateAccountRequest,
+        request: service_pb2.CreateCustomerRequest,
         context: grpc.ServicerContext,
-    ):
+    ) -> service_pb2.CreateCustomerResponse:
         customer_id = uuid.uuid1().bytes
         self._spanner_dao.CreateCustomer(
             customer_id, request.name, request.address
@@ -42,7 +43,7 @@ def serve():
     reflection.enable_server_reflection(SERVICE_NAMES, server)
     server.add_insecure_port("[::]:8080")
     server.start()
-    print("Started server on 8080")
+    logging.info("Started server on 8080")
     server.wait_for_termination()
 
 

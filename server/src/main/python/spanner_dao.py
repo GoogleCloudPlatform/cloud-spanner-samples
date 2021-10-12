@@ -17,4 +17,3 @@ class SpannerDao:
                 columns=["CustomerId", "Name", "Address"],
                 values=[[base64.b64encode(customer_id), name, address]],
             )
-        print("Created Customer")
