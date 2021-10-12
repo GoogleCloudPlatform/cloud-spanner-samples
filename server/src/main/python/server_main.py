@@ -1,5 +1,6 @@
 """The Python implementation of the GRPC helloworld.Greeter server."""
 
+import argparse
 import logging
 import uuid
 from concurrent import futures
@@ -8,17 +9,20 @@ import grpc
 from google.cloud import spanner
 from grpc_reflection.v1alpha import reflection
 
-import logging
 import service_pb2
 import service_pb2_grpc
 from spanner_dao import SpannerDao
 
+_SERVER_THREAD_POOL_SIZE = 10
+
 
 class FinAppService(service_pb2_grpc.FinAppServicer):
-    def __init__(self) -> None:
+    def __init__(
+        self, project_id: str, instance_id: str, database_id: str
+    ) -> None:
         super().__init__()
         self._spanner_dao = SpannerDao(
-            spanner.Client(), "test-instance", "test-database"
+            spanner.Client(project=project_id), instance_id, database_id
         )
 
     def CreateCustomer(
@@ -33,20 +37,40 @@ class FinAppService(service_pb2_grpc.FinAppServicer):
         return service_pb2.CreateCustomerResponse(customer_id=customer_id)
 
 
-def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    service_pb2_grpc.add_FinAppServicer_to_server(FinAppService(), server)
+def _Serve(args):
+    server = grpc.server(
+        futures.ThreadPoolExecutor(max_workers=_SERVER_THREAD_POOL_SIZE)
+    )
+    service_pb2_grpc.add_FinAppServicer_to_server(
+        FinAppService(
+            args.spanner_project_id,
+            args.spanner_instance_id,
+            args.spanner_Database_id,
+        ),
+        server,
+    )
     SERVICE_NAMES = (
         service_pb2.DESCRIPTOR.services_by_name["FinApp"].full_name,
         reflection.SERVICE_NAME,
     )
     reflection.enable_server_reflection(SERVICE_NAMES, server)
-    server.add_insecure_port("[::]:8080")
+    server.add_insecure_port(f"[::]:{args.port}")
     server.start()
-    logging.info("Started server on 8080")
+    logging.info(f"Started server on {args.port}")
     server.wait_for_termination()
 
 
 if __name__ == "__main__":
-    logging.basicConfig()
-    serve()
+    logging.basicConfig(level=logging.INFO)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", type=int, default=8080)
+    parser.add_argument(
+        "--spanner_project_id", type=str, default="test-project"
+    )
+    parser.add_argument(
+        "--spanner_instance_id", type=str, default="test-instance"
+    )
+    parser.add_argument(
+        "--spanner_database_id", type=str, default="test-database"
+    )
+    _Serve(parser.parse_args())
