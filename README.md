@@ -18,7 +18,7 @@ for client libraries to work.
     a. Java
 
     ```
-    $ bash run.sh server java \
+    $ bash run.sh java \
         --spanner_project_id=test-project --spanner_instance_id=test-instance \
         --spanner_database_id=test-database
     ```
