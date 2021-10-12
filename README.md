@@ -16,6 +16,7 @@ for client libraries to work.
 2. Bring up the FinAppServer hosting a grpc service.
 
 a. Java
+
     ```
     $ bash run.sh server java \
         --spanner_project_id=test-project --spanner_instance_id=test-instance \
