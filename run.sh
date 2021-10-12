@@ -21,6 +21,8 @@ exit_with_help_msg() {
       --spanner_instance_id=test-instance --spanner_database_id=test-database
   $ bash run.sh server jdbc --spanner_project_id=test-project \
       --spanner_instance_id=test-instance --spanner_database_id=test-database
+  $ bash run.sh workload \
+       --address-name localhost --port 8080 --thread-count 200
   " >&2
   exit 1
 }
@@ -49,6 +51,7 @@ run_and_configure_emulator() {
   gcloud config set spanner/instance test-instance
   gcloud spanner databases create test-database \
     --ddl-file server/src/main/java/com/google/finapp/schema.sdl
+  export SPANNER_EMULATOR_HOST="localhost:9010"
 }
 
 run_server_java() {
@@ -78,10 +81,16 @@ run_server() {
   if $fn_name $@; then return 0; else return 1; fi
 }
 
+run_workload() {
+  mvn clean compile assembly:single -pl org.example:workload
+  java -jar workload/target/workload-1.0-SNAPSHOT-jar-with-dependencies.jar $a
+}
+
 main() {
   declare -A -x command_table=(
     ['emulator']="run_and_configure_emulator"
     ['server']="run_server"
+    ['workload']="run_workload"
   )
   local commands="${!command_table[@]}"
 
