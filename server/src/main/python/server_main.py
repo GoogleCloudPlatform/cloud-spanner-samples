@@ -12,43 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""The Python implementation of the GRPC helloworld.Greeter server."""
-
 import argparse
 import logging
-import uuid
 from concurrent import futures
 
 import grpc
-from google.cloud import spanner
+from google.api_core.exceptions import GoogleAPICallError
 from grpc_reflection.v1alpha import reflection
 
 import service_pb2
 import service_pb2_grpc
-from spanner_dao import SpannerDao
+from finapp_service import FinAppService
 
 _SERVER_THREAD_POOL_SIZE = 10
-
-
-class FinAppService(service_pb2_grpc.FinAppServicer):
-    def __init__(
-        self, project_id: str, instance_id: str, database_id: str
-    ) -> None:
-        super().__init__()
-        self._spanner_dao = SpannerDao(
-            spanner.Client(project=project_id), instance_id, database_id
-        )
-
-    def CreateCustomer(
-        self,
-        request: service_pb2.CreateCustomerRequest,
-        context: grpc.ServicerContext,
-    ) -> service_pb2.CreateCustomerResponse:
-        customer_id = uuid.uuid1().bytes
-        self._spanner_dao.CreateCustomer(
-            customer_id, request.name, request.address
-        )
-        return service_pb2.CreateCustomerResponse(customer_id=customer_id)
 
 
 def _Serve(args):
@@ -59,7 +35,7 @@ def _Serve(args):
         FinAppService(
             args.spanner_project_id,
             args.spanner_instance_id,
-            args.spanner_Database_id,
+            args.spanner_database_id,
         ),
         server,
     )
