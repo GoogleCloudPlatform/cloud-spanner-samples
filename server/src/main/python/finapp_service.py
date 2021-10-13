@@ -24,24 +24,22 @@ from spanner_dao import SpannerDao
 
 
 class FinAppService(service_pb2_grpc.FinAppServicer):
-    def __init__(
-        self, project_id: str, instance_id: str, database_id: str
-    ) -> None:
-        super().__init__()
-        self._spanner_dao = SpannerDao(
-            spanner.Client(project=project_id), instance_id, database_id
-        )
 
-    def CreateCustomer(
-        self,
-        request: service_pb2.CreateCustomerRequest,
-        context: grpc.ServicerContext,
-    ) -> service_pb2.CreateCustomerResponse:
-        customer_id = uuid.uuid4().bytes
-        try:
-            self._spanner_dao.CreateCustomer(
-                customer_id, request.name, request.address
-            )
-        except GoogleAPICallError as e:
-            context.abort(e.grpc_status_code, e.message)
-        return service_pb2.CreateCustomerResponse(customer_id=customer_id)
+  def __init__(self, project_id: str, instance_id: str,
+               database_id: str) -> None:
+    super().__init__()
+    self._spanner_dao = SpannerDao(spanner.Client(project=project_id),
+                                   instance_id, database_id)
+
+  def CreateCustomer(
+      self,
+      request: service_pb2.CreateCustomerRequest,
+      context: grpc.ServicerContext,
+  ) -> service_pb2.CreateCustomerResponse:
+    customer_id = uuid.uuid4().bytes
+    try:
+      self._spanner_dao.CreateCustomer(customer_id, request.name,
+                                       request.address)
+    except GoogleAPICallError as e:
+      context.abort(e.grpc_status_code, e.message)
+    return service_pb2.CreateCustomerResponse(customer_id=customer_id)

@@ -28,39 +28,36 @@ _SERVER_THREAD_POOL_SIZE = 10
 
 
 def _Serve(args):
-    server = grpc.server(
-        futures.ThreadPoolExecutor(max_workers=_SERVER_THREAD_POOL_SIZE)
-    )
-    service_pb2_grpc.add_FinAppServicer_to_server(
-        FinAppService(
-            args.spanner_project_id,
-            args.spanner_instance_id,
-            args.spanner_database_id,
-        ),
-        server,
-    )
-    SERVICE_NAMES = (
-        service_pb2.DESCRIPTOR.services_by_name["FinApp"].full_name,
-        reflection.SERVICE_NAME,
-    )
-    reflection.enable_server_reflection(SERVICE_NAMES, server)
-    server.add_insecure_port(f"[::]:{args.port}")
-    server.start()
-    logging.info(f"Started server on {args.port}")
-    server.wait_for_termination()
+  server = grpc.server(
+      futures.ThreadPoolExecutor(max_workers=_SERVER_THREAD_POOL_SIZE))
+  service_pb2_grpc.add_FinAppServicer_to_server(
+      FinAppService(
+          args.spanner_project_id,
+          args.spanner_instance_id,
+          args.spanner_database_id,
+      ),
+      server,
+  )
+  service_names = (
+      service_pb2.DESCRIPTOR.services_by_name["FinApp"].full_name,
+      reflection.SERVICE_NAME,
+  )
+  reflection.enable_server_reflection(service_names, server)
+  server.add_insecure_port(f"[::]:{args.port}")
+  server.start()
+  logging.info(f"Started server on {args.port}")
+  server.wait_for_termination()
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--port", type=int, default=8080)
-    parser.add_argument(
-        "--spanner_project_id", type=str, default="test-project"
-    )
-    parser.add_argument(
-        "--spanner_instance_id", type=str, default="test-instance"
-    )
-    parser.add_argument(
-        "--spanner_database_id", type=str, default="test-database"
-    )
-    _Serve(parser.parse_args())
+  logging.basicConfig(level=logging.INFO)
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--port", type=int, default=8080)
+  parser.add_argument("--spanner_project_id", type=str, default="test-project")
+  parser.add_argument("--spanner_instance_id",
+                      type=str,
+                      default="test-instance")
+  parser.add_argument("--spanner_database_id",
+                      type=str,
+                      default="test-database")
+  _Serve(parser.parse_args())
