@@ -85,8 +85,7 @@ run_server_python() {
   source env/bin/activate
   pip install -r server/src/main/python/requirements.txt
   export SPANNER_EMULATOR_HOST="localhost:9010"
-  export GOOGLE_CLOUD_PROJECT="test-project"
-  python server/src/main/python/server_main.py
+  python server/src/main/python/server_main.py $a
 }
 
 run_server() {
