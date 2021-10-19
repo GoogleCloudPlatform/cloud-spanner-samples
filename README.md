@@ -10,33 +10,18 @@ NOTE: Requires gcloud, mvn, grpc_cli installed.
 for client libraries to work.
 
     ```
-    $ gcloud emulators spanner start
-    $ gcloud config configurations create emulator
-    $ gcloud config set auth/disable_credentials true
-    $ gcloud config set project test-project
-    $ gcloud config set api_endpoint_overrides/spanner http://localhost:9020/
-    $ gcloud spanner instances create test-instance \
-        --config=emulator-config --description="Test Instance" --nodes=1
-    $ gcloud config set spanner/instance test-instance
-    $ gcloud spanner databases create test-database \
-        --ddl-file src/main/java/com/google/finapp/schema.sdl
-    $ export SPANNER_EMULATOR_HOST="localhost:9010"
+    $ bash run.sh emulator
     ```
 
-2. Bring up the FinAppServer hosting a grpc service from the `cloud-spanner-samples/server` directory in a separate terminal.
+2. Bring up the FinAppServer hosting a grpc service.
 
     ```
-    $ mvn clean compile assembly:single
-    $ java -jar target/server-1.0-SNAPSHOT-jar-with-dependencies.jar \
+    $ bash run.sh server java \
         --spanner_project_id=test-project --spanner_instance_id=test-instance \
         --spanner_database_id=test-database
     ```
-> To run the application using the JDBC implementation instead of the default Java client implementation, add the flag.
-> ```
-> $ java -jar target/server-1.0-SNAPSHOT-jar-with-dependencies.jar \
-> --spanner_project_id=test-project --spanner_instance_id=test-instance \
-> --spanner_database_id=test-database --spanner_use_jdbc
-> ```
+> To run the application using the JDBC implementation, in the command above,
+substitute `java` with `jdbc`.
 
 3. Call RPCs using grpc_cli.
 
@@ -47,14 +32,13 @@ for client libraries to work.
 
 ## How to run the workload generator
 
-1. Run the application in a separate terminal.
+1. Bring up the finapp server using steps described above.
 
-2. In the `cloud-spanner-samples/workload` directory, run
+2. In a separate terminal, bring up the workload using the following command:
  
     ```
-    $ mvn clean compile assembly:single
-    $ java -jar target/workload-1.0-SNAPSHOT-jar-with-dependencies.jar \
-        --address-name localhost --port 8080 --thread-count 200 
+    $ bash run.sh workload \
+        --address-name localhost --port 8080 --num-accounts 200 
     ```
 
 ## How to run the application tests
