@@ -13,17 +13,39 @@ for client libraries to work.
     $ bash run.sh emulator
     ```
 
-2. Bring up the FinAppServer hosting a grpc service.
+1. Bring up the FinAppServer hosting a grpc service.
+
+    a. Java
 
     ```
+    $ bash run.sh java \
+        --spanner_project_id=test-project --spanner_instance_id=test-instance \
+        --spanner_database_id=test-database
+    ```
+    b. JDBC
+
+    ```shell
     $ bash run.sh server java \
         --spanner_project_id=test-project --spanner_instance_id=test-instance \
         --spanner_database_id=test-database
     ```
-> To run the application using the JDBC implementation, in the command above,
-substitute `java` with `jdbc`.
 
-3. Call RPCs using grpc_cli.
+    b. Python
+
+    ```
+    $ bash run.sh server python
+    ```
+
+    Once you are done using the server, you can exit the virtual env using `deactivate`
+
+    NOTE: The generated python classes for protos are already checked in `server/src/main/python`.
+    If you would like to re-generate them use the following commands:
+
+    ```
+    $ bash run.sh gen_py_proto_srcs
+    ```
+
+2. Call RPCs using grpc_cli.
 
     ```
     $ grpc_cli call localhost:8080 CreateCustomer \
@@ -35,7 +57,7 @@ substitute `java` with `jdbc`.
 1. Bring up the finapp server using steps described above.
 
 2. In a separate terminal, bring up the workload using the following command:
- 
+
     ```
     $ bash run.sh workload \
         --address-name localhost --port 8080 --num-accounts 200 
@@ -45,4 +67,5 @@ substitute `java` with `jdbc`.
 
 1. Set up the emulator as described in #1 above.
 2. Run `mvn integration-test`.
+
 > To run the tests using the JDBC implementation of the application instead of the Java client implementation, run `mvn integration-test -DSPANNER_USE_JDBC=true`

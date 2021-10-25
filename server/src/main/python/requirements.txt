@@ -1,0 +1,5 @@
+google-cloud-spanner==3.8.0
+grpcio==1.39.0
+grpcio-tools==1.39.0
+grpcio-reflection==1.39.0
+protobuf==3.17.3
