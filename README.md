@@ -22,7 +22,6 @@ for client libraries to work.
         --spanner_project_id=test-project --spanner_instance_id=test-instance \
         --spanner_database_id=test-database
     ```
-
     b. JDBC
 
     ```shell
