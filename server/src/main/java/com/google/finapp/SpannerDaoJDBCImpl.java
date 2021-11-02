@@ -208,7 +208,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
    * Returns an ImmutableMap of all requested AccountData keyed by account ids.
    *
    * @param accountIds account ids for which to return AccountData
-   * @param connection the transaction context to use
+   * @param connection used for queries
    * @return mapping of AccountData, keyed by account id
    * @throws StatusException if any of the requested accountIds is not found, or the associated
    *     accountStatus is not ACTIVE.

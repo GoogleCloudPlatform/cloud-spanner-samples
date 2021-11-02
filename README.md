@@ -2,9 +2,9 @@
 
 This repository contains a sample banking application built using Cloud Spanner.
 
-## How to run the application locally
+## How to run the application against Cloud Spanner emulator
 
-NOTE: Requires gcloud, mvn, grpc_cli installed.
+NOTE: Requires bash, gcloud, mvn, grpc_cli installed.
 
 1. Create a database locally using cloud-spanner-emulator and export spanner host
 for client libraries to work.
@@ -46,5 +46,5 @@ substitute `java` with `jdbc`.
 ## How to run the application tests
 
 1. Set up the emulator as described in #1 above.
-2. Run `mvn integration-test` for testing the Java client implementation, or
-3. Run `mvn integration-test -DSPANNER_USE_JDBC=true` for the JDBC implementation
+2. `mvn integration-test` tests the Java client implementation
+3. `mvn integration-test -DSPANNER_USE_JDBC=true` tests the JDBC implementation
