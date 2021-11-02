@@ -60,8 +60,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   }
 
   @Override
-  public void createAccount(
-      ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
+  public void createAccount(ByteArray accountId, AccountStatus accountStatus, BigDecimal balance)
       throws StatusException {
     try {
       databaseClient.write(
@@ -69,8 +68,6 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
               Mutation.newInsertBuilder("Account")
                   .set("AccountId")
                   .to(accountId)
-                  .set("AccountType")
-                  .to(accountType.getNumber())
                   .set("AccountStatus")
                   .to(accountStatus.getNumber())
                   .set("Balance")
@@ -115,11 +112,13 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
           .run(
               transaction -> {
                 // Get account balances.
-                ImmutableMap<ByteArray, BigDecimal> accountBalances =
-                    readAccountBalances(fromAccountId, toAccountId, transaction);
+                ImmutableMap<ByteArray, AccountData> accountData =
+                    readAccountDataForTransfer(
+                        ImmutableList.of(fromAccountId, toAccountId), transaction);
 
-                BigDecimal newSourceAmount = accountBalances.get(fromAccountId).subtract(amount);
-                BigDecimal newDestAmount = accountBalances.get(toAccountId).add(amount);
+                BigDecimal newSourceAmount =
+                    accountData.get(fromAccountId).balance.subtract(amount);
+                BigDecimal newDestAmount = accountData.get(toAccountId).balance.add(amount);
 
                 if (newSourceAmount.signum() == -1) {
                   throw Status.INVALID_ARGUMENT
@@ -127,7 +126,7 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                           String.format(
                               "Account balance cannot be negative. Original account balance: %s,"
                                   + " amount to be removed: %s",
-                              accountBalances.get(fromAccountId).toString(), amount.toString()))
+                              accountData.get(fromAccountId).balance.toString(), amount.toString()))
                       .asException();
                 }
 
@@ -159,51 +158,35 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   public BigDecimal createTransactionForAccount(
       ByteArray accountId, BigDecimal amount, boolean isCredit) throws StatusException {
     try {
-      BigDecimal finalBalance =
-          databaseClient
-              .readWriteTransaction()
-              .run(
-                  transaction -> {
-                    // Get account balances.
-                    ResultSet resultSet =
-                        transaction.read(
-                            "Account",
-                            KeySet.singleKey(Key.of(accountId)),
-                            ImmutableList.of("Balance"));
-                    BigDecimal oldBalance = null;
-                    while (resultSet.next()) {
-                      oldBalance = resultSet.getBigDecimal("Balance");
-                    }
-                    if (oldBalance == null) {
-                      throw Status.INVALID_ARGUMENT
-                          .withDescription(
-                              String.format(
-                                  String.format("Account not found: %s", accountId.toString())))
-                          .asException();
-                    }
-                    BigDecimal newBalance;
-                    if (isCredit) {
-                      newBalance = oldBalance.subtract(amount);
-                    } else {
-                      newBalance = oldBalance.add(amount);
-                    }
+      return databaseClient
+          .readWriteTransaction()
+          .run(
+              transaction -> {
+                AccountData accountData =
+                    readAccountDataForTransfer(ImmutableList.of(accountId), transaction)
+                        .get(accountId);
+                BigDecimal newBalance;
+                if (isCredit) {
+                  newBalance = accountData.balance.subtract(amount);
+                } else {
+                  newBalance = accountData.balance.add(amount);
+                }
 
-                    if (newBalance.signum() == -1) {
-                      throw Status.INVALID_ARGUMENT
-                          .withDescription(
-                              String.format(
-                                  "Account balance cannot be negative. original account balance:"
-                                      + " %s, amount to be removed: %s",
-                                  oldBalance.toString(), amount.toString()))
-                          .asException();
-                    }
-                    transaction.buffer(
-                        ImmutableList.of(
-                            buildUpdateAccountMutation(accountId, newBalance),
-                            buildInsertTransactionHistoryMutation(accountId, amount, isCredit)));
-                    return newBalance;
-                  });
-      return finalBalance;
+                if (newBalance.signum() == -1) {
+                  throw Status.INVALID_ARGUMENT
+                      .withDescription(
+                          String.format(
+                              "Account balance cannot be negative. original account balance:"
+                                  + " %s, amount to be removed: %s",
+                              accountData.balance, amount))
+                      .asException();
+                }
+                transaction.buffer(
+                    ImmutableList.of(
+                        buildUpdateAccountMutation(accountId, newBalance),
+                        buildInsertTransactionHistoryMutation(accountId, amount, isCredit)));
+                return newBalance;
+              });
     } catch (SpannerException e) {
       // filter for StatusException thrown in lambda function above
       Throwable cause = e.getCause();
@@ -251,20 +234,49 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
     }
   }
 
-  private ImmutableMap<ByteArray, BigDecimal> readAccountBalances(
-      ByteArray fromAccountId, ByteArray toAccountId, TransactionContext transaction) {
+  /**
+   * Returns an ImmutableMap of all requested AccountData keyed by account ids.
+   *
+   * @param accountIds account ids for which to return AccountData
+   * @param transaction the transaction context to use
+   * @return mapping of AccountData, keyed by account id
+   * @throws StatusException if any of the requested accountIds is not found, or the associated
+   *     accountStatus is not ACTIVE.
+   */
+  private ImmutableMap<ByteArray, AccountData> readAccountDataForTransfer(
+      Iterable<ByteArray> accountIds, TransactionContext transaction) throws StatusException {
+    KeySet.Builder keySetBuilder = KeySet.newBuilder();
+    for (ByteArray accountId : accountIds) {
+      keySetBuilder.addKey(Key.of(accountId));
+    }
     ResultSet resultSet =
         transaction.read(
             "Account",
-            KeySet.newBuilder().addKey(Key.of(fromAccountId)).addKey(Key.of(toAccountId)).build(),
-            ImmutableList.of("AccountId", "Balance"));
+            keySetBuilder.build(),
+            ImmutableList.of("AccountId", "AccountStatus", "Balance"));
 
-    ImmutableMap.Builder<ByteArray, BigDecimal> accountBalancesBuilder = ImmutableMap.builder();
+    ImmutableMap.Builder<ByteArray, AccountData> accountDataBuilder = ImmutableMap.builder();
     while (resultSet.next()) {
-      accountBalancesBuilder.put(
-          resultSet.getBytes("AccountId"), resultSet.getBigDecimal("Balance"));
+      AccountData accountData = new AccountData();
+      accountData.balance = resultSet.getBigDecimal("Balance");
+      accountData.status = AccountStatus.forNumber((int) resultSet.getLong("AccountStatus"));
+      accountDataBuilder.put(resultSet.getBytes("AccountId"), accountData);
     }
-    return accountBalancesBuilder.build();
+    ImmutableMap<ByteArray, AccountData> accountData = accountDataBuilder.build();
+    for (ByteArray accountId : accountIds) {
+      if (!accountData.containsKey(accountId)) {
+        throw Status.INVALID_ARGUMENT
+            .withDescription(String.format("Account not found: %s", accountId.toString()))
+            .asException();
+      } else if (accountData.get(accountId).status != AccountStatus.ACTIVE) {
+        throw Status.INVALID_ARGUMENT
+            .withDescription(
+                String.format(
+                    "Non-active accounts are not eligible for transfers: %s", accountId.toString()))
+            .asException();
+      }
+    }
+    return accountData;
   }
 
   private Mutation buildUpdateAccountMutation(ByteArray accountId, BigDecimal newBalance) {

@@ -62,12 +62,6 @@ public final class ServerMain {
     @Parameter(names = {"--port", "-p"})
     int port = 8080;
 
-    @Parameter(names = {"--spanner_host"})
-    String spannerHost = "spanner.googleapis.com";
-
-    @Parameter(names = {"--spanner_port"})
-    int spannerPort = 443;
-
     @Parameter(names = {"--spanner_project_id"})
     String spannerProjectId;
 

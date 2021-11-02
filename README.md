@@ -10,6 +10,7 @@ NOTE: Requires gcloud, mvn, grpc_cli installed.
 for client libraries to work.
 
     ```
+    $ mvn clean install -Dmaven.test.skip=true
     $ bash run.sh emulator
     $ export SPANNER_EMULATOR_HOST="localhost:9010"
     ```
@@ -17,7 +18,6 @@ for client libraries to work.
 2. Bring up the FinAppServer hosting a grpc service.
 
     ```
-    $ mvn clean install
     $ bash run.sh server java \
         --spanner_project_id=test-project --spanner_instance_id=test-instance \
         --spanner_database_id=test-database
@@ -46,5 +46,5 @@ substitute `java` with `jdbc`.
 ## How to run the application tests
 
 1. Set up the emulator as described in #1 above.
-2. Run `mvn integration-test`.
-> To run the tests using the JDBC implementation of the application instead of the Java client implementation, run `mvn integration-test -DSPANNER_USE_JDBC=true`
+2. Run `mvn integration-test` for testing the Java client implementation, or
+3. Run `mvn integration-test -DSPANNER_USE_JDBC=true` for the JDBC implementation

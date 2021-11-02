@@ -77,7 +77,6 @@ public class WorkloadClient implements Runnable {
     ids.add(
         createAccount(
             getRandomAmountFromRange(0, MAX_INITIAL_ACCOUNT_BALANCE),
-            CreateAccountRequest.Type.CHECKING,
             CreateAccountRequest.Status.ACTIVE));
   }
 
@@ -85,15 +84,10 @@ public class WorkloadClient implements Runnable {
     return BigDecimal.valueOf(random.nextInt(max - min) + min);
   }
 
-  private ByteString createAccount(
-      BigDecimal balance, CreateAccountRequest.Type type, CreateAccountRequest.Status status)
+  private ByteString createAccount(BigDecimal balance, CreateAccountRequest.Status status)
       throws StatusRuntimeException {
     CreateAccountRequest request =
-        CreateAccountRequest.newBuilder()
-            .setBalance(balance.toString())
-            .setType(type)
-            .setStatus(status)
-            .build();
+        CreateAccountRequest.newBuilder().setBalance(balance.toString()).setStatus(status).build();
     try {
       CreateAccountResponse response = blockingStub.createAccount(request);
       logger.log(Level.INFO, String.format("Account created %s", response));

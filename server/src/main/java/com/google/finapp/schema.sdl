@@ -14,7 +14,6 @@
 
 CREATE TABLE Account (
   AccountId BYTES(16) NOT NULL,
-  AccountType INT64 NOT NULL,
   CreationTimestamp TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp=true),
   AccountStatus INT64 NOT NULL,
   Balance NUMERIC NOT NULL

@@ -63,11 +63,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     try {
       BigDecimal balance = getNonNegativeBigDecimal(account.getBalance());
-      spannerDao.createAccount(
-          accountId,
-          toStorageAccountType(account.getType()),
-          toStorageAccountStatus(account.getStatus()),
-          balance);
+      spannerDao.createAccount(accountId, toStorageAccountStatus(account.getStatus()), balance);
     } catch (StatusException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
@@ -184,17 +180,6 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     responseObserver.onCompleted();
   }
 
-  private static AccountType toStorageAccountType(CreateAccountRequest.Type apiAccountType) {
-    switch (apiAccountType) {
-      case CHECKING:
-        return AccountType.CHECKING;
-      case SAVING:
-        return AccountType.SAVING;
-      default:
-        return AccountType.UNSPECIFIED_ACCOUNT_TYPE;
-    }
-  }
-
   private static AccountStatus toStorageAccountStatus(
       CreateAccountRequest.Status apiAccountStatus) {
     switch (apiAccountStatus) {
@@ -208,7 +193,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
   }
 
   private BigDecimal getNonNegativeBigDecimal(String value) throws StatusException {
-    BigDecimal valueDecimal = null;
+    BigDecimal valueDecimal;
     try {
       valueDecimal = new BigDecimal(value);
     } catch (NumberFormatException e) {
