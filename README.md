@@ -11,11 +11,13 @@ for client libraries to work.
 
     ```
     $ bash run.sh emulator
+    $ export SPANNER_EMULATOR_HOST="localhost:9010"
     ```
 
 2. Bring up the FinAppServer hosting a grpc service.
 
     ```
+    $ mvn clean install
     $ bash run.sh server java \
         --spanner_project_id=test-project --spanner_instance_id=test-instance \
         --spanner_database_id=test-database

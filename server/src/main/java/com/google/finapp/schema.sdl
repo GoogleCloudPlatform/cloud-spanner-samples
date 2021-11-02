@@ -46,13 +46,3 @@ CREATE TABLE CustomerRole (
   INTERLEAVE IN PARENT Customer ON DELETE CASCADE;
 
 CREATE INDEX CustomerRoleByAccount ON CustomerRole(AccountId, CustomerId);
-
-CREATE TABLE Statement (
-  AccountId BYTES(16) NOT NULL,
-  StatementId BYTES(16) NOT NULL,
-  Balance NUMERIC NOT NULL,
-  StatementWindowStart TIMESTAMP NOT NULL,
-  StatementWindowEnd TIMESTAMP NOT NULL,
-  StatementSummary BYTES(MAX) NOT NULL
-) PRIMARY KEY (AccountId, StatementId),
-  INTERLEAVE IN PARENT Account ON DELETE CASCADE;
