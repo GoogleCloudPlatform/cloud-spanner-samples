@@ -27,7 +27,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
 
@@ -68,20 +69,18 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     }
   }
 
-  public void createAccount(
-      ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
+  public void createAccount(ByteArray accountId, AccountStatus accountStatus, BigDecimal balance)
       throws StatusException {
     try (Connection connection = DriverManager.getConnection(this.connectionUrl);
         PreparedStatement ps =
             connection.prepareStatement(
                 "INSERT INTO Account\n"
-                    + "(AccountId, AccountType, AccountStatus, Balance, CreationTimestamp)\n"
+                    + "(AccountId, AccountStatus, Balance, CreationTimestamp)\n"
                     + "VALUES\n"
-                    + "(?, ?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
+                    + "(?, ?, ?, PENDING_COMMIT_TIMESTAMP())")) {
       ps.setBytes(1, accountId.toByteArray());
-      ps.setInt(2, accountType.getNumber());
-      ps.setInt(3, accountStatus.getNumber());
-      ps.setBigDecimal(4, balance);
+      ps.setInt(2, accountStatus.getNumber());
+      ps.setBigDecimal(3, balance);
       ps.executeUpdate();
     } catch (SQLException e) {
       throw Status.fromThrowable(e).asException();
@@ -110,36 +109,15 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
 
   public ImmutableMap<ByteArray, BigDecimal> moveAccountBalance(
       ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws StatusException {
-    try (Connection connection = DriverManager.getConnection(this.connectionUrl);
-        PreparedStatement readStatement =
-            connection.prepareStatement(
-                "SELECT AccountId, Balance FROM Account WHERE (AccountId = ? or AccountId = ?)")) {
+    try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
       connection.setAutoCommit(false);
+      ImmutableMap<ByteArray, AccountData> accountData =
+          readAccountDataForTransfer(ImmutableList.of(fromAccountId, toAccountId), connection);
       byte[] fromAccountIdArray = fromAccountId.toByteArray();
       byte[] toAccountIdArray = toAccountId.toByteArray();
-      readStatement.setBytes(1, fromAccountIdArray);
-      readStatement.setBytes(2, toAccountIdArray);
-      java.sql.ResultSet resultSet = readStatement.executeQuery();
-      BigDecimal sourceAmount = null;
-      BigDecimal destAmount = null;
-      while (resultSet.next()) {
-        byte[] currentId = resultSet.getBytes("AccountId");
-        if (Arrays.equals(currentId, fromAccountIdArray)) {
-          sourceAmount = resultSet.getBigDecimal("Balance");
-        } else {
-          destAmount = resultSet.getBigDecimal("Balance");
-        }
-      }
-      if (sourceAmount == null) {
-        throw Status.INVALID_ARGUMENT
-            .withDescription(String.format("Account not found: %s", fromAccountId.toString()))
-            .asException();
-      } else if (destAmount == null) {
-        throw Status.INVALID_ARGUMENT
-            .withDescription(String.format("Account not found: %s", toAccountId.toString()))
-            .asException();
-      }
+      BigDecimal sourceAmount = accountData.get(fromAccountId).balance;
       BigDecimal newSourceAmount = sourceAmount.subtract(amount);
+      BigDecimal destAmount = accountData.get(toAccountId).balance;
       BigDecimal newDestAmount = destAmount.add(amount);
       if (newSourceAmount.signum() == -1) {
         throw Status.INVALID_ARGUMENT
@@ -147,10 +125,10 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
                 String.format(
                     "Account balance cannot be negative. original account balance: %s, amount to be"
                         + " removed: %s",
-                    sourceAmount.toString(), amount.toString()))
+                    sourceAmount, amount))
             .asException();
       }
-      updateAccount(fromAccountIdArray, newSourceAmount, connection);
+      updateAccount(fromAccountId.toByteArray(), newSourceAmount, connection);
       updateAccount(toAccountIdArray, newDestAmount, connection);
       insertTransferTransactions(fromAccountIdArray, toAccountIdArray, amount, connection);
       connection.commit();
@@ -162,22 +140,13 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
 
   public BigDecimal createTransactionForAccount(
       ByteArray accountId, BigDecimal amount, boolean isCredit) throws StatusException {
-    try (Connection connection = DriverManager.getConnection(this.connectionUrl);
-        PreparedStatement readStatement =
-            connection.prepareStatement("SELECT Balance FROM Account WHERE AccountId = ?")) {
+    try (Connection connection = DriverManager.getConnection(this.connectionUrl)) {
       connection.setAutoCommit(false);
       byte[] accountIdArray = accountId.toByteArray();
-      readStatement.setBytes(1, accountIdArray);
-      java.sql.ResultSet resultSet = readStatement.executeQuery();
-      BigDecimal oldBalance = null;
-      while (resultSet.next()) {
-        oldBalance = resultSet.getBigDecimal("Balance");
-      }
-      if (oldBalance == null) {
-        throw Status.INVALID_ARGUMENT
-            .withDescription(String.format("Account not found: %s", accountId.toString()))
-            .asException();
-      }
+      BigDecimal oldBalance =
+          readAccountDataForTransfer(ImmutableList.of(accountId), connection)
+              .get(accountId)
+              .balance;
       BigDecimal newBalance;
       if (isCredit) {
         newBalance = oldBalance.subtract(amount);
@@ -190,7 +159,7 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
                 String.format(
                     "Account balance cannot be negative. original account balance: %s, amount to be"
                         + " removed: %s",
-                    oldBalance.toString(), amount.toString()))
+                    oldBalance, amount))
             .asException();
       }
       updateAccount(accountIdArray, newBalance, connection);
@@ -233,6 +202,54 @@ final class SpannerDaoJDBCImpl implements SpannerDaoInterface {
     } catch (SQLException e) {
       throw Status.fromThrowable(e).asException();
     }
+  }
+
+  /**
+   * Returns an ImmutableMap of all requested AccountData keyed by account ids.
+   *
+   * @param accountIds account ids for which to return AccountData
+   * @param connection used for queries
+   * @return mapping of AccountData, keyed by account id
+   * @throws StatusException if any of the requested accountIds is not found, or the associated
+   *     accountStatus is not ACTIVE.
+   */
+  private ImmutableMap<ByteArray, AccountData> readAccountDataForTransfer(
+      Iterable<ByteArray> accountIds, Connection connection) throws StatusException {
+    ImmutableMap<ByteArray, AccountData> accountDataMap;
+    try (PreparedStatement readStatement =
+        connection.prepareStatement(
+            "SELECT AccountId, AccountStatus, Balance FROM Account WHERE AccountId IN UNNEST(?)")) {
+      List<byte[]> accountIdArrays = new ArrayList<>();
+      for (ByteArray accountId : accountIds) {
+        accountIdArrays.add(accountId.toByteArray());
+      }
+      readStatement.setArray(1, connection.createArrayOf("BYTES", accountIdArrays.toArray()));
+      java.sql.ResultSet resultSet = readStatement.executeQuery();
+      ImmutableMap.Builder<ByteArray, AccountData> accountDataBuilder = ImmutableMap.builder();
+      while (resultSet.next()) {
+        AccountData accountData = new AccountData();
+        accountData.balance = resultSet.getBigDecimal("Balance");
+        accountData.status = AccountStatus.forNumber((int) resultSet.getLong("AccountStatus"));
+        accountDataBuilder.put(ByteArray.copyFrom(resultSet.getBytes("AccountId")), accountData);
+      }
+      accountDataMap = accountDataBuilder.build();
+    } catch (SQLException e) {
+      throw Status.fromThrowable(e).asException();
+    }
+    for (ByteArray accountId : accountIds) {
+      if (!accountDataMap.containsKey(accountId)) {
+        throw Status.INVALID_ARGUMENT
+            .withDescription(String.format("Account not found: %s", accountId.toString()))
+            .asException();
+      } else if (accountDataMap.get(accountId).status != AccountStatus.ACTIVE) {
+        throw Status.INVALID_ARGUMENT
+            .withDescription(
+                String.format(
+                    "Non-active accounts are not eligible for transfers: %s", accountId.toString()))
+            .asException();
+      }
+    }
+    return accountDataMap;
   }
 
   private void updateAccount(byte[] accountId, BigDecimal newBalance, Connection connection)

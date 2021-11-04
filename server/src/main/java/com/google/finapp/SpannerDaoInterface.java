@@ -30,12 +30,10 @@ public interface SpannerDaoInterface {
   /**
    * Inserts a new row to the Account table in the database.
    *
-   * @param accountType indicates unspecified, checking, or savings Account type
    * @param accountStatus indicates unspecified, active, or frozen Account status
    * @param balance non-negative account balance
    */
-  void createAccount(
-      ByteArray accountId, AccountType accountType, AccountStatus accountStatus, BigDecimal balance)
+  void createAccount(ByteArray accountId, AccountStatus accountStatus, BigDecimal balance)
       throws StatusException;
 
   /** Inserts a new row to the CustomerRole table for a Customer in the database. */
@@ -80,4 +78,10 @@ public interface SpannerDaoInterface {
   ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
       ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp, int maxEntryCount)
       throws StatusException;
+
+  /** Helper data class for Account-level data, used to implement SpannerDaoInterface. */
+  class AccountData {
+    AccountStatus status;
+    BigDecimal balance;
+  }
 }

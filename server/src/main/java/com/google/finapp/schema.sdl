@@ -14,7 +14,6 @@
 
 CREATE TABLE Account (
   AccountId BYTES(16) NOT NULL,
-  AccountType INT64 NOT NULL,
   CreationTimestamp TIMESTAMP NOT NULL OPTIONS (allow_commit_timestamp=true),
   AccountStatus INT64 NOT NULL,
   Balance NUMERIC NOT NULL
@@ -45,14 +44,4 @@ CREATE TABLE CustomerRole (
 ) PRIMARY KEY (CustomerId, RoleId),
   INTERLEAVE IN PARENT Customer ON DELETE CASCADE;
 
-CREATE INDEX CustomerRoleByAccount ON CustomerRole(AccountId, CustomerId);
-
-CREATE TABLE Statement (
-  AccountId BYTES(16) NOT NULL,
-  StatementId BYTES(16) NOT NULL,
-  Balance NUMERIC NOT NULL,
-  StatementWindowStart TIMESTAMP NOT NULL,
-  StatementWindowEnd TIMESTAMP NOT NULL,
-  StatementSummary BYTES(MAX) NOT NULL
-) PRIMARY KEY (AccountId, StatementId),
-  INTERLEAVE IN PARENT Account ON DELETE CASCADE;
+CREATE INDEX CustomerRoleByAccount ON CustomerRole(AccountId, CustomerId)

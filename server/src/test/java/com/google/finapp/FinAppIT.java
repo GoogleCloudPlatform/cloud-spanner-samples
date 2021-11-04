@@ -65,9 +65,7 @@ public class FinAppIT {
   @BeforeClass
   public static void setup() throws IOException {
     RemoteSpannerHelper testHelper = env.getTestHelper();
-    db =
-        testHelper.createTestDatabase(
-            extractStatementsFromSDLFile("src/main/java/com/google/finapp/schema.sdl"));
+    db = testHelper.createTestDatabase(extractStatementsFromSDLFile());
   }
 
   @Before
@@ -100,9 +98,8 @@ public class FinAppIT {
                 InProcessChannelBuilder.forName(serverName).directExecutor().build()));
   }
 
-  private static String[] extractStatementsFromSDLFile(String filename)
-      throws FileNotFoundException {
-    File file = new File(filename);
+  private static String[] extractStatementsFromSDLFile() throws FileNotFoundException {
+    File file = new File("src/main/java/com/google/finapp/schema.sdl");
     BufferedReader reader = new BufferedReader(new FileReader(file));
     StringBuilder builder = new StringBuilder();
     try (Scanner scanner = new Scanner(reader)) {
@@ -122,7 +119,7 @@ public class FinAppIT {
   }
 
   @Test
-  public void createCustomer_createsValidCustomer() throws Exception {
+  public void createCustomer_createsValidCustomer() {
     String name = "customer name";
     String address = "customer address";
     CreateCustomerResponse response =
@@ -148,12 +145,11 @@ public class FinAppIT {
   }
 
   @Test
-  public void createAccount_createsValidAccount() throws Exception {
+  public void createAccount_createsValidAccount() {
     BigDecimal amount = new BigDecimal(2);
     CreateAccountResponse response =
         finAppService.createAccount(
             CreateAccountRequest.newBuilder()
-                .setType(CreateAccountRequest.Type.UNSPECIFIED_ACCOUNT_TYPE /* = 0*/)
                 .setStatus(CreateAccountRequest.Status.UNSPECIFIED_ACCOUNT_STATUS /* = 0*/)
                 .setBalance(amount.toString())
                 .build());
@@ -164,34 +160,36 @@ public class FinAppIT {
             .read(
                 "Account",
                 KeySet.singleKey(Key.of(ByteArray.copyFrom(response.getAccountId().toByteArray()))),
-                Arrays.asList("AccountType", "AccountStatus", "Balance"))) {
+                Arrays.asList("AccountStatus", "Balance"))) {
       int count = 0;
       while (resultSet.next()) {
-        assertThat(resultSet.getLong(0)).isEqualTo(0);
-        assertThat(resultSet.getLong(1)).isEqualTo(0);
-        assertThat(resultSet.getBigDecimal(2)).isEqualTo(amount);
+        assertThat(resultSet.getLong("AccountStatus")).isEqualTo(0);
+        assertThat(resultSet.getBigDecimal("Balance")).isEqualTo(amount);
         count++;
       }
       assertThat(count).isEqualTo(1);
     }
   }
 
-  private void addTestAccountRow(
-      ByteArray accountId, BigDecimal balance, Timestamp creationTimestamp) {
+  private void addAccountRow(
+      ByteArray accountId, AccountStatus status, BigDecimal balance, Timestamp creationTimestamp) {
     databaseClient.write(
         ImmutableList.of(
             Mutation.newInsertBuilder("Account")
                 .set("AccountId")
                 .to(accountId)
-                .set("AccountType")
-                .to(AccountType.CHECKING_VALUE)
                 .set("AccountStatus")
-                .to(AccountStatus.ACTIVE_VALUE)
+                .to(status.getNumber())
                 .set("Balance")
                 .to(balance)
                 .set("CreationTimestamp")
                 .to(creationTimestamp)
                 .build()));
+  }
+
+  private void addActiveAccountRow(
+      ByteArray accountId, BigDecimal balance, Timestamp creationTimestamp) {
+    addAccountRow(accountId, AccountStatus.ACTIVE, balance, creationTimestamp);
   }
 
   private void addTestCustomer(ByteArray customerId, String name, String address) {
@@ -208,12 +206,11 @@ public class FinAppIT {
   }
 
   @Test
-  public void createCustomerRole_createsValidCustomerRole() throws Exception {
+  public void createCustomerRole_createsValidCustomerRole() {
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     ByteArray customerId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
-    ByteArray roleId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     String roleName = "role name";
-    addTestAccountRow(accountId, new BigDecimal(60), Timestamp.now());
+    addActiveAccountRow(accountId, new BigDecimal(60), Timestamp.now());
     addTestCustomer(customerId, "customer name", "customer address");
 
     CreateCustomerRoleResponse response =
@@ -243,14 +240,14 @@ public class FinAppIT {
   }
 
   @Test
-  public void moveAccountBalance_validTransfers() throws Exception {
+  public void moveAccountBalance_validTransfers() {
     ByteArray fromAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     ByteArray toAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     BigDecimal fromAccountBalance = new BigDecimal(44);
     BigDecimal toAccountBalance = new BigDecimal(0);
     BigDecimal amount = new BigDecimal(1);
-    addTestAccountRow(fromAccountId, fromAccountBalance, Timestamp.now());
-    addTestAccountRow(toAccountId, toAccountBalance, Timestamp.now());
+    addActiveAccountRow(fromAccountId, fromAccountBalance, Timestamp.now());
+    addActiveAccountRow(toAccountId, toAccountBalance, Timestamp.now());
     MoveAccountBalanceResponse response =
         finAppService.moveAccountBalance(
             MoveAccountBalanceRequest.newBuilder()
@@ -282,8 +279,8 @@ public class FinAppIT {
     BigDecimal fromAccountBalance = new BigDecimal(20);
     BigDecimal toAccountBalance = new BigDecimal(0);
     BigDecimal amount = new BigDecimal(-10);
-    addTestAccountRow(fromAccountId, fromAccountBalance, Timestamp.now());
-    addTestAccountRow(toAccountId, toAccountBalance, Timestamp.now());
+    addActiveAccountRow(fromAccountId, fromAccountBalance, Timestamp.now());
+    addActiveAccountRow(toAccountId, toAccountBalance, Timestamp.now());
 
     Exception e =
         assertThrows(
@@ -299,14 +296,14 @@ public class FinAppIT {
   }
 
   @Test
-  public void moveAccountBalance_tooLargeAmount_throwsException() throws Exception {
+  public void moveAccountBalance_tooLargeAmount_throwsException() {
     ByteArray fromAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     ByteArray toAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     BigDecimal fromAccountBalance = new BigDecimal(20);
     BigDecimal toAccountBalance = new BigDecimal(0);
     BigDecimal amount = new BigDecimal(25);
-    addTestAccountRow(fromAccountId, fromAccountBalance, Timestamp.now());
-    addTestAccountRow(toAccountId, toAccountBalance, Timestamp.now());
+    addActiveAccountRow(fromAccountId, fromAccountBalance, Timestamp.now());
+    addActiveAccountRow(toAccountId, toAccountBalance, Timestamp.now());
 
     Exception e =
         assertThrows(
@@ -322,12 +319,55 @@ public class FinAppIT {
   }
 
   @Test
-  public void createTransactionForAccount_isCredit_subtractsFromAccountBalance() throws Exception {
+  public void moveAccountBalance_missingAccount_throwsException() {
+    ByteArray fromAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    ByteArray toAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal fromAccountBalance = new BigDecimal(20);
+    BigDecimal amount = new BigDecimal(10);
+    addActiveAccountRow(fromAccountId, fromAccountBalance, Timestamp.now());
+    Exception e =
+        assertThrows(
+            io.grpc.StatusRuntimeException.class,
+            () ->
+                finAppService.moveAccountBalance(
+                    MoveAccountBalanceRequest.newBuilder()
+                        .setFromAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
+                        .setToAccountId(ByteString.copyFrom(toAccountId.toByteArray()))
+                        .setAmount(amount.toString())
+                        .build()));
+    assertThat(e.getMessage()).contains("Account not found");
+  }
+
+  @Test
+  public void moveAccountBalance_frozenAccount_throwsException() {
+    ByteArray fromAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    ByteArray toAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    BigDecimal fromAccountBalance = new BigDecimal(44);
+    BigDecimal toAccountBalance = new BigDecimal(0);
+    BigDecimal amount = new BigDecimal(1);
+    addActiveAccountRow(fromAccountId, fromAccountBalance, Timestamp.now());
+    addAccountRow(toAccountId, AccountStatus.FROZEN, toAccountBalance, Timestamp.now());
+
+    Exception e =
+        assertThrows(
+            io.grpc.StatusRuntimeException.class,
+            () ->
+                finAppService.moveAccountBalance(
+                    MoveAccountBalanceRequest.newBuilder()
+                        .setFromAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
+                        .setToAccountId(ByteString.copyFrom(toAccountId.toByteArray()))
+                        .setAmount(amount.toString())
+                        .build()));
+    assertThat(e.getMessage()).contains("Non-active accounts are not eligible for transfers");
+  }
+
+  @Test
+  public void createTransactionForAccount_isCredit_subtractsFromAccountBalance() {
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     BigDecimal oldAccountBalance = new BigDecimal(60);
     BigDecimal amount = new BigDecimal(10);
     boolean isCredit = true;
-    addTestAccountRow(accountId, oldAccountBalance, Timestamp.now());
+    addActiveAccountRow(accountId, oldAccountBalance, Timestamp.now());
 
     CreateTransactionForAccountResponse response =
         finAppService.createTransactionForAccount(
@@ -346,7 +386,7 @@ public class FinAppIT {
                 Arrays.asList("Amount", "IsCredit", "AccountId"));
         ResultSet accountResultSet =
             transaction.read(
-                "Account", KeySet.singleKey(Key.of(accountId)), Arrays.asList("Balance")); ) {
+                "Account", KeySet.singleKey(Key.of(accountId)), Arrays.asList("Balance"))) {
       int count = 0;
       boolean transactionSeen = false;
       boolean accountSeen = false;
@@ -370,12 +410,12 @@ public class FinAppIT {
   }
 
   @Test
-  public void createTransactionForAccount_notIsCredit_addsToAccountBalance() throws Exception {
+  public void createTransactionForAccount_notIsCredit_addsToAccountBalance() {
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     BigDecimal oldAccountBalance = new BigDecimal(75);
     BigDecimal amount = new BigDecimal(10);
     boolean isCredit = false;
-    addTestAccountRow(accountId, oldAccountBalance, Timestamp.now());
+    addActiveAccountRow(accountId, oldAccountBalance, Timestamp.now());
 
     CreateTransactionForAccountResponse response =
         finAppService.createTransactionForAccount(
@@ -394,7 +434,7 @@ public class FinAppIT {
                 Arrays.asList("Amount", "IsCredit", "AccountId"));
         ResultSet accountResultSet =
             transaction.read(
-                "Account", KeySet.singleKey(Key.of(accountId)), Arrays.asList("Balance")); ) {
+                "Account", KeySet.singleKey(Key.of(accountId)), Arrays.asList("Balance"))) {
       int count = 0;
       boolean transactionSeen = false;
       boolean accountSeen = false;
@@ -418,12 +458,12 @@ public class FinAppIT {
   }
 
   @Test
-  public void createTransactionForAccount_negativeAmount_throwsException() throws Exception {
+  public void createTransactionForAccount_negativeAmount_throwsException() {
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     BigDecimal oldAccountBalance = new BigDecimal(20);
     BigDecimal amount = new BigDecimal(-10);
     boolean isCredit = false;
-    addTestAccountRow(accountId, oldAccountBalance, Timestamp.now());
+    addActiveAccountRow(accountId, oldAccountBalance, Timestamp.now());
 
     Exception e =
         assertThrows(
@@ -439,12 +479,12 @@ public class FinAppIT {
   }
 
   @Test
-  public void createTransactionForAccount_tooLargeAmount_throwsException() throws Exception {
+  public void createTransactionForAccount_tooLargeAmount_throwsException() {
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     BigDecimal oldAccountBalance = new BigDecimal(20);
     BigDecimal amount = new BigDecimal(30);
     boolean isCredit = true;
-    addTestAccountRow(accountId, oldAccountBalance, Timestamp.now());
+    addActiveAccountRow(accountId, oldAccountBalance, Timestamp.now());
     Exception e =
         assertThrows(
             io.grpc.StatusRuntimeException.class,
@@ -459,14 +499,14 @@ public class FinAppIT {
   }
 
   @Test
-  public void getRecentTransactionsForAccount_validSingleTransaction() throws Exception {
+  public void getRecentTransactionsForAccount_validSingleTransaction() {
     ByteArray fromAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     ByteArray toAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     BigDecimal fromAccountBalance = new BigDecimal(20);
     BigDecimal toAccountBalance = new BigDecimal(0);
     BigDecimal amount = new BigDecimal(10);
-    addTestAccountRow(fromAccountId, fromAccountBalance, Timestamp.now());
-    addTestAccountRow(toAccountId, toAccountBalance, Timestamp.now());
+    addActiveAccountRow(fromAccountId, fromAccountBalance, Timestamp.now());
+    addActiveAccountRow(toAccountId, toAccountBalance, Timestamp.now());
     finAppService.moveAccountBalance(
         MoveAccountBalanceRequest.newBuilder()
             .setFromAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
@@ -495,14 +535,14 @@ public class FinAppIT {
   }
 
   @Test
-  public void getRecentTransactionsForAccount_validMultipleTransactions() throws Exception {
+  public void getRecentTransactionsForAccount_validMultipleTransactions() {
     ByteArray fromAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     ByteArray toAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     BigDecimal fromAccountBalance = new BigDecimal(20);
     BigDecimal toAccountBalance = new BigDecimal(0);
     BigDecimal amount = new BigDecimal(10);
-    addTestAccountRow(fromAccountId, fromAccountBalance, Timestamp.now());
-    addTestAccountRow(toAccountId, toAccountBalance, Timestamp.now());
+    addActiveAccountRow(fromAccountId, fromAccountBalance, Timestamp.now());
+    addActiveAccountRow(toAccountId, toAccountBalance, Timestamp.now());
     finAppService.moveAccountBalance(
         MoveAccountBalanceRequest.newBuilder()
             .setFromAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
@@ -594,11 +634,10 @@ public class FinAppIT {
   }
 
   @Test
-  public void getRecentTransactionsForAccount_BeginAfterEndTimestamp() throws Exception {
+  public void getRecentTransactionsForAccount_BeginAfterEndTimestamp() {
     ByteArray accountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
     BigDecimal accountBalance = new BigDecimal(20);
-    BigDecimal amount = new BigDecimal(10);
-    addTestAccountRow(accountId, accountBalance, Timestamp.now());
+    addActiveAccountRow(accountId, accountBalance, Timestamp.now());
     Exception e =
         assertThrows(
             io.grpc.StatusRuntimeException.class,

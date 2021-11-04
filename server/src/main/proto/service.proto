@@ -57,19 +57,12 @@ message CreateCustomerResponse {
 message CreateAccountRequest {
   string balance = 1; // Digits[.[Digits]] or [Digits].Digits
 
-  enum Type {
-    UNSPECIFIED_ACCOUNT_TYPE = 0;
-    CHECKING = 1;
-    SAVING = 2;
-  }
-  Type type = 2;
-
   enum Status {
     UNSPECIFIED_ACCOUNT_STATUS = 0;
     ACTIVE = 1;
     FROZEN = 2;
   }
-  Status status = 3;
+  Status status = 2;
 }
 
 message CreateAccountResponse {
