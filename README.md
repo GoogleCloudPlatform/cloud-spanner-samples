@@ -54,7 +54,7 @@ The backend should support the following operations:
 Good schema design can unlock Cloud Spanner capabilities for scale-out with
 essentially no limits by automatically sharding data based on load and size.
 On the other hand, schema anti-patterns, like
-[hot-spotting](https://cloud.google.com/spanner/docs/schema-design#primary-key-prevent-hotspots),
+[hotspotting](https://cloud.google.com/spanner/docs/schema-design#primary-key-prevent-hotspots),
 can cause bottlenecks and seriously handicap performance. Developers using
 Cloud Spanner should familiarize themselves early with Cloud Spanner's
 [data model](https://cloud.google.com/spanner/docs/schema-and-data-model) and
