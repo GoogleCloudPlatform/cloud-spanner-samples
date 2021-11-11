@@ -5,7 +5,7 @@ application. It consists of 2 components:
 1. A gRPC server that provides application level functionality
   (see: [service.proto](server/src/main/proto/service.proto)) using CloudSpanner
   as the storage backend, found in the [server](server) directory
-2. A workload generator for the above, found in the [workload](workload) folder
+2. A workload generator for the above, found in the [workload](workload) directory
 
 The goal of the sample is to provide a simple working example to jump-start
 exploring Cloud Spanner.
