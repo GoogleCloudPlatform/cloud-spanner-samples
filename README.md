@@ -21,7 +21,7 @@ with application-level operations and uses Cloud Spanner as the storage backend.
 We provide two alternative implementations for connecting to Cloud Spanner for
 educational purposes:
 - [Cloud Spanner Java Client](https://github.com/googleapis/java-spanner)
-- [Cloud Spanner JDBC](https://github.com/googleapis/java-spanner-jdbc)
+- [Cloud Spanner JDBC Client](https://github.com/googleapis/java-spanner-jdbc)
 
 Clients, including the workload generator, a potential frontend component, or
 tools like [grpc_cli](https://github.com/grpc/grpc/blob/master/doc/command_line_tool.md)
