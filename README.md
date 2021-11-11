@@ -61,7 +61,7 @@ Cloud Spanner should familiarize themselves early with Cloud Spanner's
 [schema best practices](https://cloud.google.com/spanner/docs/schema-design).
 This section gives examples of how schema best practices apply to the finance
 application, for the full schema see
-[schema.sdl](server/src/main/java/com/google/finapp/schema.sdl)
+[schema.sdl](server/src/main/java/com/google/finapp/schema.sdl).
 
 #### Primary Keys and UUIDs
 Using a column whose value monotonically increases, or decreases as the first
