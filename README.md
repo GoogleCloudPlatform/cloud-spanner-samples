@@ -64,8 +64,8 @@ application, for the full schema see
 [schema.sdl](server/src/main/java/com/google/finapp/schema.sdl).
 
 #### Primary Keys and UUIDs
-Using a column whose value monotonically increases, or decreases as the first
-key of a high write rate table, or index should be avoided as it can cause
+Using a column whose value monotonically increases, or decreases, as the first
+key of a high write rate table or index should be avoided as it can cause
 [hot-spots](https://cloud.google.com/spanner/docs/schema-design#primary-key-prevent-hotspots).
 For this reason the sample uses [UUIDs](https://cloud.google.com/spanner/docs/schema-design#uuid_primary_key)
 for all primary keys (e.g: CustomerId, AccountId).
