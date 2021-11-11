@@ -47,8 +47,9 @@ The backend should support the following operations:
 - *CreateTransactionForAccount*: Monetary transfer between an account and an
   external entity
 - *MoveAccountBalance*: Monetary transfer between two accounts
-- *GetRecentTransactionsForAccount*: Returns recent transactions for an account,
-  should support pagination.
+- *GetRecentTransactionsForAccount*: Returns transactions for an account within
+  a specified time window, ordered by descending timestamp (more recent first).
+  Should support pagination.
 
 ### Schema design
 Good schema design can unlock Cloud Spanner capabilities for scale-out with
@@ -67,14 +68,15 @@ application, for the full schema see
 Using a column whose value monotonically increases, or decreases, as the first
 key of a high write rate table or index should be avoided as it can cause
 [hot-spots](https://cloud.google.com/spanner/docs/schema-design#primary-key-prevent-hotspots).
-For this reason the sample uses [UUIDs](https://cloud.google.com/spanner/docs/schema-design#uuid_primary_key)
+For this reason the sample uses [UUIDv4](https://cloud.google.com/spanner/docs/schema-design#uuid_primary_key)
 for all primary keys (e.g: CustomerId, AccountId).
  
 #### Foreign keys and Interleaving
 Interleaving is a good choice for many parent-child (1-to-N) relationships.
 It allows co-location of child rows with their parent rows and can
 significantly improve performance, for details see:
-[interleaved tables](https://cloud.google.com/spanner/docs/schema-and-data-model#creating-interleaved-tables)
+[interleaved tables](https://cloud.google.com/spanner/docs/schema-and-data-model#creating-interleaved-tables),
+[database splits](https://cloud.google.com/spanner/docs/schema-and-data-model#database-splits),
 [comparison with foreign keys](https://cloud.google.com/spanner/docs/foreign-keys/overview#fk-and-table-interleaving).
 
 The *Account* to *TransactionHistory* relation is a good example for using
@@ -102,7 +104,7 @@ to:
 Indeed, for *TransactionHistory* we use primary key:
 `AccountId, EventTimestamp DESC` which is optimal for the
 `GetRecentTransactionsForAccount` operation. Note that all operations described
-create at most one new row in *TransactionHistory*, in such cases it is safe
+create at most one new row in *TransactionHistory*. In such cases it is safe
 to use the commit timestamp as a key.
 
 ## Running the application
