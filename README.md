@@ -81,7 +81,7 @@ The *Account* to *TransactionHistory* relation is a good example for using
 interleaving. It is a 1-to-N relationship. Moreover, all financial transfers
 would need to update both tables (add a row to *TransactionHistory* and update
 the *Account* *balance* for the same AccountId). Interleaving
-*TransactionHistory* under *Account* results co-locating relevant rows and as a
+*TransactionHistory* under *Account* results in co-locating relevant rows and as a
 result allows such updates to be performant.
 
 The *Customer* to *Account* relation, is an M-to-N and requires a separate
