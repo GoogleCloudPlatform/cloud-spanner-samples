@@ -34,7 +34,7 @@ The application models the following entities:
   accounts.
 - *Account*: A financial account, keeps track of balance. Multiple customers
   could access a single account with different roles.
-- *Transaction*: A monetary transfers associated with the accounts
+- *Transaction*: A monetary transfer associated with one or more accounts.
 
 Captured as an ER diagram:
 ![FinAppERD.png](images/FinAppERD.png)
