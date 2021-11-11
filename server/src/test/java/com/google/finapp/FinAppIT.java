@@ -45,6 +45,8 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.UUID;
+
+import org.apache.http.util.ByteArrayBuffer;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -271,6 +273,25 @@ public class FinAppIT {
     assertThat(response.getFromAccountIdBalance()).isEqualTo("42");
     assertThat(response.getToAccountIdBalance()).isEqualTo("2");
   }
+
+  @Test
+  public void moveAccountBalance_sameAccount_throwsException() throws Exception {
+    ByteArray fromAccountId = UuidConverter.getBytesFromUuid(UUID.randomUUID());
+    ByteArray toAccountId = ByteArray.copyFrom(fromAccountId.toByteArray());
+
+    Exception e =
+        assertThrows(
+            io.grpc.StatusRuntimeException.class,
+            () ->
+                finAppService.moveAccountBalance(
+                    MoveAccountBalanceRequest.newBuilder()
+                        .setFromAccountId(ByteString.copyFrom(fromAccountId.toByteArray()))
+                        .setToAccountId(ByteString.copyFrom(toAccountId.toByteArray()))
+                        .setAmount("10")
+                        .build()));
+    assertThat(e.getMessage()).contains("\"To\" and \"from\" account IDs must be different");
+  }
+
 
   @Test
   public void moveAccountBalance_negativeAmount_throwsException() throws Exception {

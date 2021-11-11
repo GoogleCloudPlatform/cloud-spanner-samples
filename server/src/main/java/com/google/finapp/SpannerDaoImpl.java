@@ -105,6 +105,11 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
   @Override
   public ImmutableMap<ByteArray, BigDecimal> moveAccountBalance(
       ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws StatusException {
+    if (fromAccountId.equals(toAccountId)) {
+      throw Status.INVALID_ARGUMENT
+          .withDescription("\"To\" and \"from\" account IDs must be different")
+          .asException();
+    }
     ImmutableMap.Builder<ByteArray, BigDecimal> accountBalancesBuilder = ImmutableMap.builder();
     try {
       databaseClient
