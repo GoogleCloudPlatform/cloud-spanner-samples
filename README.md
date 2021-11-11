@@ -96,7 +96,7 @@ but any solution would work equally well for the target operations.
 Tables (or indexes) that have some type of history keyed by timestamp are
 common, *TransactionHistory* is a good example. In such cases it is important
 to:
-1. Do not use the timestamp as the first key part (see [hot-spotting](https://cloud.google.com/spanner/docs/schema-design#primary-key-prevent-hotspots))
+1. Not use the timestamp as the first key part (see [hot-spotting](https://cloud.google.com/spanner/docs/schema-design#primary-key-prevent-hotspots))
 2. Use [descending order for timestamps](https://cloud.google.com/spanner/docs/schema-design#ordering_timestamp-based_keys)
 
 Indeed, for *TransactionHistory* we use primary key:
