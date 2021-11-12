@@ -102,9 +102,17 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
   public void moveAccountBalance(
       MoveAccountBalanceRequest request,
       StreamObserver<MoveAccountBalanceResponse> responseObserver) {
-    ImmutableMap<ByteArray, BigDecimal> accountBalances;
     ByteArray fromAccountId = ByteArray.copyFrom(request.getFromAccountId().toByteArray());
     ByteArray toAccountId = ByteArray.copyFrom(request.getToAccountId().toByteArray());
+    if (fromAccountId.equals(toAccountId)) {
+      responseObserver.onError(
+        Status.INVALID_ARGUMENT
+          .withDescription("\"To\" and \"from\" account IDs must be different")
+          .asException());
+      return;
+    }
+
+    ImmutableMap<ByteArray, BigDecimal> accountBalances;
     try {
       BigDecimal amount = getNonNegativeBigDecimal(request.getAmount());
       accountBalances = spannerDao.moveAccountBalance(fromAccountId, toAccountId, amount);
