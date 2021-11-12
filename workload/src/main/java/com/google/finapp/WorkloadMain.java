@@ -75,6 +75,6 @@ public final class WorkloadMain {
     @Parameter(
         names = {"--thread-count", "-t"},
         description = "Number of threads to use, to control parallelism.")
-    int threadCount = 10;
+    int threadCount = 2;
   }
 }
