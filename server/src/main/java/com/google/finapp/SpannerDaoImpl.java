@@ -110,12 +110,15 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
           .withDescription("\"To\" and \"from\" account IDs must be different")
           .asException();
     }
-    ImmutableMap.Builder<ByteArray, BigDecimal> accountBalancesBuilder = ImmutableMap.builder();
     try {
-      databaseClient
+      return databaseClient
           .readWriteTransaction()
           .run(
               transaction -> {
+                // Note that the transaction can run multiple times, we create
+                // accountBalancesBuilder inside the transaction to avoid
+                // setting the same key twice below.
+                ImmutableMap.Builder<ByteArray, BigDecimal> accountBalancesBuilder = ImmutableMap.builder();
                 // Get account balances.
                 ImmutableMap<ByteArray, AccountData> accountData =
                     readAccountDataForTransfer(
@@ -146,9 +149,8 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
 
                 accountBalancesBuilder.put(fromAccountId, newSourceAmount);
                 accountBalancesBuilder.put(toAccountId, newDestAmount);
-                return null;
+                return accountBalancesBuilder.build();
               });
-      return accountBalancesBuilder.build();
     } catch (SpannerException e) {
       // filter for StatusException thrown in lambda function above
       Throwable cause = e.getCause();
