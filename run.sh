@@ -40,7 +40,8 @@ teardown_previous_emulator() {
 
 run_and_configure_emulator() {
   teardown_previous_emulator
-  gcloud emulators spanner start &
+  docker pull gcr.io/cloud-spanner-emulator/emulator
+  docker run -p 9010:9010 -p 9020:9020 gcr.io/cloud-spanner-emulator/emulator &
   if ! gcloud config configurations create emulator; then
     # If this isn't the first time this script is being executed,
     # create emulator will fail. Just activate the emulator in that case.
