@@ -106,9 +106,9 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     ByteArray toAccountId = ByteArray.copyFrom(request.getToAccountId().toByteArray());
     if (fromAccountId.equals(toAccountId)) {
       responseObserver.onError(
-        Status.INVALID_ARGUMENT
-          .withDescription("\"To\" and \"from\" account IDs must be different")
-          .asException());
+          Status.INVALID_ARGUMENT
+              .withDescription("\"To\" and \"from\" account IDs must be different")
+              .asException());
       return;
     }
 
