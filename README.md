@@ -19,4 +19,3 @@ Please review the [Code of Conduct](docs/code-of-conduct.md).
 
 If you are interested in contributing, more details on how to do so are provided 
 on the [Contributing page](docs/contributing.md).
-

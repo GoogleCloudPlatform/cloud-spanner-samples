@@ -108,7 +108,6 @@ create at most one new row in *TransactionHistory*. In such cases it is safe
 to use the commit timestamp as a key.
 
 ## Running the application
-
 > NOTE: Requires bash, gcloud, mvn, grpc_cli installed.
 
 ### Running against a Cloud Spanner instance
@@ -140,6 +139,7 @@ above, substitute `java` with `pg`.
 ### Running against Cloud Spanner emulator
 
 > NOTE: The PostgreSQL Interface will not work with the Spanner emulator
+
 1. Create a database locally using cloud-spanner-emulator and export spanner host
 for client libraries to work.
 
@@ -156,6 +156,7 @@ for client libraries to work.
         --spanner_project_id=test-project --spanner_instance_id=test-instance \
         --spanner_database_id=test-database
     ```
+
     > NOTE: To run the application using the JDBC implementation, in the command above,
 substitute `java` with `jdbc`.
 
