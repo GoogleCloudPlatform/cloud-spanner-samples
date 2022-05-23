@@ -18,6 +18,7 @@ jobs:
         distribution: 'adopt'
         cache: 'maven'
     - name: Build workload project with Maven
+      working-directory: ./finance
       run: |
         mvn clean install -DskipTests
         mvn compile assembly:single -pl org.example:workload
