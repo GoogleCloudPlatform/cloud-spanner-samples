@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 
 package com.google.finapp;
 
-// From SpannerDaoimpl
 import com.google.cloud.ByteArray;
 import com.google.cloud.Timestamp;
 import com.google.cloud.spanner.DatabaseClient;
@@ -40,10 +39,11 @@ final class SpannerDaoPGImpl implements SpannerDaoInterface {
     this.databaseClient = databaseClient;
   }
 
+  @Override
   public void createCustomer(ByteArray customerId, String name, String address)
       throws StatusException {
     try {
-      this.databaseClient
+      databaseClient
           .readWriteTransaction()
           .run(
               transaction -> {
@@ -52,12 +52,12 @@ final class SpannerDaoPGImpl implements SpannerDaoInterface {
                             "INSERT INTO Customer\n"
                                 + "(CustomerId, Name, Address)\n"
                                 + "VALUES\n"
-                                + "(@customerId, @name, @address)")
-                        .bind("customerId")
+                                + "($1, $2, $3)")
+                        .bind("p1")
                         .to(customerId)
-                        .bind("name")
+                        .bind("p2")
                         .to(name)
-                        .bind("address")
+                        .bind("p3")
                         .to(address)
                         .build();
                 transaction.executeUpdate(statement);
@@ -68,10 +68,11 @@ final class SpannerDaoPGImpl implements SpannerDaoInterface {
     }
   }
 
+  @Override
   public void createAccount(ByteArray accountId, AccountStatus accountStatus, BigDecimal balance)
       throws StatusException {
     try {
-      this.databaseClient
+      databaseClient
           .readWriteTransaction()
           .run(
               transaction -> {
@@ -95,17 +96,16 @@ final class SpannerDaoPGImpl implements SpannerDaoInterface {
                 return null;
               });
     } catch (SpannerException e) {
-      System.out.println(e.getMessage());
       throw Status.fromThrowable(e).asException();
     }
   }
 
+  @Override
   public void createCustomerRole(
       ByteArray customerId, ByteArray accountId, ByteArray roleId, String roleName)
       throws StatusException {
-
     try {
-      this.databaseClient
+      databaseClient
           .readWriteTransaction()
           .run(
               transaction -> {
@@ -129,18 +129,19 @@ final class SpannerDaoPGImpl implements SpannerDaoInterface {
                 return null;
               });
     } catch (SpannerException e) {
-      System.out.println(e.getMessage());
       throw Status.fromThrowable(e).asException();
     }
   }
 
+  @Override
   public ImmutableMap<ByteArray, BigDecimal> moveAccountBalance(
       ByteArray fromAccountId, ByteArray toAccountId, BigDecimal amount) throws StatusException {
     try {
-      return this.databaseClient
+      return databaseClient
           .readWriteTransaction()
           .run(
               transaction -> {
+                // Get account balances.
                 ImmutableMap<ByteArray, AccountData> accountData =
                     readAccountDataForTransfer(
                         ImmutableList.of(fromAccountId, toAccountId), transaction);
@@ -165,15 +166,20 @@ final class SpannerDaoPGImpl implements SpannerDaoInterface {
                 return ImmutableMap.of(fromAccountId, newSourceAmount, toAccountId, newDestAmount);
               });
     } catch (SpannerException e) {
-      e.printStackTrace();
+      // filter for StatusException thrown in lambda function above
+      Throwable cause = e.getCause();
+      if (cause instanceof StatusException) {
+        throw (StatusException) cause;
+      }
       throw Status.fromThrowable(e).asException();
     }
   }
 
+  @Override
   public BigDecimal createTransactionForAccount(
       ByteArray accountId, BigDecimal amount, boolean isCredit) throws StatusException {
     try {
-      return this.databaseClient
+      return databaseClient
           .readWriteTransaction()
           .run(
               transaction -> {
@@ -201,10 +207,16 @@ final class SpannerDaoPGImpl implements SpannerDaoInterface {
                 return newBalance;
               });
     } catch (SpannerException e) {
+      // filter for StatusException thrown in lambda function above
+      Throwable cause = e.getCause();
+      if (cause instanceof StatusException) {
+        throw (StatusException) cause;
+      }
       throw Status.fromThrowable(e).asException();
     }
   }
 
+  @Override
   public ImmutableList<TransactionEntry> getRecentTransactionsForAccount(
       ByteArray accountId, Timestamp beginTimestamp, Timestamp endTimestamp, int maxEntryCount)
       throws StatusException {
@@ -212,19 +224,19 @@ final class SpannerDaoPGImpl implements SpannerDaoInterface {
         Statement.newBuilder(
                 "SELECT * "
                     + "FROM TransactionHistory "
-                    + "WHERE AccountId = $1 AND "
-                    + "EventTimestamp >= $2 AND "
-                    + "EventTimestamp < $3 "
+                    + "WHERE AccountId = @accountId AND "
+                    + "EventTimestamp >= @beginTimestamp AND "
+                    + "EventTimestamp < @endTimestamp "
                     + "ORDER BY EventTimestamp DESC"
                     + (maxEntryCount > 0 ? " LIMIT " + maxEntryCount : ""))
-            .bind("p1")
+            .bind("accountId")
             .to(accountId)
-            .bind("p2")
+            .bind("beginTimestamp")
             .to(beginTimestamp.toString())
-            .bind("p3")
+            .bind("endTimestamp")
             .to(endTimestamp.toString())
             .build();
-    try (ResultSet resultSet = this.databaseClient.singleUse().executeQuery(statement)) {
+    try (ResultSet resultSet = databaseClient.singleUse().executeQuery(statement)) {
       ImmutableList.Builder<TransactionEntry> transactionHistoriesBuilder = ImmutableList.builder();
       while (resultSet.next()) {
         transactionHistoriesBuilder.add(
@@ -257,36 +269,21 @@ final class SpannerDaoPGImpl implements SpannerDaoInterface {
       keySetBuilder.addKey(Key.of(accountId));
     }
 
+    ImmutableMap.Builder<ByteArray, AccountData> accountDataBuilder = ImmutableMap.builder();
+
     try (ResultSet resultSet =
         transaction.read(
             "Account",
             keySetBuilder.build(),
-            ImmutableList.of("accountid", "accountstatus", "balance"))) {
-      ImmutableMap.Builder<ByteArray, AccountData> accountDataBuilder = ImmutableMap.builder();
+            ImmutableList.of("AccountId", "AccountStatus", "Balance"))) {
+
       while (resultSet.next()) {
         AccountData accountData = new AccountData();
         accountData.balance = new BigDecimal(String.valueOf(resultSet.getValue("balance")));
         accountData.status = AccountStatus.forNumber((int) resultSet.getLong("accountstatus"));
         accountDataBuilder.put(resultSet.getBytes("accountid"), accountData);
       }
-      ImmutableMap<ByteArray, AccountData> accountData = accountDataBuilder.build();
-      for (ByteArray accountId : accountIds) {
-        if (!accountData.containsKey(accountId)) {
-          throw Status.INVALID_ARGUMENT
-              .withDescription(String.format("Account not found: %s", accountId.toString()))
-              .asException();
-        } else if (accountData.get(accountId).status != AccountStatus.ACTIVE) {
-          throw Status.INVALID_ARGUMENT
-              .withDescription(
-                  String.format(
-                      "Non-active accounts are not eligible for transfers: %s",
-                      accountId.toString()))
-              .asException();
-        }
-      }
-      return accountData;
     } catch (SpannerException e) {
-      System.out.println(e.toString());
       // filter for StatusException thrown in lambda function above
       Throwable cause = e.getCause();
       if (cause instanceof StatusException) {
@@ -294,6 +291,23 @@ final class SpannerDaoPGImpl implements SpannerDaoInterface {
       }
       throw Status.fromThrowable(e).asException();
     }
+
+    ImmutableMap<ByteArray, AccountData> accountData = accountDataBuilder.build();
+    for (ByteArray accountId : accountIds) {
+      if (!accountData.containsKey(accountId)) {
+        throw Status.INVALID_ARGUMENT
+            .withDescription(String.format("Account not found: %s", accountId.toString()))
+            .asException();
+      } else if (accountData.get(accountId).status != AccountStatus.ACTIVE) {
+        throw Status.INVALID_ARGUMENT
+            .withDescription(
+                String.format(
+                    "Non-active accounts are not eligible for transfers: %s",
+                    accountId.toString()))
+            .asException();
+      }
+    }
+    return accountData;
   }
 
   private void updateAccount(
