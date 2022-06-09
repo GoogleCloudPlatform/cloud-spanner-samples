@@ -1,3 +1,3 @@
-server/target/**
-workload/target/**
-
+pom.xml.versionsBackup
+server/target**
+workload/target**

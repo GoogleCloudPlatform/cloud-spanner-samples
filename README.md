@@ -9,14 +9,13 @@ More details of each sample application can be found in the README for the sampl
 app.
 
 Sample applications:
-- [Banking](finance/README.md)
+- [Finance](finance/README.md)
 
 
 ## Code of Conduct
-Please review the [Code of Conduct](docs/code-of-conduct.md)
+Please review the [Code of Conduct](docs/code-of-conduct.md).
 
 ## Contributing
 
 If you are interested in contributing, more details on how to do so are provided 
-in the [Contributing page](docs/contributing.md).
-
+on the [Contributing page](docs/contributing.md).

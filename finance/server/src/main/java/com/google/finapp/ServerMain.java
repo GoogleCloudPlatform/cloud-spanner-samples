@@ -32,6 +32,7 @@ public final class ServerMain {
     SpannerDaoInterface spannerDao =
         getSpannerDao(
             args.spannerUseJdbc,
+            args.spannerUsePg,
             args.spannerProjectId,
             args.spannerInstanceId,
             args.spannerDatabaseId);
@@ -42,6 +43,7 @@ public final class ServerMain {
 
   private static SpannerDaoInterface getSpannerDao(
       boolean spannerUseJdbc,
+      boolean spannerUsePg,
       String spannerProjectId,
       String spannerInstanceId,
       String spannerDatabaseId) {
@@ -54,6 +56,10 @@ public final class ServerMain {
     DatabaseClient client =
         spanner.getDatabaseClient(
             DatabaseId.of(spannerProjectId, spannerInstanceId, spannerDatabaseId));
+
+    if (spannerUsePg) {
+      return new SpannerDaoPGImpl(client);
+    }
     return new SpannerDaoImpl(client);
   }
 
@@ -75,5 +81,10 @@ public final class ServerMain {
         names = {"--spanner_use_jdbc"},
         arity = 0)
     boolean spannerUseJdbc = false;
+
+    @Parameter(
+        names = {"--spanner_use_pg"},
+        arity = 0)
+    boolean spannerUsePg = false;
   }
 }

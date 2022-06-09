@@ -69,10 +69,17 @@ run_server_jdbc() {
     --spanner_use_jdbc $@
 }
 
+run_server_pg() {
+  mvn clean compile assembly:single -pl org.example:server
+  java -jar server/target/server-1.0-SNAPSHOT-jar-with-dependencies.jar \
+    --spanner_use_pg $@
+}
+
 run_server() {
   declare -A -x servers_table=(
     ['java']="run_server_java"
     ['jdbc']="run_server_jdbc"
+    ['pg']="run_server_pg"
   )
   local servers="${!servers_table[@]}"
 
