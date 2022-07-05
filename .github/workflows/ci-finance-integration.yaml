@@ -2,6 +2,8 @@ on:
   push:
     branches:
     - main
+    paths:
+    - 'finance/**'
   pull_request:
 name: Integration tests against emulator
 jobs:
@@ -24,14 +26,14 @@ jobs:
         cache: 'maven'
     - name: Check java version
       run: java -version
-    - name: Configure gcloud 
-      run: | 
+    - name: Configure gcloud
+      run: |
         gcloud config set auth/disable_credentials true
         gcloud config set project test-project
         gcloud config set api_endpoint_overrides/spanner http://localhost:9020/
         gcloud spanner instances create test-instance --config=emulator-config --nodes=1 --description="TestInstance"
-    - name: Run integration tests 
-      working-directory: ./finance      
+    - name: Run integration tests
+      working-directory: ./finance
       run: |
         mvn --batch-mode integration-test failsafe:verify
         mvn --batch-mode integration-test failsafe:verify -DSPANNER_USE_JDBC=true
