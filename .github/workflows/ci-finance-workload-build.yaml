@@ -4,6 +4,8 @@ on:
   push:
     branches:
     - main
+    paths:
+    - 'finance/**'
   pull_request:
 
 jobs:

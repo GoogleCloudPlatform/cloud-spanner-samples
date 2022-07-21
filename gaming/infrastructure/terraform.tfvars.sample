@@ -1,0 +1,11 @@
+gcp_project = "PROJECT"
+
+spanner_config = {
+    instance_name     = "INSTANCE"
+    database_name     = "DATABASE"
+    configuration     = "regional-us-central1"
+    display_name      = "gaming spanner instance"
+    processing_units  = 100
+    environment       = "staging"
+}
+

@@ -1,0 +1,8 @@
+server:
+  host: localhost
+  port: 8081
+
+spanner:
+  project_id: GCP_PROJECT_ID
+  instance_id: SPANNER_INSTANCE_ID
+  database_id: SPANNER_DATABASE_ID

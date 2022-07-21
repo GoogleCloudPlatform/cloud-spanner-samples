@@ -1,0 +1,22 @@
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - 'gaming/**'
+  pull_request:
+name: Gaming app tests
+jobs:
+  units:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-go@v3
+      with:
+        go-version: '^1.18.1'
+    - name: Check go version
+      run: go version
+    - name: Run tests
+      working-directory: ./gaming
+      run: |
+        make test-all

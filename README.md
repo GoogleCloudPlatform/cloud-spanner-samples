@@ -10,6 +10,7 @@ app.
 
 Sample applications:
 - [Finance](finance/README.md)
+- [Gaming](gaming/README.md)
 
 
 ## Code of Conduct
@@ -17,5 +18,5 @@ Please review the [Code of Conduct](docs/code-of-conduct.md).
 
 ## Contributing
 
-If you are interested in contributing, more details on how to do so are provided 
+If you are interested in contributing, more details on how to do so are provided
 on the [Contributing page](docs/contributing.md).
