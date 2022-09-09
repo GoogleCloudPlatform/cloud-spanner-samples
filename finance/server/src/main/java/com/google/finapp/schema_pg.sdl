@@ -48,4 +48,8 @@ CREATE TABLE CustomerRole (
     REFERENCES Account(AccountId)
 ) INTERLEAVE IN PARENT Customer ON DELETE CASCADE;
 
+CREATE TABLE CloudSpannerSampleApp (
+  id INT64,
+) PRIMARY KEY (id);
+
 CREATE INDEX CustomerRoleByAccount ON CustomerRole(AccountId, CustomerId)
