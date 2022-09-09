@@ -50,7 +50,7 @@ CREATE TABLE CustomerRole (
 
 CREATE INDEX CustomerRoleByAccount ON CustomerRole(AccountId, CustomerId);
 
-CREATE TABLE "CloudSpannerSampleApp" (
+CREATE TABLE CloudSpannerSampleApp (
   Id BIGINT NOT NULL,
   PRIMARY KEY (Id)
 )
