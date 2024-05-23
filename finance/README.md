@@ -137,8 +137,8 @@ has the schema in
    > NOTE: To run the application using the JDBC implementation, in the command above,
 substitute `java` with `jdbc`.
 
-   > NOTE: To run the application using the PG Interface implementation, in the command 
-above, substitute `java` with `pg`.
+   > NOTE: To run the application using the PostgreSQL Interface implementation,
+in the command above, substitute `java` with `pg`.
 
 1. After the server starts listening, in a separate terminal window, call RPCs
 using grpc_cli.
@@ -198,4 +198,3 @@ using grpc_cli.
 run `export SPANNER_EMULATOR_HOST="localhost:9010"`.
 1. `mvn integration-test` tests the Java client implementation
 1. `mvn integration-test -DSPANNER_USE_JDBC=true` tests the JDBC implementation
-1. Testing the PG Interface is not yet available
