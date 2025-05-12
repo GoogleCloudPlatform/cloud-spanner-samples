@@ -1,21 +1,30 @@
-# Cloud Spanner Sample Apps
+# Spanner Sample Apps and Notebooks
 
-This repository provides the source code for Cloud Spanner sample
-applications.
+This repository contains notebooks and sample apps that demonstrate how to use,
+develop, and manage Spanner on Google Cloud. 
 
-These applications highlight how to develop applications to work with Cloud Spanner.
+See respective README files in sub-directories for details.
 
-More details of each sample application can be found in the README for the sample
-app.
-
-Sample applications:
+## Sample applications
 - [Finance](finance/README.md)
 
+## Notebooks 
 
 ## Code of Conduct
 Please review the [Code of Conduct](docs/code-of-conduct.md).
+
+## Licensing
+
+* See [LICENSE](LICENSE)
 
 ## Contributing
 
 If you are interested in contributing, more details on how to do so are provided 
 on the [Contributing page](docs/contributing.md).
+
+## Source Code Headers
+
+Every file containing source code must include copyright and license
+information. This includes any JS/CSS files that you might be serving out to
+browsers. (This is to help well-intentioned people avoid accidental copying that
+doesn't comply with the license.)
