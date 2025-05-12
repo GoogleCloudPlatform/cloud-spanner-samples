@@ -1,14 +1,14 @@
-# Cloud Spanner Finance Application
+# Spanner Finance Application
 
-This directory provides the source code for a Cloud Spanner sample financial
+This directory provides the source code for a Spanner sample financial
 application. It consists of 2 components:
 1. A gRPC server that provides application level functionality
-  (see: [service.proto](server/src/main/proto/service.proto)) using CloudSpanner
-  as the storage backend, found in the [server](server) directory
+  (see: [service.proto](server/src/main/proto/service.proto)) using Spanner as
+  the storage backend, found in the [server](server) directory
 2. A workload generator for the above, found in the [workload](workload) directory
 
 The goal of the sample is to provide a simple working example to jump-start
-exploring Cloud Spanner.
+exploring Spanner.
 
 ## Architecture & Schema
 
@@ -17,11 +17,11 @@ This is how everything fits together:
 ![FinAppConnect.png](images/FinAppConnect.png)
 
 The FinAppServer is the backend of the application. It provides a gRPC interface
-with application-level operations and uses Cloud Spanner as the storage backend.
-We provide two alternative implementations for connecting to Cloud Spanner for
+with application-level operations and uses Spanner as the storage backend. We
+provide two alternative implementations for connecting to Spanner for
 educational purposes:
-- [Cloud Spanner Java Client](https://github.com/googleapis/java-spanner)
-- [Cloud Spanner JDBC Client](https://github.com/googleapis/java-spanner-jdbc)
+- [Spanner Java Client](https://github.com/googleapis/java-spanner)
+- [Spanner JDBC Client](https://github.com/googleapis/java-spanner-jdbc)
 
 Clients, including the workload generator, a potential frontend component, or
 tools like [grpc_cli](https://github.com/grpc/grpc/blob/master/doc/command_line_tool.md)
@@ -52,12 +52,12 @@ The backend should support the following operations:
   Should support pagination.
 
 ### Schema design
-Good schema design can unlock Cloud Spanner capabilities for scale-out with
+Good schema design can unlock Spanner capabilities for scale-out with
 essentially no limits by automatically sharding data based on load and size.
 On the other hand, schema anti-patterns, like
 [hotspotting](https://cloud.google.com/spanner/docs/schema-design#primary-key-prevent-hotspots),
 can cause bottlenecks and seriously handicap performance. Developers using
-Cloud Spanner should familiarize themselves early with Cloud Spanner's
+Spanner should familiarize themselves early with Spanner's
 [data model](https://cloud.google.com/spanner/docs/schema-and-data-model) and
 [schema best practices](https://cloud.google.com/spanner/docs/schema-design).
 This section gives examples of how schema best practices apply to the finance
@@ -108,16 +108,28 @@ create at most one new row in *TransactionHistory*. In such cases it is safe
 to use the commit timestamp as a key.
 
 ## Running the application
-> NOTE: Requires bash, gcloud, mvn, grpc_cli installed.
+> NOTE: Requires bash, docker, gcloud, java, mvn, grpc_cli installed.
 
-### Running against a Cloud Spanner instance
+### Running against a Spanner instance
 
-> NOTE: The PostgreSQL Interface will only work with a Cloud Spanner instance
+> NOTE: The PostgreSQL Interface will only work with a Spanner instance
 
-<!---TODO: Steps to create instance and database - Probably point to neos tutorial-->
+1. Create a GCP project `test-project` containing a Spanner instance
+`test-instance`.
+
+1. Inside this Spanner instance, create a database `test-database`. Choose the
+appropriate dialect, either GoogleSQL or PostgreSQL. Ensure that the database
+has the schema in
+[schema.sdl](server/src/main/java/com/google/finapp/schema.sdl).
+
+1. Set up Application Default Credentials.
+    ```bash
+    $ gcloud auth application-default login
+    ```
+
 1. Bring up the FinAppServer hosting a grpc service.
 
-    ```
+    ```bash
     $ bash run.sh server java \
         --spanner_project_id=test-project --spanner_instance_id=test-instance \
         --spanner_database_id=test-database
@@ -125,33 +137,33 @@ to use the commit timestamp as a key.
    > NOTE: To run the application using the JDBC implementation, in the command above,
 substitute `java` with `jdbc`.
 
-   > NOTE: To run the application using the PG Interface implementation, in the command 
-above, substitute `java` with `pg`.
+   > NOTE: To run the application using the PostgreSQL Interface implementation,
+in the command above, substitute `java` with `pg`.
 
-3. Call RPCs using grpc_cli.
+1. After the server starts listening, in a separate terminal window, call RPCs
+using grpc_cli.
 
-    ```
+    ```bash
     $ grpc_cli call localhost:8080 CreateCustomer \
-        "name: 'google' address: 'amphitheatre pkwy'" --channel_creds_type=insecure
+        'name: "google" address: "amphitheatre pkwy"' --channel_creds_type=insecure
     ```
 
-
-### Running against Cloud Spanner emulator
+### Running against Spanner emulator
 
 > NOTE: The PostgreSQL Interface will not work with the Spanner emulator
 
-1. Create a database locally using cloud-spanner-emulator and export spanner host
-for client libraries to work.
+1. Create a database locally using the Spanner emulator.
 
-    ```
+    ```bash
     $ mvn clean install -Dmaven.test.skip=true
     $ bash run.sh emulator
+    ```
+
+1. Export the Spanner host for client libraries to work. Bring up the
+FinAppServer hosting a grpc service.
+
+    ```bash
     $ export SPANNER_EMULATOR_HOST="localhost:9010"
-    ```
-
-2. Bring up the FinAppServer hosting a grpc service.
-
-    ```
     $ bash run.sh server java \
         --spanner_project_id=test-project --spanner_instance_id=test-instance \
         --spanner_database_id=test-database
@@ -160,27 +172,29 @@ for client libraries to work.
     > NOTE: To run the application using the JDBC implementation, in the command above,
 substitute `java` with `jdbc`.
 
-3. Call RPCs using grpc_cli.
+1. After the server starts listening, in a separate terminal window, call RPCs
+using grpc_cli.
 
-    ```
+    ```bash
     $ grpc_cli call localhost:8080 CreateCustomer \
-        "name: 'google' address: 'amphitheatre pkwy'" --channel_creds_type=insecure
+        'name: "google" address: "amphitheatre pkwy"' --channel_creds_type=insecure
     ```
 
 ## How to run the workload generator
 
 1. Bring up the finapp server using steps described above.
 
-2. In a separate terminal, bring up the workload using the following command:
+1. In a separate terminal, bring up the workload using the following command:
  
-    ```
+    ```bash
     $ bash run.sh workload \
         --address-name localhost --port 8080 --num-accounts 200 
     ```
 
 ## How to run the application tests
 
-1. Set up the emulator as described in #1 above.
-2. `mvn integration-test` tests the Java client implementation
-3. `mvn integration-test -DSPANNER_USE_JDBC=true` tests the JDBC implementation
-4. Testing the PG Interface is not yet available
+1. Bring up the finapp server using steps described above.
+1. Open a separate terminal window. If you are running against the emulator,
+run `export SPANNER_EMULATOR_HOST="localhost:9010"`.
+1. `mvn integration-test` tests the Java client implementation
+1. `mvn integration-test -DSPANNER_USE_JDBC=true` tests the JDBC implementation
