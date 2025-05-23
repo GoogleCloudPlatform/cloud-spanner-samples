@@ -1,14 +1,20 @@
 # Spanner Sample Apps and Notebooks
 
 This repository contains notebooks and sample apps that demonstrate how to use,
-develop, and manage Spanner on Google Cloud. 
+develop, and manage Spanner on Google Cloud. For additional samples by
+programming language, refer to the following repositories:
+- [Python](https://github.com/GoogleCloudPlatform/python-docs-samples)
+- [Node.js](https://github.com/GoogleCloudPlatform/nodejs-docs-samples)
+- [Java](https://github.com/GoogleCloudPlatform/java-docs-samples)
+- [Go](https://github.com/GoogleCloudPlatform/golang-samples)
 
 See respective README files in sub-directories for details.
 
 ## Sample applications
+- [Banking](banking/README.md)
 - [Finance](finance/README.md)
 
-## Notebooks 
+## Notebooks
 
 ## Code of Conduct
 Please review the [Code of Conduct](docs/code-of-conduct.md).
@@ -19,7 +25,7 @@ Please review the [Code of Conduct](docs/code-of-conduct.md).
 
 ## Contributing
 
-If you are interested in contributing, more details on how to do so are provided 
+If you are interested in contributing, more details on how to do so are provided
 on the [Contributing page](docs/contributing.md).
 
 ## Source Code Headers

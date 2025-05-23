@@ -1,0 +1,201 @@
+TransactionId,AccountId,TransactionType,Amount,Timestamp,Category,Description
+1,1,Credit,200.00,,,Salary credit from Acme Corp.
+2,1,Debit,50.00,,,Purchased groceries at SuperMart.
+3,5,Credit,1000.00,,,Interest earned on savings.
+4,12,Debit,300.00,,,Online payment for utilities.
+5,2,Credit,500.00,,,Refund from online store.
+6,25,Debit,150.00,,,Dinner at restaurant.
+7,3,Credit,2500.00,,,Monthly salary.
+8,1,Debit,75.00,,,Gasoline purchase.
+9,18,Credit,1200.00,,,Dividend payment.
+10,8,Debit,200.00,,,Clothing purchase.
+11,30,Credit,800.00,,,Transfer from another account.
+12,5,Debit,60.00,,,Coffee shop purchase.
+13,22,Credit,3000.00,,,Investment profit.
+14,10,Debit,400.00,,,Electronics purchase.
+15,35,Credit,600.00,,,Bonus payment.
+16,15,Debit,90.00,,,Movie tickets.
+17,2,Credit,2800.00,,,Monthly salary.
+18,28,Debit,120.00,,,Book purchase.
+19,4,Credit,1500.00,,,Rental income.
+20,40,Debit,250.00,,,Home improvement supplies.
+21,10,Credit,900.00,,,Gift received.
+22,32,Debit,70.00,,,Pharmacy purchase.
+23,17,Credit,3500.00,,,Investment profit.
+24,45,Debit,450.00,,,Furniture purchase.
+25,20,Credit,700.00,,,Insurance claim payout.
+26,3,Debit,100.00,,,Concert tickets.
+27,38,Credit,3000.00,,,Monthly salary.
+28,6,Debit,130.00,,,Sporting goods purchase.
+29,50,Credit,1800.00,,,Freelance income.
+30,15,Debit,300.00,,,Car repair.
+31,42,Credit,1000.00,,,Lottery winnings.
+32,24,Debit,80.00,,,Bakery purchase.
+33,55,Credit,4000.00,,,Investment profit.
+34,27,Debit,500.00,,,Travel expenses.
+35,4,Credit,800.00,,,Scholarship payment.
+36,48,Debit,110.00,,,Art supplies purchase.
+37,9,Credit,3200.00,,,Monthly salary.
+38,60,Debit,140.00,,,Pet supplies.
+39,18,Credit,2000.00,,,Consulting fees.
+40,52,Debit,350.00,,,Dental visit.
+41,30,Credit,1200.00,,,Tax refund.
+42,65,Debit,90.00,,,Hardware store purchase.
+43,33,Credit,4500.00,,,Investment profit.
+44,5,Debit,550.00,,,Appliance purchase.
+45,58,Credit,900.00,,,Grant payment.
+46,11,Debit,120.00,,,Garden supplies.
+47,70,Credit,3400.00,,,Monthly salary.
+48,21,Debit,150.00,,,Pharmacy purchase.
+49,75,Credit,2200.00,,,Bonus payment.
+50,36,Debit,280.00,,,Clothing purchase.
+51,62,Credit,1100.00,,,Transfer from savings.
+52,40,Debit,65.00,,,Coffee shop purchase.
+53,80,Credit,3800.00,,,Investment profit.
+54,44,Debit,480.00,,,Electronics purchase.
+55,72,Credit,750.00,,,Refund from online store.
+56,47,Debit,100.00,,,Dinner at restaurant.
+57,85,Credit,3100.00,,,Monthly salary.
+58,51,Debit,135.00,,,Gasoline purchase.
+59,90,Credit,1900.00,,,Dividend payment.
+60,54,Debit,220.00,,,Book purchase.
+61,95,Credit,1000.00,,,Rental income.
+62,57,Debit,75.00,,,Home improvement supplies.
+63,13,Credit,4200.00,,,Gift received.
+64,61,Debit,55.00,,,Pharmacy purchase.
+65,100,Credit,850.00,,,Insurance claim payout.
+66,66,Debit,95.00,,,Concert tickets.
+67,2,Credit,3600.00,,,Monthly salary.
+68,71,Debit,145.00,,,Sporting goods purchase.
+69,7,Credit,2100.00,,,Freelance income.
+70,76,Debit,320.00,,,Car repair.
+71,16,Credit,1300.00,,,Lottery winnings.
+72,81,Debit,85.00,,,Bakery purchase.
+73,26,Credit,4800.00,,,Investment profit.
+74,86,Debit,580.00,,,Travel expenses.
+75,31,Credit,950.00,,,Scholarship payment.
+76,91,Debit,115.00,,,Art supplies purchase.
+77,37,Credit,3300.00,,,Monthly salary.
+78,96,Debit,150.00,,,Pet supplies.
+79,43,Credit,2200.00,,,Consulting fees.
+80,10,Debit,370.00,,,Dental visit.
+81,99,Credit,1400.00,,,Tax refund.
+82,49,Debit,95.00,,,Hardware store purchase.
+83,105,Credit,5000.00,,,Investment profit.
+84,53,Debit,600.00,,,Appliance purchase.
+85,110,Credit,1000.00,,,Grant payment.
+86,56,Debit,130.00,,,Garden supplies.
+87,115,Credit,3500.00,,,Monthly salary.
+88,61,Debit,160.00,,,Pharmacy purchase.
+89,120,Credit,2300.00,,,Bonus payment.
+90,64,Debit,300.00,,,Clothing purchase.
+91,125,Credit,1200.00,,,Transfer from savings.
+92,69,Debit,70.00,,,Coffee shop purchase.
+93,5,Credit,4000.00,,,Investment profit.
+94,74,Debit,520.00,,,Electronics purchase.
+95,14,Credit,800.00,,,Refund from online store.
+96,79,Debit,110.00,,,Dinner at restaurant.
+97,23,Credit,3200.00,,,Monthly salary.
+98,125,Debit,220.00,,,Dental visit.
+99,84,Debit,140.00,,,Gasoline purchase.
+100,29,Credit,2000.00,,,Dividend payment.
+101,89,Debit,350.00,,,Book purchase.
+102,34,Credit,1200.00,,,Rental income.
+103,94,Debit,90.00,,,Home improvement supplies.
+104,39,Credit,4500.00,,,Gift received.
+105,10,Debit,550.00,,,Pharmacy purchase.
+106,46,Credit,900.00,,,Insurance claim payout.
+107,10,Debit,120.00,,,Concert tickets.
+108,51,Credit,3400.00,,,Monthly salary.
+109,56,Debit,150.00,,,Sporting goods purchase.
+110,61,Credit,2200.00,,,Freelance income.
+111,66,Debit,280.00,,,Car repair.
+112,71,Credit,1100.00,,,Lottery winnings.
+113,76,Debit,65.00,,,Bakery purchase.
+114,81,Credit,3800.00,,,Investment profit.
+115,86,Debit,480.00,,,Travel expenses.
+116,91,Credit,750.00,,,Scholarship payment.
+117,96,Debit,100.00,,,Art supplies purchase.
+118,100,Credit,3100.00,,,Monthly salary.
+119,105,Debit,135.00,,,Pet supplies.
+120,110,Credit,1900.00,,,Consulting fees.
+121,115,Debit,220.00,,,Dental visit.
+122,120,Credit,1000.00,,,Tax refund.
+123,125,Debit,75.00,,,Hardware store purchase.
+124,1,Credit,4200.00,,,Investment profit.
+125,6,Debit,55.00,,,Appliance purchase.
+126,11,Credit,850.00,,,Grant payment.
+127,16,Debit,95.00,,,Garden supplies.
+128,21,Credit,3600.00,,,Monthly salary.
+129,26,Debit,145.00,,,Pharmacy purchase.
+130,31,Credit,2100.00,,,Bonus payment.
+131,36,Debit,320.00,,,Clothing purchase.
+132,41,Credit,1300.00,,,Transfer from savings.
+133,46,Debit,85.00,,,Coffee shop purchase.
+134,51,Credit,4800.00,,,Investment profit.
+135,56,Debit,580.00,,,Electronics purchase.
+136,61,Credit,950.00,,,Refund from online store.
+137,66,Debit,115.00,,,Dinner at restaurant.
+138,71,Credit,3300.00,,,Monthly salary.
+139,76,Debit,150.00,,,Gasoline purchase.
+140,81,Credit,2200.00,,,Dividend payment.
+141,86,Debit,370.00,,,Book purchase.
+142,91,Credit,1400.00,,,Rental income.
+143,96,Debit,95.00,,,Home improvement supplies.
+144,100,Credit,5000.00,,,Gift received.
+145,105,Debit,600.00,,,Pharmacy purchase.
+146,1,Credit,1000.00,,,Tax refund.
+147,115,Debit,130.00,,,Concert tickets.
+148,120,Credit,3500.00,,,Monthly salary.
+149,125,Debit,160.00,,,Sporting goods purchase.
+150,1,Credit,2300.00,,,Freelance income.
+151,6,Debit,300.00,,,Car repair.
+152,11,Credit,1200.00,,,Lottery winnings.
+153,16,Debit,85.00,,,Bakery purchase.
+154,21,Credit,4800.00,,,Investment profit.
+155,26,Debit,580.00,,,Travel expenses.
+156,31,Credit,950.00,,,Scholarship payment.
+157,36,Debit,115.00,,,Art supplies purchase.
+158,41,Credit,3300.00,,,Monthly salary.
+159,46,Debit,150.00,,,Pet supplies.
+160,51,Credit,2200.00,,,Consulting fees.
+161,56,Debit,370.00,,,Dental visit.
+162,61,Credit,1400.00,,,Tax refund.
+163,66,Debit,95.00,,,Hardware store purchase.
+164,71,Credit,5000.00,,,Investment profit.
+165,76,Debit,600.00,,,Appliance purchase.
+166,81,Credit,1000.00,,,Grant payment.
+167,86,Debit,130.00,,,Garden supplies.
+168,91,Credit,3500.00,,,Monthly salary.
+169,96,Debit,160.00,,,Pharmacy purchase.
+170,100,Credit,2300.00,,,Bonus payment.
+171,105,Debit,300.00,,,Clothing purchase.
+172,110,Credit,1200.00,,,Transfer from savings.
+173,115,Debit,70.00,,,Coffee shop purchase.
+174,120,Credit,4000.00,,,Investment profit.
+175,125,Debit,520.00,,,Electronics purchase.
+176,1,Credit,800.00,,,Refund from online store.
+177,6,Debit,110.00,,,Dinner at restaurant.
+178,11,Credit,3200.00,,,Monthly salary.
+179,16,Debit,140.00,,,Gasoline purchase.
+180,21,Credit,2000.00,,,Dividend payment.
+181,26,Debit,350.00,,,Book purchase.
+182,31,Credit,1200.00,,,Rental income.
+183,36,Debit,90.00,,,Home improvement supplies.
+184,41,Credit,4500.00,,,Gift received.
+185,46,Debit,550.00,,,Pharmacy purchase.
+186,51,Credit,900.00,,,Insurance claim payout.
+187,56,Debit,120.00,,,Concert tickets.
+188,61,Credit,3400.00,,,Monthly salary.
+189,66,Debit,150.00,,,Sporting goods purchase.
+190,71,Credit,2200.00,,,Freelance income.
+191,76,Debit,280.00,,,Car repair.
+192,81,Credit,1100.00,,,Lottery winnings.
+193,86,Debit,65.00,,,Bakery purchase.
+194,91,Credit,3800.00,,,Investment profit.
+195,96,Debit,480.00,,,Travel expenses.
+196,100,Credit,750.00,,,Scholarship payment.
+197,105,Debit,100.00,,,Art supplies purchase.
+198,110,Credit,3100.00,,,Monthly salary.
+199,115,Debit,135.00,,,Pet supplies.
+200,120,Credit,1900.00,,,Consulting fees.

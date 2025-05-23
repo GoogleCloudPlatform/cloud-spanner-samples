@@ -113,7 +113,8 @@ final class SpannerDaoImpl implements SpannerDaoInterface {
                 // Note that the transaction can run multiple times, we create
                 // accountBalancesBuilder inside the transaction to avoid
                 // setting the same key twice below.
-                ImmutableMap.Builder<ByteArray, BigDecimal> accountBalancesBuilder = ImmutableMap.builder();
+                ImmutableMap.Builder<ByteArray, BigDecimal> accountBalancesBuilder =
+                    ImmutableMap.builder();
                 // Get account balances.
                 ImmutableMap<ByteArray, AccountData> accountData =
                     readAccountDataForTransfer(
