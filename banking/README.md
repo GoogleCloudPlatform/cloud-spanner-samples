@@ -16,7 +16,13 @@ The accompanying codelab for this sample is: [https://codelabs.developers.google
 
 3. Follow the [Java development environment setup instructions](https://cloud.google.com/java/docs/setup).
 
-4. Enable the required APIs (Spanner, Vertex AI, and BigQuery) for your project:
+4. Authenticate with the gcloud CLI:
+
+```bash
+gcloud auth application-default login
+```
+
+5. Enable the required APIs (Spanner, Vertex AI, and BigQuery) for your project:
 
 ```bash
 gcloud services enable spanner.googleapis.com
@@ -116,23 +122,6 @@ Examples:
 
 10. Run through the available commands, starting with `create` and `insert`, then try the advanced queries and other features
 
-The different `stepN` folders are related to the codelab for this sample.  They show the complete code after each logical step in the codelab.
-
-## Cleanup
-
-1. Delete the Spanner instance:
-
-```bash
-gcloud spanner instances delete cloudspanner-onlinebanking
-```
-
-2. Delete the BigQuery connection and dataset:
-
-```bash
-bq rm --connection --location=us-central1 spanner-connection
-bq rm -r MarketingCampaigns
-```
-
 ## Test
 
 ℹ️ Note that the tests require a Spanner instance to have already been created.  And the tests will create a new database with random characters to avoid deleting the database if already in use.
@@ -148,4 +137,19 @@ export SPANNER_TEST_DATABASE=onlinebanking
 
 ```bash
 mvn integration-test
+```
+
+## Cleanup
+
+1. Delete the Spanner instance:
+
+```bash
+gcloud spanner instances delete cloudspanner-onlinebanking
+```
+
+2. Delete the BigQuery connection and dataset:
+
+```bash
+bq rm --connection --location=us-central1 spanner-connection
+bq rm -r MarketingCampaigns
 ```
