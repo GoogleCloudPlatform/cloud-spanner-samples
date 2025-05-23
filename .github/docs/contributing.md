@@ -1,7 +1,8 @@
 # How to Contribute
 
-We'd love to accept your patches and contributions to existing samples in this project.
-New sample applications are reserved to Google employees only for the time being.
+We welcome updates and patches to existing sample applications from all contributors. 
+For net new sample applications, however, we're currently only accepting contributions 
+from Google employees to ensure alignment with the project.
 To submit a patch, there are just a few small guidelines you need to follow.
 
 ## Contributor License Agreement
