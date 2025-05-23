@@ -1,7 +1,8 @@
 # How to Contribute
 
-We'd love to accept your patches and contributions to this project. There are
-just a few small guidelines you need to follow.
+We'd love to accept your patches and contributions to existing samples in this project.
+New sample applications are reserved to Google employees only for the time being.
+To submit a patch, there are just a few small guidelines you need to follow.
 
 ## Contributor License Agreement
 

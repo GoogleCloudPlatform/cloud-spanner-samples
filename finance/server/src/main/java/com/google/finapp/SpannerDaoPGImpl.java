@@ -302,8 +302,7 @@ final class SpannerDaoPGImpl implements SpannerDaoInterface {
         throw Status.INVALID_ARGUMENT
             .withDescription(
                 String.format(
-                    "Non-active accounts are not eligible for transfers: %s",
-                    accountId.toString()))
+                    "Non-active accounts are not eligible for transfers: %s", accountId.toString()))
             .asException();
       }
     }
