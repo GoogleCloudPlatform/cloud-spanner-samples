@@ -13,6 +13,7 @@ See respective README files in sub-directories for details.
 ## Sample applications
 - [Banking](banking/README.md)
 - [Finance](finance/README.md)
+- [Chunking](chunking/README.md)
 
 ## Notebooks
 
