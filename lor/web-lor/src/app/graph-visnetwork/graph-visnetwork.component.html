@@ -1,0 +1,20 @@
+<div class="wrapper">
+    <div class="legend">
+        <table border-spacing="10px">
+            <tr><th>Color legend</th></tr>
+            <tr padding="10px"><td bgcolor="#87CEFA">Hobbits</td></tr>
+            <tr padding="10px"><td bgcolor="#00FF7F">Men</td></tr>
+            <tr padding="10px"><td bgcolor="#FFFF00">Elves</td></tr>
+            <tr padding="10px"><td bgcolor="#FF6347">Dwarfs</td></tr>
+            <tr padding="10px"><td bgcolor="#DAA520">Ainur</td></tr>
+            <tr padding="10px"><td bgcolor="#228B22">Ents</td></tr>
+            <tr padding="10px"><td bgcolor="#FFA07A">Animals</td></tr>
+            <tr padding="10px"><td bgcolor="#778899">Orcs</td></tr>
+        </table>
+        <br>
+        <div [hidden]="!isWaitingDrawing">
+            Rendering ...<mat-progress-spinner [value]="valueDraw"></mat-progress-spinner>
+        </div>
+    </div>
+    <div class="graph" id="lornetwork" #lornetwork></div>
+</div>

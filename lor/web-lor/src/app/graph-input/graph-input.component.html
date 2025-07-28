@@ -1,0 +1,54 @@
+<form [formGroup]="form">
+    <div class="input">
+        <table  style="width:100%;">
+            <tr>
+                <td width="150px">
+                    Kinds
+                    <mat-form-field>
+                        <mat-select class="multiselect-dropdown" placeholder="Kinds" formControlName="kinds_fc" [(ngModel)]="kindsSelected" multiple>
+                            <app-select-check-all [model]="$any(form).get('kinds_fc')"
+                                [values]="kindsListChk"></app-select-check-all>
+                            <mat-option *ngFor="let chkitem of kindsListChk" [value]="chkitem.id">{{ chkitem.label
+                                }}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </td>
+                <td width="150px">
+                    Characters
+                    <mat-form-field>
+                        <mat-select class="multiselect-dropdown"  placeholder="Characters" formControlName="characters_fc" [(ngModel)]="characterSelected"  multiple>
+                            <app-select-check-all [model]="$any(form).get('characters_fc')"
+                                [values]="charactersListChk"></app-select-check-all>
+                            <mat-option *ngFor="let chkitem of charactersListChk" [value]="chkitem.id">{{ chkitem.label
+                                }}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </td>
+                <td width="150px">
+                    Places
+                    <mat-form-field>
+                        <mat-select class="multiselect-dropdown"  placeholder="Places" formControlName="places_fc" [(ngModel)]="placesSelected"  multiple>
+                            <app-select-check-all [model]="$any(form).get('places_fc')"
+                                [values]="placesListChk"></app-select-check-all>
+                            <mat-option *ngFor="let chkitem of placesListChk" [value]="chkitem.id">{{ chkitem.label
+                                }}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </td>
+                <td width="350px">
+                    Relation strength
+                    <mat-slider min="1" max="533" step="1" showTickMarks discrete style="width: 300px;">
+                        <input matSliderStartThumb formControlName="minStrenght_fc" [(ngModel)]="minStrenght">
+                        <input matSliderEndThumb formControlName="maxStrenght_fc" [(ngModel)]="maxStrenght">
+                    </mat-slider>
+                </td>
+                <td>
+                    <button  mat-flat-button (click)="viewQuery()">View Query</button>
+                </td>
+                <td>
+                    <button mat-flat-button (click)="runQuery()">Run</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+</form>
