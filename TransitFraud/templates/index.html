@@ -1,4 +1,21 @@
+<!--
+ Copyright 2025 Google LLC
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
 {# This simple template derives from ``base.html``. See ``base.html`` for
+
    more information about template inheritance. #}
 {%- extends "base.html" %}
 
@@ -23,15 +40,11 @@
   {%- endif %}
   {%- endwith %}
     <div class="jumbotron">
-      <h1>Card Clone Checker</h1>
-        <form action = "/cloneview" method = "POST">
+      <h1>Card Trace</h1>
+        <form action = "/view" method = "POST">
           <div class="form-group">
-            <label for="cardid">Card ID</label>
+            <label for="cardid"></label>
             <input id="cardid" class="form-control" name="cardid">
-            <label for="stationid">Station ID</label>
-            <input id="stationid" class="form-control" name="stationid">
-            <label for="timestamp">Timestamp </label>
-            <input id="timestamp" class="form-control" name="timestamp">
           </div>
           <div class="form-group">
             <br><br>
@@ -39,9 +52,7 @@
           </div>
         </form>
       </p>
-      <p>We are checking to see if this card has been cloned.</p>
-      <p>This card swipe will be checked against all of the rides in the system and the distance between stations.  If it is not possible that the cardholder could have traveled this distance in the time, we will consider this card suspicious and possibly cloned</p>
-
+      <p>We will traverse the graph of cards, cardholders, and registered addresses to attemp to find fraudulent netwoks of cards</p>
     </div>
    </div>
 {%- endblock %}
