@@ -1,0 +1,56 @@
+{# This simple template derives from ``base.html``. See ``base.html`` for
+   more information about template inheritance. #}
+{%- extends "base.html" %}
+
+{# Loads some of the macros included with Flask-Bootstrap. We are using the
+   utils module here to automatically render Flask's flashed messages in a
+   bootstrap friendly manner #}
+{% import "bootstrap/utils.html" as utils %}
+
+
+{# Inside the ``content`` is where you should place most of your own stuff.
+   This will keep scripts at the page end and a navbar you add on later
+   intact. #}
+{% block content %}
+  <div class="container">
+  {%- with messages = get_flashed_messages(with_categories=True) %}
+  {%- if messages %}
+    <div class="row">
+      <div class="col-md-12">
+        {{utils.flashed_messages(messages)}}
+      </div>
+    </div>
+  {%- endif %}
+  {%- endwith %}
+    <div class="jumbotron">
+      {%- if row %}
+      <h2>
+      <table>
+      <tr><td>Card {{card_id}} checked in at</td></tr>
+      <tr><td>{{to_station}}</td><td>{{row[1]}}</td></tr>
+      <tr><td>{{from_station}}</td><td>{{row[3]}}</td></tr>
+      <tr><td> within</td><td> {{row[0]|int}} seconds</td></tr>
+      </table>
+      </h2>
+      <p style="color:red">This is shorter than the travel time between these stations</p>
+      <h4>Try tracing the card</h4>
+      <br><br>
+      <h4>Ride History(Last 25)</h4>
+      <div class="container">
+        <table class="table table-dark table-striped w-auto" >
+          <thead class="thead-dark">
+              <tr><th>RideID</th><th>Time</th><th>Station</th></tr>
+          </thead>
+          <tbody>
+            {% for row in history %}
+              <tr><td>{{row[0]}}</td><td>{{row[1]}}</td><td>{{row[2]}}</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {%- else %}
+      <h1>No Clone Suspected </h1>
+      {%- endif %}
+    </div>
+   </div>
+{%- endblock %}

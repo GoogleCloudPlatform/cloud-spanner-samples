@@ -1,0 +1,74 @@
+{# This simple template derives from ``base.html``. See ``base.html`` for
+   more information about template inheritance. #}
+{%- extends "base.html" %}
+
+{# Loads some of the macros included with Flask-Bootstrap. We are using the
+   utils module here to automatically render Flask's flashed messages in a
+   bootstrap friendly manner #}
+{% import "bootstrap/utils.html" as utils %}
+
+{% block head %}
+<script src="//unpkg.com/force-graph"></script>
+{%- endblock %}
+
+{# Inside the ``content`` is where you should place most of your own stuff.
+   This will keep scripts at the page end and a navbar you add on later
+   intact. #}
+{% block content %}
+  <div class="container">
+  {%- with messages = get_flashed_messages(with_categories=True) %}
+  {%- if messages %}
+    <div class="row">
+      <div class="col-md-12">
+        {{utils.flashed_messages(messages)}}
+      </div>
+    </div>
+  {%- endif %}
+  {%- endwith %}
+    <div class="jumbotron">
+      <h1>Card Trace </h1>
+      <h3>Card:  {{card_id}} </h3>
+    </div>
+   </div>
+   <div id = "graph">
+   <script>
+     fetch('/data/{{card_id}}').then(res => res.json()).then(data => {
+       const Graph = ForceGraph()
+        (document.getElementById('graph'))
+          .graphData(data)
+          .height(700)
+          .width(700)
+          .cooldownTicks(100)
+          .nodeId('id')
+          .nodeAutoColorBy('group')
+          .nodeCanvasObject((node, ctx, globalScale) => {
+            const label = node.name;
+            const fontSize = 14/globalScale;
+            ctx.font = `${fontSize}px Sans-Serif-Bold`;
+            const textWidth = ctx.measureText(label).width;
+            const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = node.color;
+            ctx.fillText(label, node.x, node.y);
+
+            node.__bckgDimensions = bckgDimensions; // to re-use in nodePointerAreaPaint
+          })
+          .nodePointerAreaPaint((node, color, ctx) => {
+            ctx.fillStyle = color;
+            const bckgDimensions = node.__bckgDimensions;
+            bckgDimensions && ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
+          });
+       Graph.d3Force('charge').strength(-200);
+       Graph.d3Force('center', null);
+       Graph.onEngineStop(() => Graph.zoomToFit(.8));
+      });
+   </script>
+   </div>
+   </div>
+   </div>
+{%- endblock %}

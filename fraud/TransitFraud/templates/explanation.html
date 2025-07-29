@@ -1,0 +1,37 @@
+{# This simple template derives from ``base.html``. See ``base.html`` for
+   more information about template inheritance. #}
+{%- extends "base.html" %}
+
+{# Loads some of the macros included with Flask-Bootstrap. We are using the
+   utils module here to automatically render Flask's flashed messages in a
+   bootstrap friendly manner #}
+{% import "bootstrap/utils.html" as utils %}
+
+
+{# Inside the ``content`` is where you should place most of your own stuff.
+   This will keep scripts at the page end and a navbar you add on later
+   intact. #}
+{% block content %}
+  <div class="container">
+  {%- with messages = get_flashed_messages(with_categories=True) %}
+  {%- if messages %}
+    <div class="row">
+      <div class="col-md-12">
+        {{utils.flashed_messages(messages)}}
+      </div>
+    </div>
+  {%- endif %}
+  {%- endwith %}
+    <div class="jumbotron">
+      <h2>Explanation</h2>
+      <p></p>
+      <p>This is an explanation of how the system works</p>
+      <p>We have created a Spanner Graph Database to store the stations in the London Underground and pre-calculated all of the transit times between the stations.</p>
+      <p>In addtion we have Oyster transit cards, mapped to riders and the physical addresses that they are mapped to.</p>
+      <p>In our Tube system riders to not need to swipe out, but they need to swipe in.</p>
+      <p>We collect every swipe and store it in the database.  We then check to see if the card has been cloned, by determining the shortest travel times between stations and flag a card if it gets somewhere faster than is possible</p>
+
+      <p><center><img src="/docs/graph.png" alt="GraphDiagram"></center></p>
+    </div>
+   </div>
+{%- endblock %}

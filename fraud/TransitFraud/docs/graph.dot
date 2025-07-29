@@ -1,0 +1,18 @@
+digraph diag {
+  node [shape=Mrecord, color=Blue, fillcolor=Blue, style=filled, fontcolor=white];
+  edge [fontcolor=darkgreen, color=darkgreen,fontsize=8];
+  bgcolor=transparent;
+  nodesep=0.2;
+
+  Person [label="Person"];
+  Address [label="Address"];
+  Oyster [label="Oyster"];
+  Station [label="Station"];
+  Ride [label="Ride"];
+
+  Person -> Oyster [label=HAS_OYSTER];
+  Address -> Person [label=HAS_INHABITANT];
+  Station -> Station [label=ROUTE];
+  Ride -> Oyster;
+  Ride -> Station;
+}
