@@ -1,0 +1,19 @@
+.input {
+    background-color: lightgray;
+    margin: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: left;
+    font-family: Verdana, sans-serif;
+    padding: 5px;
+}
+
+.multiselect-dropdown {
+    padding :0px 2px !important;
+}
+
+.example-button-row {
+    display: table-cell;
+    max-width: 600px;
+  }

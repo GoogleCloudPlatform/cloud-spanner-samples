@@ -1,0 +1,21 @@
+.graph {
+    background-color: white;
+    margin:10px;
+    height: 70vh;
+} 
+
+.wrapper {
+    display: grid;
+    grid-template-columns: 130px 1fr ;
+}
+
+.legend {
+    margin: 10px;
+    background-color: lightgray;
+    padding: 5px;
+}
+
+
+td {
+    padding: 10px;
+}

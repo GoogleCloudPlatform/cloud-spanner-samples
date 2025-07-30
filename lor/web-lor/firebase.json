@@ -1,0 +1,24 @@
+{
+  "hosting": {
+    "public": "dist/web-lor/browser",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/api/*",
+        "run": {
+          "serviceId": "spanner-lor",  
+          "region": "europe-southwest1",    
+          "pinTag": true  
+        }            
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

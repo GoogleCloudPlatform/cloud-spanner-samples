@@ -1,0 +1,17 @@
+<mat-toolbar>
+  <div class = "md-toolbar-tools">
+    <table>
+      <tr width="100%">
+        <td><img src="one-ring.png" height="60px"></td>
+        <td>Lord of the Rings Spanner Graph demo</td>
+        <td><img src="spanner-logo.png" height="60px"></td>
+      </tr>
+    </table>
+  </div>
+</mat-toolbar>
+<div>
+  <app-graph-input (queryLaunch)="runquery($event)" #gInput></app-graph-input>
+</div>
+<div>
+  <app-graph-visnetwork #gDraw></app-graph-visnetwork>
+</div> 
