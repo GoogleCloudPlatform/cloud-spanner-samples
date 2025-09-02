@@ -1,0 +1,8 @@
+{
+    "/api/*": {
+        "target": "https://spanner-lor-40332330336.europe-southwest1.run.app",
+        "secure": true,
+        "logLevel": "debug",
+        "changeOrigin": true
+    }
+}
