@@ -7,6 +7,7 @@ This notebook demonstrates how to leverage Spanner Graph to model, visualize, an
 * Define a graph on top of this data
 * Run a series of queries to uncover insights about the network's topology and health.
 
+The graph schema is shown below.
 
 ![Network Digital Twin - Spanner Graph Schema](./ndtwin-schema.png)
 
