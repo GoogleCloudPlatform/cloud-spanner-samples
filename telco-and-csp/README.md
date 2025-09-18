@@ -3,6 +3,7 @@
 A Network Digital Twin is the heart of the [Autonomous Network Operations framework](https://cloud.google.com/blog/topics/telecommunications/the-autonomous-network-operations-framework-for-csps?e=48754805). It is not merely a static inventory or topology map, but a dynamic, multi-layer, real-time representation of the network.
 
 This notebook demonstrates how to leverage Spanner Graph to model, visualize, and query a complex telecommunications network. We will:
+
 * Load realistic network data (Sample data has been synthetically generated using Gemini 2.5.) into Spanner tables.
 * Define a graph on top of this data
 * Run a series of queries to uncover insights about the network's topology and health.
