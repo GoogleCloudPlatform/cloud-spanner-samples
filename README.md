@@ -15,6 +15,7 @@ See respective README files in sub-directories for details.
 - [Finance](finance/README.md)
 - [Chunking](chunking/README.md)
 - [Transit Fraud Detector](TransitFraud/README.md)
+- [Network Digital Twin](telco-and-csp/README.md)
 
 ## Notebooks
 
