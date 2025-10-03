@@ -1,0 +1,100 @@
+{
+  "tables": [
+    {
+      "name": "CHANGEREQUEST",
+      "dataFiles": [
+        "CHANGEREQUEST-000000000000.avro"
+      ]
+    },
+    {
+      "name": "ENTITY",
+      "dataFiles": [
+        "ENTITY-000000000000.avro"
+      ]
+    },
+    {
+      "name": "EntityHasChangeRequest",
+      "dataFiles": [
+        "EntityHasChangeRequest-000000000000.avro"
+      ]
+    },
+    {
+      "name": "EntityHasFault",
+      "dataFiles": [
+        "EntityHasFault-000000000000.avro"
+      ]
+    },
+    {
+      "name": "EntityHasInsight",
+      "dataFiles": [
+        "EntityHasInsight-000000000000.avro"
+      ]
+    },
+    {
+      "name": "EntityHasNotification",
+      "dataFiles": [
+        "EntityHasNotification-000000000000.avro"
+      ]
+    },
+    {
+      "name": "EntityHasPerformance",
+      "dataFiles": [
+        "EntityHasPerformance-000000000000.avro"
+      ]
+    },
+    {
+      "name": "EntityHasTicket",
+      "dataFiles": [
+        "EntityHasTicket-000000000000.avro"
+      ]
+    },
+    {
+      "name": "EntityToEdgePerformance",
+      "dataFiles": [
+        "EntityToEdgePerformance-000000000000.avro"
+      ]
+    },
+    {
+      "name": "EntityToEntity",
+      "dataFiles": [
+        "EntityToEntity-000000000000.avro"
+      ]
+    },
+    {
+      "name": "EntityToNeighbor",
+      "dataFiles": [
+        "EntityToNeighbor-000000000000.avro"
+      ]
+    },
+    {
+      "name": "FAULTS",
+      "dataFiles": [
+        "FAULTS-000000000000.avro"
+      ]
+    },
+    {
+      "name": "INSIGHT",
+      "dataFiles": [
+        "INSIGHT-000000000000.avro"
+      ]
+    },
+    {
+      "name": "NOTIFICATION",
+      "dataFiles": [
+        "NOTIFICATION-000000000000.avro"
+      ]
+    },
+    {
+      "name": "PERFORMANCE",
+      "dataFiles": [
+        "PERFORMANCE-000000000000.avro"
+      ]
+    },
+    {
+      "name": "TICKETS",
+      "dataFiles": [
+        "TICKETS-000000000000.avro"
+      ]
+    }
+  ]
+}
