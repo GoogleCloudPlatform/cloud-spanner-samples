@@ -1,0 +1,10 @@
+langchain
+langchain-google-spanner
+requests
+beautifulsoup4
+google-cloud-spanner
+langchain-experimental
+langchain-google-vertexai
+email-validator
+youtube-transcript-api
+python-dotenv

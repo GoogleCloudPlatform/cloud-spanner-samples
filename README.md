@@ -11,13 +11,21 @@ programming language, refer to the following repositories:
 See respective README files in sub-directories for details.
 
 ## Sample applications
-- [Banking](banking/README.md)
-- [Finance](finance/README.md)
-- [Chunking](chunking/README.md)
-- [Transit Fraud Detector](TransitFraud/README.md)
-- [Network Digital Twin](telco-and-csp/README.md)
+- [ADK on knowledge graph](adk-knowledge-graph): Create a knowledge graph from documentation and YouTube videos. Use agents to create comic strips with Nano Banana to answer questions using the knowledge graph.
+- [Banking](banking/README.md): Java-based application featuring AI integration, full-text search and BigQuery federation.
+- [Chunking](chunking/README.md): Document chunking for RAG.
+- [Finance](finance/README.md): gRPC server and workload generator to demonstrate key Spanner capabilities.
+- [LoR](lor/README.md): Using Dataflow, Cloud Run and Spanner to explore Lord of the Rings characters.
+- [Network Digital Twin](telco-and-csp/README.md): Advanced usage of graph to Spanner Graph to model, visualize, and query a complex telecommunications network.
+- [Transit Fraud Detector](TransitFraud/README.md): Advanced usage of graph capabilities to detect fraud.
+
 
 ## Notebooks
+Some of these notebooks are hosted in external Google Cloud repositories.
+
+- [Graph QA Chain](https://github.com/googleapis/langchain-google-spanner-python/blob/main/docs/graph_qa_chain.ipynb): Sample notebook using LangChain to query a graph through natural language.
+- [Using Graph RAG with Spanner Graph](https://github.com/googleapis/langchain-google-spanner-python/blob/main/docs/graph_rag.ipynb)
+
 
 ## Code of Conduct
 Please review the [Code of Conduct](docs/code-of-conduct.md).
