@@ -1,0 +1,14 @@
+langchain
+langchain-google-spanner
+requests
+google-cloud-spanner
+langchain-experimental
+langchain-google-vertexai
+google-cloud-aiplatform
+google-api-python-client
+google-cloud-storage
+google-cloud-bigquery
+pillow
+google-generativeai
+python-dotenv
+google-adk
