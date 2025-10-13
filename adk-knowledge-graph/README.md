@@ -8,6 +8,6 @@ These two applications demonstrate the use of the [ADK](https://cloud.google.com
 ## Setup
 
 1. [Load the Knowledge Graph](knowledge-graph-loader/README.md):Use the data loader to create a knowledge graph with embeddings.
-2. [Create an agentic application](adk-comic-generator/README.md): Use the Agent Development Kit to coordinate agents that tap into your Spanner knowledge graph and use Nano Banana image generation to create comic strips.
+2. [Create an agentic application](adk-knowledge-graph/adk-comic-generator/spanner-comics/README.md): Use the Agent Development Kit to coordinate agents that tap into your Spanner knowledge graph and use Nano Banana image generation to create comic strips.
 
 See the README files for each application for further instructions.
