@@ -8,3 +8,6 @@ steps:
         echo "Successfully connected to Cloud Build!"
         gcloud spanner instances list
 # Add cloudbuild.yaml
+# ADD THIS SECTION:
+options:
+  logging: CLOUD_LOGGING_ONLY
