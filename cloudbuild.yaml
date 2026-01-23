@@ -7,4 +7,4 @@ steps:
       - |
         echo "Successfully connected to Cloud Build!"
         gcloud spanner instances list
-Add cloudbuild.yaml
+# Add cloudbuild.yaml
