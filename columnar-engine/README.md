@@ -15,10 +15,11 @@ You can directly upload the CSV file to your Spanner instance through the **Impo
 1.   Extract and upload the CSV file into a GCS bucket 
 2.   Upload the schema into the GCS bucket
 3.   Follow the instructions from the **Import my own data** wizard
+4.   After the data loading is finished, [trigger a major compaction](https://docs.cloud.google.com/spanner/docs/manual-data-compaction#trigger-compaction) to make sure the data is fully converted to columnar format. Wait for the major compaction to finish. 
 
 ![Import my own data](import_data.png)
 
 
-4.   Copy and paste the queries into Spanner Studio
+5.   Copy and paste the queries into Spanner Studio
 
 
