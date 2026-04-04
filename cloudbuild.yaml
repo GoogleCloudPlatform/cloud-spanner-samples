@@ -1,0 +1,13 @@
+steps:
+  # This step tells GCP to list your Spanner instances to prove it's connected
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Successfully connected to Cloud Build!"
+        gcloud spanner instances list
+# Add cloudbuild.yaml
+# ADD THIS SECTION:
+options:
+  logging: CLOUD_LOGGING_ONLY
