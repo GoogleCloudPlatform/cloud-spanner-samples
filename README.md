@@ -15,6 +15,7 @@ See respective README files in sub-directories for details.
 - [Banking](banking/README.md): Java-based application featuring AI integration, full-text search and BigQuery federation.
 - [Chunking](chunking/README.md): Document chunking for RAG.
 - [Finance](finance/README.md): gRPC server and workload generator to demonstrate key Spanner capabilities.
+- [Identity and Access Management Graph](iam-access-graph/README.md): Real-time access graph from policy bindings. 
 - [LoR](lor/README.md): Using Dataflow, Cloud Run and Spanner to explore Lord of the Rings characters.
 - [Network Digital Twin](telco-and-csp/README.md): Advanced usage of graph to Spanner Graph to model, visualize, and query a complex telecommunications network.
 - [Transit Fraud Detector](TransitFraud/README.md): Advanced usage of graph capabilities to detect fraud.
