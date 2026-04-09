@@ -47,7 +47,9 @@ CREATE TABLE IF NOT EXISTS ChatLogs (
     SenderId STRING NOT NULL,
     ReceiverId STRING NOT NULL,
     Message STRING NOT NULL,
-    Timestamp TIMESTAMP NOT NULL
+    Timestamp TIMESTAMP NOT NULL,
+    MessageEmbedding STRUCT<result ARRAY<FLOAT64>,
+    status STRING>
 )
 PARTITION BY DATE(Timestamp);
 
