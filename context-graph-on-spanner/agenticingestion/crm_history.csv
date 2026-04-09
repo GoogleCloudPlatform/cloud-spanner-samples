@@ -1,7 +1,0 @@
-account_id,tier,industry,event_date,ae_notes,contract_status,revenue_impact
-CUST-101,Gold,Manufacturing,2025-01-15,"Client complained about the new UI. I offered a 50% discount for the next 6 months to match the competitor's price and keep them from canceling. Followed standard retention policy.",Churned,-12000.00
-CUST-202,Gold,Healthcare,2025-03-22,"Usage metrics are down 30%. Instead of a price cut, I hosted a 'Clinical Efficiency Workshop' to show the team how to use the automated reporting feature. They were very impressed.",Renewed,15000.00
-CUST-303,Silver,Logistics,2025-06-10,"The procurement lead mentioned budget cuts. I provided a 'Value Realization Audit' showing they saved $20k in shipping costs last year. No discount was needed after they saw the data.",Renewed,8000.00
-CUST-101,Gold,Manufacturing,2025-08-05,"Secondary attempt to save the account after the initial discount period ended. Customer still feels the platform is too complex. Offered more training but they decided to move to a simpler tool.",Churned,-12000.00
-CUST-404,Bronze,Retail,2025-11-12,"Customer requested a feature that is only in the Gold tier. I gave them a 30-day trial of the Gold features to prove the ROI before the renewal date.",Renewed,4500.00
-CUST-105,Gold,Manufacturing,2025-05-10,Conducted a Strategic Advisory Workshop to solve platform complexity friction. Successfully pivoted from a price-based retention request to a value-based automation roadmap. Renewal secured.,Renewed,25000.0
