@@ -1,7 +1,22 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import csv
 import json
 import asyncio
 import os
+
 import vertexai
 from vertexai.generative_models import GenerativeModel
 from google.cloud import spanner
@@ -11,24 +26,37 @@ from google.adk.tools import FunctionTool
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
 from datetime import datetime
+from dotenv import load_dotenv
+
 
 # --- INITIALIZATION ---
-PROJECT_ID = "xxxx"
-INSTANCE_ID = "graphxx"
-DATABASE_ID = "marketinggraph"
-APP_NAME = "ContextBuilder"
-USER_ID = "user_123"
-SESSION_ID = "session_456"
+load_dotenv()
 
-os.environ["GOOGLE_CLOUD_SPANNER_ENABLE_METRICS"] = "false"
-os.environ["OTEL_SDK_DISABLED"] = "true"
+PROJECT_ID = os.getenv("PROJECT_ID")
+INSTANCE_ID = os.getenv("INSTANCE_ID")
+DATABASE_ID = os.getenv("DATABASE_ID")
+LOCATION = os.getenv("LOCATION", "us-central1")
 
+GOOGLE_CLOUD_SPANNER_ENABLE_METRICS=os.getenv("GOOGLE_CLOUD_SPANNER_ENABLE_METRICS")
+OTEL_SDK_DISABLED=os.getenv("OTEL_SDK_DISABLED")
+GOOGLE_GENAI_USE_VERTEXAI=os.getenv("GOOGLE_GENAI_USE_VERTEXAI")
+
+APP_NAME = os.getenv("APP_NAME")
+USER_ID = os.getenv("USER_ID")
+SESSION_ID = os.getenv("SESSION_ID")
 
 os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
-os.environ["GOOGLE_CLOUD_LOCATION"] = "us-central1"
-os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "True"
+os.environ["GOOGLE_CLOUD_LOCATION"] = LOCATION
 
-vertexai.init(project=PROJECT_ID, location="us-central1")
+os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = GOOGLE_GENAI_USE_VERTEXAI
+os.environ["GOOGLE_CLOUD_SPANNER_ENABLE_METRICS"] = GOOGLE_CLOUD_SPANNER_ENABLE_METRICS
+os.environ["OTEL_SDK_DISABLED"] = OTEL_SDK_DISABLED
+
+APP_NAME = APP_NAME
+USER_ID = USER_ID
+SESSION_ID = SESSION_ID
+
+vertexai.init(project=PROJECT_ID, location=LOCATION)
 model = GenerativeModel("gemini-2.5-flash") # Global model for tools
 
 spanner_client = spanner.Client()
