@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-=======
->>>>>>> upstream/main
 import asyncio
 import uuid
 import warnings
@@ -26,7 +23,6 @@ from google.adk.sessions import InMemorySessionService
 from google.adk.tools import FunctionTool
 from google.genai import types
 from google.cloud import spanner
-<<<<<<< HEAD
 from dotenv import load_dotenv
 
 # --- INITIALIZATION ---
@@ -53,21 +49,6 @@ os.environ["GOOGLE_CLOUD_SPANNER_ENABLE_METRICS"] = GOOGLE_CLOUD_SPANNER_ENABLE_
 os.environ["OTEL_SDK_DISABLED"] = OTEL_SDK_DISABLED
 
 warnings.filterwarnings("ignore", category=UserWarning)
-=======
-
-# --- 1. Environment & Telemetry ---
-warnings.filterwarnings("ignore", category=UserWarning)
-os.environ["GOOGLE_CLOUD_SPANNER_ENABLE_METRICS"] = "false"
-os.environ["OTEL_SDK_DISABLED"] = "true"
-
-PROJECT_ID = "xxx" #update project_id
-INSTANCE_ID = "graphxx"
-DATABASE_ID = "marketinggraph" # Matches your ingestion DB
-
-os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
-os.environ["GOOGLE_CLOUD_LOCATION"] = "us-central1"
-os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "True"
->>>>>>> upstream/main
 
 spanner_client = spanner.Client(project=PROJECT_ID)
 instance = spanner_client.instance(INSTANCE_ID)
@@ -91,11 +72,7 @@ def get_customer_info(customer_id: str):
                                        param_types={'cid': spanner.param_types.STRING})
         rows = list(results)
         if rows:
-<<<<<<< HEAD
             return {"industry": rows[0][0], "tier": rows[0][1], "current_signal": rows[0][2]}
-=======
-            return {"industry": rows[0][0], "tier": rows[0][1]}
->>>>>>> upstream/main
         return "Customer not found."
 
 
@@ -174,11 +151,7 @@ async def main():
     prompt = "Generate a growth report for CUST-101. Should we offer a discount to stop their usage drop?"
     content = types.Content(role='user', parts=[types.Part(text=prompt)])
 
-<<<<<<< HEAD
     async for event in runner.run_async(new_message=content, user_id=USER_ID, session_id=SESSION_ID):
-=======
-    async for event in runner.run_async(new_message=content, user_id="user_123", session_id="session_final"):
->>>>>>> upstream/main
         # 1. Capture and print the final text response
         if event.is_final_response():
             final_text = event.content.parts[0].text
