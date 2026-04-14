@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Copyright 2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+=======
+>>>>>>> upstream/main
 import csv
 import json
 import time
@@ -26,6 +29,7 @@ from google.adk.tools import FunctionTool
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
 from datetime import datetime
+<<<<<<< HEAD
 from dotenv import load_dotenv
 
 # --- INITIALIZATION ---
@@ -52,6 +56,26 @@ os.environ["GOOGLE_CLOUD_SPANNER_ENABLE_METRICS"] = GOOGLE_CLOUD_SPANNER_ENABLE_
 os.environ["OTEL_SDK_DISABLED"] = OTEL_SDK_DISABLED
 
 vertexai.init(project=PROJECT_ID, location=LOCATION)
+=======
+
+# --- INITIALIZATION ---
+PROJECT_ID = "xxxx"
+INSTANCE_ID = "graph"
+DATABASE_ID = "benchmarkgraphdb"
+APP_NAME = "ContextBuilder"
+USER_ID = "user_123"
+SESSION_ID = "session_456"
+
+os.environ["GOOGLE_CLOUD_SPANNER_ENABLE_METRICS"] = "false"
+os.environ["OTEL_SDK_DISABLED"] = "true"
+
+
+os.environ["GOOGLE_CLOUD_PROJECT"] = PROJECT_ID
+os.environ["GOOGLE_CLOUD_LOCATION"] = "us-central1"
+os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "True"
+
+vertexai.init(project=PROJECT_ID, location="us-central1")
+>>>>>>> upstream/main
 model = GenerativeModel("gemini-2.5-flash") # Global model for tools
 
 spanner_client = spanner.Client()
