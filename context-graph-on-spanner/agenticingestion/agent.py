@@ -16,7 +16,6 @@ import csv
 import json
 import asyncio
 import os
-
 import vertexai
 from vertexai.generative_models import GenerativeModel
 from google.cloud import spanner
