@@ -47,17 +47,20 @@ CREATE TABLE IF NOT EXISTS ChatLogs (
     SenderId STRING NOT NULL,
     ReceiverId STRING NOT NULL,
     Message STRING NOT NULL,
-    Timestamp TIMESTAMP NOT NULL
+    Timestamp TIMESTAMP NOT NULL,
+    MessageEmbedding STRUCT<result ARRAY<FLOAT64>,
+    status STRING>
 )
 PARTITION BY DATE(Timestamp);
 
-CREATE OR REPLACE PROPERTY GRAPH CatChatNetwork
-  NODE TABLES (
-    Players KEY (PlayerId)
-  )
-  EDGE TABLES (
-    ChatLogs KEY (MessageId)
-      SOURCE KEY (SenderId) REFERENCES Players (PlayerId)
-      DESTINATION KEY (ReceiverId) REFERENCES Players (PlayerId)
-      LABEL Communicates
-  );
+  CREATE OR REPLACE PROPERTY GRAPH game_analytics.CatChatNetwork 
+      NODE TABLES(Players KEY(PlayerId)) 
+      EDGE TABLES( ChatLogs KEY(MessageId) SOURCE KEY(SenderId)
+      REFERENCES
+        Players(PlayerId) DESTINATION KEY(ReceiverId)
+      REFERENCES
+        Players(PlayerId) 
+      LABEL Communicates 
+      PROPERTIES( Message,
+          Timestamp,
+          MessageEmbedding));
