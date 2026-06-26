@@ -1,0 +1,225 @@
+{
+  "node_sets": {
+    "event": {
+      "features": {
+        "event_id": {
+          "format": "BYTES",
+          "semantic": "PRIMARY_ID",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "incident_type": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "change_request_id": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "root_cause": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "t_start": {
+          "format": "INTEGER_64",
+          "semantic": "TIMESTAMP",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "t_end": {
+          "format": "INTEGER_64",
+          "semantic": "TIMESTAMP",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "ttr_minutes": {
+          "format": "INTEGER_64",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        }
+      }
+    },
+    "anomaly": {
+      "features": {
+        "anomaly_id": {
+          "format": "BYTES",
+          "semantic": "PRIMARY_ID",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "anomaly_type": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "anomaly_label": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "criticality": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "impact_score": {
+          "format": "FLOAT_64",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "composite_anomaly_score": {
+          "format": "FLOAT_64",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        }
+      }
+    },
+    "entity": {
+      "features": {
+        "eid": {
+          "format": "BYTES",
+          "semantic": "PRIMARY_ID",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "entity_type": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "network_domain": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "network_segment": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "criticality_tier": {
+          "format": "INTEGER_64",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        }
+      }
+    }
+  },
+  "edge_sets": {
+    "event_triggers_anomaly": {
+      "source": "event",
+      "target": "anomaly",
+      "features": {
+        "event_id": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "anomaly_id": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        }
+      }
+    },
+    "anomaly_affects_entity": {
+      "source": "anomaly",
+      "target": "entity",
+      "features": {
+        "anomaly_id": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "eid": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        }
+      }
+    },
+    "tmf_edge_entity_to_entity": {
+      "source": "entity",
+      "target": "entity",
+      "features": {
+        "eid": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "network_domain": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "to_eid": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "direction": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        },
+        "edge_type": {
+          "format": "BYTES",
+          "semantic": "UNKNOWN",
+          "shape": null,
+          "num_categorical_values": null,
+          "is_utf8_string": false
+        }
+      }
+    }
+  }
+}
