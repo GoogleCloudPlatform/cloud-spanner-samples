@@ -2,6 +2,23 @@ import uuid
 import os
 from google.cloud import spanner
 
+# [START spanner_query_with_secure_parameters]
+def query_with_user_id(database, user_id: str):
+    """Queries a parameterized view using secure context parameters."""
+    with database.snapshot() as snapshot:
+        results = snapshot.execute_sql(
+            "SELECT * FROM MyUserData",
+            request_options={
+                "client_context": {
+                    "secure_context": {"user_id": user_id}
+                }
+            },
+        )
+        for row in results:
+            print(f"UserID: {row[0]}, UserName: {row[1]}, SecretData: {row[2]}")
+# [END spanner_query_with_secure_parameters]
+
+
 def main():
     project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
     instance_id = os.environ.get("SPANNER_INSTANCE_ID")
@@ -37,17 +54,7 @@ def main():
 
         for user_id in ["1", "2"]:
             print(f"\nQuerying as user {user_id}...")
-            with database.snapshot() as snapshot:
-                results = snapshot.execute_sql(
-                    "SELECT * FROM MyUserData",
-                    request_options={
-                        "client_context": {
-                            "secure_context": {"user_id": user_id}
-                        }
-                    }
-                )
-                for row in results:
-                    print(f"UserID: {row[0]}, UserName: {row[1]}, SecretData: {row[2]}")
+            query_with_user_id(database, user_id)
 
     except Exception as e:
         print(f"Error during execution: {e}")

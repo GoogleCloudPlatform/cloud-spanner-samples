@@ -78,6 +78,7 @@ namespace PsvExample
             }
         }
 
+        // [START spanner_query_with_secure_parameters]
         static async Task QueryWithUserId(SpannerConnection connection, string userId)
         {
             string query = "SELECT * FROM myuserdata";
@@ -100,5 +101,6 @@ namespace PsvExample
                 }
             }
         }
+        // [END spanner_query_with_secure_parameters]
     }
 }
