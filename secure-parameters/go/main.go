@@ -97,32 +97,41 @@ func main() {
 
 	for _, userID := range []string{"1", "2"} {
 		fmt.Printf("\nQuerying view as user %s...\n", userID)
-		stmt := spanner.Statement{SQL: "SELECT * FROM myuserdata"}
-		iter := client.Single().QueryWithOptions(ctx, stmt, spanner.QueryOptions{
-			ClientContext: &spannerpb.RequestOptions_ClientContext{
-				SecureContext: map[string]*structpb.Value{"user_id": structpb.NewStringValue(userID)},
-			},
-		})
-
-		rowCount := 0
-		err := iter.Do(func(r *spanner.Row) error {
-			var id int64
-			var name, secret string
-			if err := r.Columns(&id, &name, &secret); err != nil {
-				return err
-			}
-			if fmt.Sprintf("%d", id) != userID {
-				return fmt.Errorf("Unexpected UserID %d for user %s", id, userID)
-			}
-			fmt.Printf("UserID: %d, UserName: %s, SecretData: %s\n", id, name, secret)
-			rowCount++
-			return nil
-		})
-		if err != nil {
+		if err := queryWithUserID(ctx, client, userID); err != nil {
 			log.Fatal(err)
-		}
-		if rowCount != 1 {
-			log.Fatalf("Expected 1 row, got %d", rowCount)
 		}
 	}
 }
+
+// [START spanner_query_with_secure_parameters]
+func queryWithUserID(ctx context.Context, client *spanner.Client, userID string) error {
+	stmt := spanner.Statement{SQL: "SELECT * FROM myuserdata"}
+	iter := client.Single().QueryWithOptions(ctx, stmt, spanner.QueryOptions{
+		ClientContext: &spannerpb.RequestOptions_ClientContext{
+			SecureContext: map[string]*structpb.Value{"user_id": structpb.NewStringValue(userID)},
+		},
+	})
+
+	rowCount := 0
+	err := iter.Do(func(r *spanner.Row) error {
+		var id int64
+		var name, secret string
+		if err := r.Columns(&id, &name, &secret); err != nil {
+			return err
+		}
+		if fmt.Sprintf("%d", id) != userID {
+			return fmt.Errorf("unexpected UserID %d for user %s", id, userID)
+		}
+		fmt.Printf("UserID: %d, UserName: %s, SecretData: %s\n", id, name, secret)
+		rowCount++
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	if rowCount != 1 {
+		return fmt.Errorf("expected 1 row, got %d", rowCount)
+	}
+	return nil
+}
+// [END spanner_query_with_secure_parameters]

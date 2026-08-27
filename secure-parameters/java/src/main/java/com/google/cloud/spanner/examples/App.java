@@ -52,20 +52,7 @@ public class App {
 
       for (String userId : new String[]{"1", "2"}) {
         System.out.println("\nQuerying as user " + userId + "...");
-        RequestOptions.ClientContext clientContext = RequestOptions.ClientContext.newBuilder()
-            .putSecureContext("user_id", Value.newBuilder().setStringValue(userId).build())
-            .build();
-            
-        try (ResultSet resultSet = dbClient.singleUse().executeQuery(Statement.of("SELECT * FROM MyUserData"), Options.clientContext(clientContext))) {
-          int rowCount = 0;
-          while (resultSet.next()) {
-            long id = resultSet.getLong("UserID");
-            if (!String.valueOf(id).equals(userId)) throw new RuntimeException("Unexpected UserID " + id + " for user " + userId);
-            System.out.printf("UserID: %d, UserName: %s, SecretData: %s%n", id, resultSet.getString("UserName"), resultSet.getString("SecretData"));
-            rowCount++;
-          }
-          if (rowCount != 1) throw new RuntimeException("Expected 1 row, got " + rowCount);
-        }
+        queryWithUserId(dbClient, userId);
       }
     } finally {
       try {
@@ -78,4 +65,34 @@ public class App {
       spanner.close();
     }
   }
+
+  // [START spanner_query_with_secure_parameters]
+  static void queryWithUserId(DatabaseClient dbClient, String userId) {
+    RequestOptions.ClientContext clientContext =
+        RequestOptions.ClientContext.newBuilder()
+            .putSecureContext("user_id", Value.newBuilder().setStringValue(userId).build())
+            .build();
+
+    try (ResultSet resultSet =
+        dbClient
+            .singleUse()
+            .executeQuery(
+                Statement.of("SELECT * FROM MyUserData"), Options.clientContext(clientContext))) {
+      int rowCount = 0;
+      while (resultSet.next()) {
+        long id = resultSet.getLong("UserID");
+        if (!String.valueOf(id).equals(userId)) {
+          throw new RuntimeException("Unexpected UserID " + id + " for user " + userId);
+        }
+        System.out.printf(
+            "UserID: %d, UserName: %s, SecretData: %s%n",
+            id, resultSet.getString("UserName"), resultSet.getString("SecretData"));
+        rowCount++;
+      }
+      if (rowCount != 1) {
+        throw new RuntimeException("Expected 1 row, got " + rowCount);
+      }
+    }
+  }
+  // [END spanner_query_with_secure_parameters]
 }
