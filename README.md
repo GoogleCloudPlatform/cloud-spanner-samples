@@ -19,7 +19,7 @@ See respective README files in sub-directories for details.
 - [LoR](lor/README.md): Using Dataflow, Cloud Run and Spanner to explore Lord of the Rings characters.
 - [Network Digital Twin](telco-and-csp/README.md): Advanced usage of graph to Spanner Graph to model, visualize, and query a complex telecommunications network.
 - [Transit Fraud Detector](TransitFraud/README.md): Advanced usage of graph capabilities to detect fraud.
-
+- [Orders Streaming Analytics](orders-streaming-analytics/README.md): Dual-path streaming with Spanner: Precomputed Lakehouse aggregates and Ad-Hoc analytics via Data Boost.
 
 ## Notebooks
 Some of these notebooks are hosted in external Google Cloud repositories.
