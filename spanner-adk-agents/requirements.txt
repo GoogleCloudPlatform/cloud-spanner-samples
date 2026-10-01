@@ -1,0 +1,4 @@
+google-cloud-spanner>=3.64.0
+google-adk[spanner]
+google-genai
+google-auth
