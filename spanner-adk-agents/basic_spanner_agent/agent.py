@@ -23,9 +23,6 @@ from google.adk.tools.spanner.settings import SpannerToolSettings, Capabilities
 from google.adk.tools.spanner.spanner_credentials import SpannerCredentialsConfig
 from google.adk.tools.spanner.spanner_toolset import SpannerToolset
 
-import os
-import sys
-
 # --- Environment Variable Validation ---
 REQUIRED_ENV_VARS = [
     "GOOGLE_CLOUD_PROJECT",
@@ -42,8 +39,8 @@ if missing_vars:
     sys.exit(1)
 
 PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT")
-INSTANCE_ID = os.environ.get("SPANNER_INSTANCE_ID", "healthcare")
-DATABASE_ID = os.environ.get("SPANNER_DATABASE_ID", "medical-db")
+INSTANCE_ID = os.environ.get("SPANNER_INSTANCE_ID")
+DATABASE_ID = os.environ.get("SPANNER_DATABASE_ID")
 
 # --- Cloud Shell Workaround ---
 # If you are running this in Cloud Shell, you need to apply a small patch to prevent

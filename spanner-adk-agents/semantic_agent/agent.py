@@ -42,8 +42,8 @@ if missing_vars:
     sys.exit(1)
 
 PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT")
-INSTANCE_ID = os.environ.get("SPANNER_INSTANCE_ID", "healthcare")
-DATABASE_ID = os.environ.get("SPANNER_DATABASE_ID", "medical-db")
+INSTANCE_ID = os.environ.get("SPANNER_INSTANCE_ID")
+DATABASE_ID = os.environ.get("SPANNER_DATABASE_ID")
 
 # --- Cloud Shell Workaround ---
 # If you are running this in Cloud Shell, you need to apply a small patch to prevent

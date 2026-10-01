@@ -64,7 +64,7 @@ pip install -r requirements.txt
 
 2. Create tables in your database and load data:
 
-First, execute the queries provided in `creaet_tables.sql` to create the `Providers`, `Patients`, `Appointments`, and `Prescriptions` tables and populate them with sample data.
+First, execute the queries provided in `create_tables.sql` to create the `Providers`, `Patients`, `Appointments`, and `Prescriptions` tables and populate them with sample data.
 
 Next, run the queries in `embeddings.sql` to generate the vector embeddings and populate them into the `DoctorNotesEmbedding` column.
 
