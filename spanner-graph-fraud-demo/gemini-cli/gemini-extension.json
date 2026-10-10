@@ -1,0 +1,26 @@
+{
+  "name": "spanner-fraud-demo",
+  "version": "1.0.0",
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {
+    "spanner": {
+      "httpUrl": "https://spanner.googleapis.com/mcp",
+      "authProviderType": "google_credentials",
+      "oauth": {
+        "scopes": ["https://www.googleapis.com/auth/cloud-platform"]
+      },
+      "timeout": 30000,
+      "headers": {
+        "x-goog-user-project": "@PROJECT_ID@"
+      },
+      "includeTools": [
+        "list_instances",
+        "list_databases",
+        "get_database_ddl",
+        "create_session",
+        "execute_sql_readonly",
+        "get_query_plan"
+      ]
+    }
+  }
+}
