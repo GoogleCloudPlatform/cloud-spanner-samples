@@ -245,6 +245,7 @@ pip install --quiet google-cloud-spanner google-cloud-storage
 2. Create the ingestion script `import_data.py`:
 ```bash
 cat << 'EOF' > import_data.py
+import datetime
 import os
 import sys
 from decimal import Decimal
