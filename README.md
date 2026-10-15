@@ -20,6 +20,7 @@ See respective README files in sub-directories for details.
 - [Network Digital Twin](telco-and-csp/README.md): Advanced usage of graph to Spanner Graph to model, visualize, and query a complex telecommunications network.
 - [Transit Fraud Detector](TransitFraud/README.md): Advanced usage of graph capabilities to detect fraud.
 - [Orders Streaming Analytics](orders-streaming-analytics/README.md): Dual-path streaming with Spanner: Precomputed Lakehouse aggregates and Ad-Hoc analytics via Data Boost.
+- [Spanner Multimodal Image Search](spanner-multimodal-image-search/README.md): Enterprise multimodal vector search, GCS object integration, and exact KNN vs. Approximate Nearest Neighbor (ANN) ScaNN indexing in Cloud Spanner.
 
 ## Notebooks
 Some of these notebooks are hosted in external Google Cloud repositories.
