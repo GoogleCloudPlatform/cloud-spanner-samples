@@ -18,11 +18,12 @@ import_data.py
 Enterprise Multimodal Vector Search in Google Cloud Spanner
 Idempotent Seeding Script for Products, Inventory, Categories, and Customer Reviews.
 """
-
+import datetime
 import os
 import sys
 from decimal import Decimal
 from google.cloud import storage
+from google.cloud import spanner
 from google.cloud import spanner
 
 # Disable Cloud Monitoring metric export warnings in Cloud Shell / headless environments
