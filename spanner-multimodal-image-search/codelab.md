@@ -345,13 +345,13 @@ def main():
         products_rows.append((pid, bid, cid, title, desc, color, price, gcs_uri, None))
 
         # Child records: Inventory
-        inventory_rows.append((pid, "store_nyc", 25 + (idx % 20), "2026-09-01T08:00:00Z"))
-        inventory_rows.append((pid, "store_sf", 15 + (idx % 12), "2026-09-02T12:30:00Z"))
+        inventory_rows.append((pid, "store_nyc", 25 + (idx % 20), datetime.datetime(2026, 9, 1, 8, 0, 0, tzinfo=datetime.timezone.utc)))
+        inventory_rows.append((pid, "store_sf", 15 + (idx % 12), datetime.datetime(2026, 9, 2, 12, 30, 0, tzinfo=datetime.timezone.utc)))
 
         # Child records: CustomerReviews
-        reviews_rows.append((pid, f"rev_{idx}_1", 5 - (idx % 2), "Outstanding fit, high quality fabric, and very stylish!", "2026-09-10"))
+        reviews_rows.append((pid, f"rev_{idx}_1", 5 - (idx % 2), "Outstanding fit, high quality fabric, and very stylish!", datetime.date(2026, 9, 10)))
         if idx % 3 == 0:
-            reviews_rows.append((pid, f"rev_{idx}_2", 4, "Great durable material and fast delivery.", "2026-09-12"))
+            reviews_rows.append((pid, f"rev_{idx}_2", 4, "Great durable material and fast delivery.", datetime.date(2026, 9, 12)))
 
     print(f"Writing mutations to Cloud Spanner using idempotent batch mutations ({len(products_rows)} products)...")
     with database.batch() as batch:
