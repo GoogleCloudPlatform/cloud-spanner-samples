@@ -1,0 +1,21 @@
+# Java
+target/
+*.class
+
+# Go
+go/secure-parameters-example
+go/psv-example
+*.exe
+*.test
+*.prof
+
+# .NET
+bin/
+obj/
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
