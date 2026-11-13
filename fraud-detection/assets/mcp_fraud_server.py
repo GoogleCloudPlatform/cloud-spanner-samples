@@ -46,6 +46,7 @@ import os
 import subprocess
 import sys
 from typing import Any
+import urllib.error
 import urllib.request
 
 
@@ -201,8 +202,12 @@ class SpannerGraphClient:
             },
             method="POST",
         )
-        with urllib.request.urlopen(req) as resp:
-            payload = json.loads(resp.read().decode("utf-8"))
+        try:
+            with urllib.request.urlopen(req) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            err_msg = e.read().decode("utf-8")
+            raise RuntimeError(f"Spanner query failed: {err_msg}") from e
         fields = [
             f["name"]
             for f in payload.get("metadata", {}).get("rowType", {}).get("fields", [])

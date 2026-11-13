@@ -588,6 +588,11 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 
+    if args.num_accounts < 1100:
+        parser.error(
+            "num-accounts must be at least 1100 to accommodate all hardcoded fraud topology accounts."
+        )
+
     summary = generate_dataset(
         output_dir=args.output_dir,
         num_persons=args.num_persons,

@@ -35,6 +35,7 @@ import os
 import random
 import subprocess
 from typing import Any
+import urllib.error
 import urllib.request
 
 os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
@@ -75,8 +76,12 @@ def _execute_sql(session_name: str, sql: str, token: str) -> list[list[Any]]:
         },
         method="POST",
     )
-    with urllib.request.urlopen(req) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        err_msg = e.read().decode("utf-8")
+        raise RuntimeError(f"SQL execution failed: {err_msg}") from e
     return data.get("rows", [])
 
 
@@ -370,9 +375,10 @@ def run_direct_spanner_gnn(
         nbrs = list(accounts[aid]["neighbors"])
         if len(nbrs) > 5:
             nbrs = rng.sample(nbrs, 5)
-        if nbrs:
+        valid_nbrs = [n for n in nbrs if n in base_features]
+        if valid_nbrs:
             mean_nbr = [
-                sum(base_features[n][d] for n in nbrs if n in base_features) / len(nbrs)
+                sum(base_features[n][d] for n in valid_nbrs) / len(valid_nbrs)
                 for d in range(16)
             ]
         else:
@@ -384,9 +390,10 @@ def run_direct_spanner_gnn(
         nbrs = list(accounts[aid]["neighbors"])
         if len(nbrs) > 5:
             nbrs = rng.sample(nbrs, 5)
-        if nbrs:
+        valid_nbrs = [n for n in nbrs if n in h1]
+        if valid_nbrs:
             mean_nbr = [
-                sum(h1[n][d] for n in nbrs if n in h1) / len(nbrs)
+                sum(h1[n][d] for n in valid_nbrs) / len(valid_nbrs)
                 for d in range(32)
             ]
         else:
