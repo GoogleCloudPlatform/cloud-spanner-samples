@@ -1,0 +1,59 @@
+{
+  "model": "2-Hop Heterogeneous GraphSAGE + Link/Node Classifier (Spanner API Direct)",
+  "embedding_dimension": 128,
+  "l2_normalized": true,
+  "accounts_scored": 2500,
+  "overall_metrics": {
+    "true_positives": 60,
+    "false_positives": 31,
+    "true_negatives": 2409,
+    "false_negatives": 0,
+    "precision": 0.6593,
+    "recall": 1.0,
+    "f1_score": 0.7947
+  },
+  "per_pattern_classification": {
+    "MONEY_MULE_RING": {
+      "total_accounts": 12,
+      "flagged_by_gnn": 12,
+      "mean_gnn_fraud_probability": 0.9709,
+      "max_gnn_fraud_probability": 0.9994
+    },
+    "SHARED_FRAUD_DEVICE": {
+      "total_accounts": 10,
+      "flagged_by_gnn": 10,
+      "mean_gnn_fraud_probability": 0.9996,
+      "max_gnn_fraud_probability": 0.9997
+    },
+    "STRUCTURING_SMURFING": {
+      "total_accounts": 10,
+      "flagged_by_gnn": 10,
+      "mean_gnn_fraud_probability": 0.9779,
+      "max_gnn_fraud_probability": 0.9998
+    },
+    "RAPID_CYCLING": {
+      "total_accounts": 10,
+      "flagged_by_gnn": 10,
+      "mean_gnn_fraud_probability": 0.9897,
+      "max_gnn_fraud_probability": 0.993
+    },
+    "IDENTITY_REUSE_MULE": {
+      "total_accounts": 8,
+      "flagged_by_gnn": 8,
+      "mean_gnn_fraud_probability": 1.0,
+      "max_gnn_fraud_probability": 1.0
+    },
+    "CIRCULAR_LOOP": {
+      "total_accounts": 10,
+      "flagged_by_gnn": 10,
+      "mean_gnn_fraud_probability": 0.9995,
+      "max_gnn_fraud_probability": 0.9999
+    },
+    "NONE": {
+      "total_accounts": 2440,
+      "flagged_by_gnn": 31,
+      "mean_gnn_fraud_probability": 0.0817,
+      "max_gnn_fraud_probability": 0.9508
+    }
+  }
+}
