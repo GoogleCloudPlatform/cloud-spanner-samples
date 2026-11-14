@@ -1,14 +1,14 @@
-# End-to-End Financial Fraud Detection Workshop (Cloud Spanner Graph + BigQuery + GNN + MCP)
+# End-to-End AML & Financial Fraud Detection Workshop (Cloud Spanner Graph + BigQuery + 2-Hop GraphSAGE GNN + Managed Spanner MCP)
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/GoogleCloudPlatform/cloud-spanner-samples/blob/main/fraud-detection/assets/fraud_detection_workshop.ipynb)
 
-This sample ([https://github.com/GoogleCloudPlatform/cloud-spanner-samples/tree/main/fraud-detection](https://github.com/GoogleCloudPlatform/cloud-spanner-samples/tree/main/fraud-detection)) provides a complete, hands-on **Anti-Money Laundering (AML) & Financial Fraud Detection** workshop combining **BigQuery**, **Cloud Spanner Graph (`FraudGraph`)**, **2-Hop Heterogeneous GraphSAGE Graph Neural Networks (GNN)**, and **Model Context Protocol (MCP)** agentic investigation tools.
+This sample ([https://github.com/GoogleCloudPlatform/cloud-spanner-samples/tree/main/fraud-detection](https://github.com/GoogleCloudPlatform/cloud-spanner-samples/tree/main/fraud-detection)) provides a complete, hands-on **Anti-Money Laundering (AML) & Financial Crime Investigation** workshop unifying **BigQuery** (Reverse ETL `EXPORT DATA` and Zero-ETL `EXTERNAL_DATASET` federation), **Cloud Spanner Graph (`FraudGraph`)** (6 ISO GQL AML typologies and interactive student challenges), **2-Hop Heterogeneous GraphSAGE Graph Neural Networks (128D embeddings & `COSINE_DISTANCE` search)**, and the **Google-Managed Cloud Spanner Remote MCP Server (`https://spanner.googleapis.com/mcp`)** for agentic compliance triage.
 
 ---
 
 ## 1. Architecture & Hybrid Data Flow
 
-The diagram below illustrates how synthetic payment network data flows from this GitHub repository through Google Cloud Storage and BigQuery into **Cloud Spanner Graph (`FraudGraph`)**, and how analytical (`%%bqsql`), graph (`%%spanner_graph`), GNN (`dgf_gnn_pipeline.py`), and agentic (`mcp_fraud_server.py`) workloads operate over a single operational graph.
+The diagram below illustrates how synthetic payment network data flows from this GitHub repository through Google Cloud Storage and BigQuery into **Cloud Spanner Graph (`FraudGraph`)**, and how analytical (`%%bqsql`), graph (`%%spanner_graph`), GNN (`dgf_gnn_pipeline.py`), and agentic (**Cloud Spanner Managed MCP Server `https://spanner.googleapis.com/mcp`**) workloads operate over a single operational graph.
 
 ```mermaid
 flowchart LR
@@ -34,9 +34,9 @@ flowchart LR
         Graph["Property Graph: FraudGraph\n(ISO GQL + COSINE_DISTANCE)"]
     end
 
-    subgraph AI["Graph ML & Agentic AI"]
+    subgraph AI["Graph ML & Managed Spanner MCP"]
         GNN["2-Hop GraphSAGE GNN\n(dgf_gnn_pipeline.py)"]
-        MCP["MCP Investigation Server\n(mcp_fraud_server.py)"]
+        MCP["Cloud Spanner Managed MCP Server\n(https://spanner.googleapis.com/mcp)"]
     end
 
     CSV -->|"Step 0.3: Auto-Sync"| GCS
@@ -49,7 +49,7 @@ flowchart LR
     Graph <-->|"Step 6: Zero-ETL\nCREATE EXTERNAL SCHEMA"| BQExt
     BQExt -->|"Step 9: Embedding Projection"| PCA
     Graph <-->|"Step 8: 2-Hop Message Passing &\n128-dim Embedding Write-Back"| GNN
-    Graph <-->|"Step 10: JSON-RPC 2.0 Tools\n(investigate_account, detect_aml_pattern)"| MCP
+    Graph <-->|"Step 10: Managed MCP JSON-RPC 2.0\n(create_session, execute_sql_readonly)"| MCP
 ```
 
 ---
@@ -58,14 +58,13 @@ flowchart LR
 
 | Path | Description |
 | :--- | :--- |
-| [`README.md`](./README.md) | Workshop overview, architecture diagrams, example fraud graphs, and setup guide. |
-| `assets/fraud_detection_workshop.ipynb` [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/GoogleCloudPlatform/cloud-spanner-samples/blob/main/fraud-detection/assets/fraud_detection_workshop.ipynb) | **End-to-End Interactive Notebook (83 cells, Sections `0`–`10`)** with `# @param` UI controls, automatic GitHub file download, BigQuery staging, Reverse ETL, `EXTERNAL_DATASET`, `%%spanner_graph` visual queries, 6 Student Challenges, GNN training, 2D PCA visualization, and MCP agent execution. |
+| [`README.md`](./README.md) | Workshop overview, architecture diagrams, example fraud graphs, Managed Spanner MCP guide, and setup instructions. |
+| `assets/fraud_detection_workshop.ipynb` [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/GoogleCloudPlatform/cloud-spanner-samples/blob/main/fraud-detection/assets/fraud_detection_workshop.ipynb) | **End-to-End Interactive Notebook (83 cells, Sections `0`–`10`)** with `# @param` UI controls, automatic GitHub file download, BigQuery staging, Reverse ETL, `EXTERNAL_DATASET`, `%%spanner_graph` visual queries, 6 Student Challenges, GNN training, 2D PCA visualization, and Cloud Spanner Managed MCP Server (`https://spanner.googleapis.com/mcp`) compliance triage. |
 | [`assets/CHALLENGE_SOLUTIONS.md`](./assets/CHALLENGE_SOLUTIONS.md) | Reference `%%spanner_graph` ISO GQL solutions and verified outputs for all **6 Student Challenges**. |
 | [`assets/schema.sql`](./assets/schema.sql) | Cloud Spanner DDL for `Person`, `Account` (with `embedding ARRAY<FLOAT64>(vector_length=>128)`), `Device`, interleaved `Owns`, `UsesDevice`, `Transfer`, secondary indexes, and `CREATE OR REPLACE PROPERTY GRAPH FraudGraph`. |
 | [`assets/queries_gql.sql`](./assets/queries_gql.sql) | Standalone ISO GQL queries for all 6 AML fraud patterns plus BigQuery-Spanner interoperability SQL (`EXTERNAL_DATASET`, `EXTERNAL_QUERY`, and `EXPORT DATA`). |
 | [`assets/dgf_gnn_pipeline.py`](./assets/dgf_gnn_pipeline.py) | 2-Hop Heterogeneous GraphSAGE GNN pipeline that extracts `FraudGraph` topology, computes 128-dimensional L2-normalized embeddings, writes them back to `Account.embedding`, and outputs evaluation metrics. |
 | [`assets/gnn_evaluation_report.json`](./assets/gnn_evaluation_report.json) | Model evaluation metrics (`Recall = 1.0000`, `Precision = 0.6593`, `F1 = 0.7947`) and top-10 cosine similarity neighbors for `SHELL_CORP` aggregator `20006`. |
-| [`assets/mcp_fraud_server.py`](./assets/mcp_fraud_server.py) | Model Context Protocol (MCP) JSON-RPC 2.0 server exposing `get_fraud_graph_summary`, `detect_aml_pattern`, `investigate_account`, and `execute_readonly_gql`. |
 | [`assets/generate_fraud_data.py`](./assets/generate_fraud_data.py) | Deterministic synthetic AML payment network generator (`seed = 42`) producing the 6 CSV files in `data/`. |
 | [`assets/load_spanner_data.py`](./assets/load_spanner_data.py) | Direct Spanner REST mutation loader utility (alternative to BigQuery Reverse ETL). |
 | [`data/`](./data/) | Synthetic dataset CSVs: `Person.csv` (`2,000` rows), `Account.csv` (`2,500` rows), `Device.csv` (`1,800` rows), `Owns.csv` (`2,500` rows), `UsesDevice.csv` (`2,518` rows), and `Transfer.csv` (`15,000` rows). |
@@ -286,7 +285,36 @@ flowchart LR
 
 ---
 
-## 6. Quickstart: Running the Workshop Notebook in Google Colab
+## 6. Agentic Fraud Investigation with Cloud Spanner Managed MCP Server (`https://spanner.googleapis.com/mcp`)
+
+Instead of deploying or maintaining a custom MCP proxy, this workshop connects directly to the **Google-Managed Cloud Spanner Remote MCP Server (`https://spanner.googleapis.com/mcp`)** over HTTPS JSON-RPC 2.0.
+
+- **Zero-Infrastructure Enablement**: Automatically enabled when `spanner.googleapis.com` is enabled (`gcloud services enable spanner.googleapis.com`).
+- **IAM Governance**: Controlled via `roles/mcp.toolUser` and `roles/spanner.databaseReader`.
+- **16 Native Managed Tools**: Includes `list_instances`, `list_databases`, `get_database_ddl`, `create_session`, `execute_sql_readonly`, `get_query_plan`, `execute_sql`, and `commit`.
+- **MCP Client Configuration (`settings.json` / `gemini-extension.json`)**:
+  ```json
+  {
+    "mcpServers": {
+      "spanner": {
+        "httpUrl": "https://spanner.googleapis.com/mcp",
+        "authProviderType": "google_credentials",
+        "oauth": {
+          "scopes": ["https://www.googleapis.com/auth/cloud-platform"]
+        },
+        "headers": {
+          "x-goog-user-project": "YOUR_PROJECT_ID"
+        },
+        "timeout": 30000
+      }
+    }
+  }
+  ```
+- **Multi-Modal Compliance Dossier Generation (Section 10)**: Using `create_session` followed by parameterized `execute_sql_readonly` calls (`@aid = 20006`), the agent queries `GRAPH FraudGraph` (1-hop KYC ownership, linked devices, and 2-hop fund flows) alongside `COSINE_DISTANCE(seed.embedding, other.embedding)` over the 128-dim GraphSAGE vectors to surface counterpart `SHELL_CORP` hub `20012` (`0.9573` cosine similarity).
+
+---
+
+## 7. Quickstart: Running the Workshop Notebook in Google Colab
 
 1. Open the notebook in Google Colab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/GoogleCloudPlatform/cloud-spanner-samples/blob/main/fraud-detection/assets/fraud_detection_workshop.ipynb)
 2. In **Section 0 (`0.1 Workshop Configuration Parameters`)**, fill in the `# @param` form fields:
@@ -295,4 +323,4 @@ flowchart LR
    - `BUCKET_NAME`: Your Google Cloud Storage bucket name for staging CSV data.
    - `GITHUB_REPO`: `https://github.com/GoogleCloudPlatform/cloud-spanner-samples/tree/main/fraud-detection` (default).
 3. Run **Section 0 (`Step 0.2` & `Step 0.3`)** to authenticate, enable required GCP APIs, automatically download all workshop assets (`assets/*`) and synthetic CSVs (`data/*.csv`) from this GitHub repository, and stage `data/*.csv` to `gs://{BUCKET_NAME}/data/`.
-4. Execute **Sections `1` through `10`** sequentially to complete the BigQuery staging, Spanner setup, DDL creation, Reverse ETL (`EXPORT DATA`), `EXTERNAL_DATASET` federation, all 6 `%%spanner_graph` fraud patterns & student challenges, 2-hop GNN training, 2D PCA visualization, and MCP investigation server calls.
+4. Execute **Sections `1` through `10`** sequentially to complete the BigQuery staging, Spanner setup, DDL creation, Reverse ETL (`EXPORT DATA`), `EXTERNAL_DATASET` federation, all 6 `%%spanner_graph` fraud patterns & student challenges, 2-hop GNN training, 2D PCA visualization, and Cloud Spanner Managed MCP Server (`https://spanner.googleapis.com/mcp`) compliance triage.
