@@ -20,6 +20,7 @@ See respective README files in sub-directories for details.
 - [Network Digital Twin](telco-and-csp/README.md): Advanced usage of graph to Spanner Graph to model, visualize, and query a complex telecommunications network.
 - [Secure Parameters](secure-parameters/README.md): Examples demonstrating the use of Parameterized Secure Views (PSV) with Client Context to restrict query results based on user identity (Java, Go, Python, and .NET).
 - [Transit Fraud Detector](TransitFraud/README.md): Advanced usage of graph capabilities to detect fraud.
+- [Financial Fraud Detection](fraud-detection/README.md): End-to-end Anti-Money Laundering (AML) & Financial Fraud Detection workshop combining Cloud Spanner Graph, BigQuery, 2-hop GraphSAGE GNN embeddings, and Model Context Protocol (MCP) agentic investigation.
 - [Orders Streaming Analytics](orders-streaming-analytics/README.md): Dual-path streaming with Spanner: Precomputed Lakehouse aggregates and Ad-Hoc analytics via Data Boost.
 - [Spanner Multimodal Image Search](spanner-multimodal-image-search/README.md): Enterprise multimodal vector search, GCS object integration, and exact KNN vs. Approximate Nearest Neighbor (ANN) ScaNN indexing in Cloud Spanner.
 
